@@ -10,7 +10,7 @@ export function useSaveStatus() {
   const [saveStatus, setSaveStatus] =
     useState<SaveStatus>("saved");
   const [showIndicator, setShowIndicator] = useState(false);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     return () => {
@@ -69,13 +69,4 @@ export function calculateLevel(xp: number) {
     xpForNextLevel,
     xpInCurrentLevel,
   };
-}
-
-export function checkLevelUp(
-  oldXP: number,
-  newXP: number,
-): boolean {
-  const oldLevel = calculateLevel(oldXP).currentLevel;
-  const newLevel = calculateLevel(newXP).currentLevel;
-  return newLevel > oldLevel;
 }

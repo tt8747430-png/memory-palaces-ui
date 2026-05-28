@@ -21,7 +21,7 @@ export function useNotifications() {
   );
   const [currentNotification, setCurrentNotification] =
     useState<NotificationQueueItem | null>(null);
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<number | undefined>(undefined);
   const queueProcessingRef = useRef(false);
 
   const processQueue = useCallback(() => {
