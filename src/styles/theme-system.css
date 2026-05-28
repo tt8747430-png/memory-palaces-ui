@@ -1,0 +1,295 @@
+/**
+ * Theme System - Comprehensive Design Tokens
+ * Integrated from professional design system
+ */
+
+:root {
+  /* ========================================
+     BRAND COLORS
+     ======================================== */
+  --theme-primary: #091a7a;
+  --theme-primary-hover: #0615a3;
+  --theme-primary-active: #04105c;
+  --theme-primary-light: #adc8ff;
+  --theme-primary-dark: #020938;
+
+  --theme-secondary: #adc8ff;
+  --theme-secondary-hover: #94b5ff;
+  --theme-secondary-active: #7ba1ff;
+  --theme-secondary-light: #e6efff;
+  --theme-secondary-dark: #6283cc;
+
+  --theme-accent: #10b981;
+  --theme-accent-hover: #059669;
+  --theme-accent-active: #047857;
+  --theme-accent-light: #d1fae5;
+  --theme-accent-dark: #065f46;
+
+  /* ========================================
+     NEUTRAL COLORS
+     ======================================== */
+  --theme-gray-50: #fafafa;
+  --theme-gray-100: #f5f5f5;
+  --theme-gray-200: #e5e5e5;
+  --theme-gray-300: #d4d4d4;
+  --theme-gray-400: #a3a3a3;
+  --theme-gray-500: #737373;
+  --theme-gray-600: #525252;
+  --theme-gray-700: #404040;
+  --theme-gray-800: #262626;
+  --theme-gray-900: #171717;
+
+  /* ========================================
+     SEMANTIC COLORS
+     ======================================== */
+  --theme-success: #10b981;
+  --theme-success-light: #d1fae5;
+  --theme-success-dark: #065f46;
+
+  --theme-warning: #f59e0b;
+  --theme-warning-light: #fef3c7;
+  --theme-warning-dark: #92400e;
+
+  --theme-error: #ef4444;
+  --theme-error-light: #fee2e2;
+  --theme-error-dark: #7f1d1d;
+
+  --theme-info: #3b82f6;
+  --theme-info-light: #dbeafe;
+  --theme-info-dark: #1e3a8a;
+
+  /* ========================================
+     SURFACE COLORS
+     ======================================== */
+  --theme-bg: #ffffff;
+  --theme-bg-subtle: #fafafa;
+  --theme-card: #ffffff;
+  --theme-card-glass: rgba(255, 255, 255, 0.9);
+  --theme-modal: #ffffff;
+  --theme-elevated: #ffffff;
+  --theme-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ========================================
+     TEXT COLORS
+     ======================================== */
+  --theme-text-primary: #171717;
+  --theme-text-secondary: #525252;
+  --theme-text-tertiary: #737373;
+  --theme-text-disabled: #a3a3a3;
+  --theme-text-on-primary: #ffffff;
+  --theme-text-on-secondary: #000000;
+  --theme-text-on-accent: #ffffff;
+
+  /* ========================================
+     BORDER COLORS
+     ======================================== */
+  --theme-border: #e5e5e5;
+  --theme-border-muted: #f5f5f5;
+  --theme-border-strong: #d4d4d4;
+  --theme-border-focus: #091a7a;
+
+  /* ========================================
+     SPACING SYSTEM
+     ======================================== */
+  --theme-space-0: 0rem;
+  --theme-space-1: 0.25rem;
+  --theme-space-2: 0.5rem;
+  --theme-space-3: 0.75rem;
+  --theme-space-4: 1rem;
+  --theme-space-5: 1.25rem;
+  --theme-space-6: 1.5rem;
+  --theme-space-8: 2rem;
+  --theme-space-10: 2.5rem;
+  --theme-space-12: 3rem;
+  --theme-space-16: 4rem;
+  --theme-space-20: 5rem;
+  --theme-space-24: 6rem;
+
+  /* Component Spacing */
+  --theme-button-px: 1.25rem;
+  --theme-button-py: 0.625rem;
+  --theme-input-px: 0.75rem;
+  --theme-input-py: 0.5rem;
+  --theme-card-padding: 1.25rem;
+  --theme-modal-padding: 1.5rem;
+
+  /* Layout Spacing */
+  --theme-container-max: 75rem;
+  --theme-container-padding: 1.5rem;
+  --theme-grid-gap: 1.5rem;
+  --theme-section-spacing: 5rem;
+
+  /* ========================================
+     BORDER RADIUS
+     ======================================== */
+  --theme-radius-sm: 0.25rem;
+  --theme-radius-base: 0.5rem;
+  --theme-radius-md: 0.75rem;
+  --theme-radius-lg: 1rem;
+  --theme-radius-xl: 1.25rem;
+  --theme-radius-2xl: 1.5rem;
+  --theme-radius-3xl: 2rem;
+  --theme-radius-full: 9999px;
+
+  /* ========================================
+     ELEVATION (SHADOWS)
+     ======================================== */
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --theme-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --theme-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --theme-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --theme-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+  /* ========================================
+     MOTION & TRANSITIONS
+     ======================================== */
+  --theme-duration-fast: 150ms;
+  --theme-duration-base: 200ms;
+  --theme-duration-moderate: 300ms;
+  --theme-duration-slow: 500ms;
+
+  --theme-ease-linear: linear;
+  --theme-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --theme-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --theme-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --theme-transition-fast: all 150ms cubic-bezier(0, 0, 0.2, 1);
+  --theme-transition-base: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition-moderate: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition-slow: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  /* ========================================
+     BRAND COLORS - DARK MODE
+     ======================================== */
+  --theme-primary: #adc8ff;
+  --theme-primary-hover: #c4d9ff;
+  --theme-primary-active: #dbeaff;
+  --theme-primary-light: #091a7a;
+  --theme-primary-dark: #f2f6ff;
+
+  --theme-secondary: #6283cc;
+  --theme-secondary-hover: #7ba1ff;
+  --theme-secondary-active: #94b5ff;
+  --theme-secondary-light: #04105c;
+  --theme-secondary-dark: #adc8ff;
+
+  --theme-accent: #34d399;
+  --theme-accent-hover: #6ee7b7;
+  --theme-accent-active: #a7f3d0;
+  --theme-accent-light: #065f46;
+  --theme-accent-dark: #d1fae5;
+
+  /* ========================================
+     NEUTRAL COLORS - DARK MODE
+     ======================================== */
+  --theme-gray-50: #0a0a0a;
+  --theme-gray-100: #141414;
+  --theme-gray-200: #1f1f1f;
+  --theme-gray-300: #2a2a2a;
+  --theme-gray-400: #525252;
+  --theme-gray-500: #737373;
+  --theme-gray-600: #a3a3a3;
+  --theme-gray-700: #d4d4d4;
+  --theme-gray-800: #e5e5e5;
+  --theme-gray-900: #f5f5f5;
+
+  /* ========================================
+     SEMANTIC COLORS - DARK MODE
+     ======================================== */
+  --theme-success: #34d399;
+  --theme-success-light: #064e3b;
+  --theme-success-dark: #d1fae5;
+
+  --theme-warning: #fbbf24;
+  --theme-warning-light: #78350f;
+  --theme-warning-dark: #fef3c7;
+
+  --theme-error: #f87171;
+  --theme-error-light: #7f1d1d;
+  --theme-error-dark: #fee2e2;
+
+  --theme-info: #60a5fa;
+  --theme-info-light: #1e3a8a;
+  --theme-info-dark: #dbeafe;
+
+  /* ========================================
+     SURFACE COLORS - DARK MODE
+     ======================================== */
+  --theme-bg: #000000;
+  --theme-bg-subtle: #0a0a0a;
+  --theme-card: #0a0a0a;
+  --theme-card-glass: rgba(10, 10, 10, 0.9);
+  --theme-modal: #141414;
+  --theme-elevated: #1f1f1f;
+  --theme-overlay: rgba(255, 255, 255, 0.1);
+
+  /* ========================================
+     TEXT COLORS - DARK MODE
+     ======================================== */
+  --theme-text-primary: #fafafa;
+  --theme-text-secondary: #d4d4d4;
+  --theme-text-tertiary: #a3a3a3;
+  --theme-text-disabled: #525252;
+  --theme-text-on-primary: #000000;
+  --theme-text-on-secondary: #ffffff;
+  --theme-text-on-accent: #000000;
+
+  /* ========================================
+     BORDER COLORS - DARK MODE
+     ======================================== */
+  --theme-border: #2a2a2a;
+  --theme-border-muted: #1f1f1f;
+  --theme-border-strong: #404040;
+  --theme-border-focus: #adc8ff;
+}
+
+/* ========================================
+   TAILWIND CSS INTEGRATION
+   ======================================== */
+@theme inline {
+  /* Brand Colors */
+  --color-theme-primary: var(--theme-primary);
+  --color-theme-primary-hover: var(--theme-primary-hover);
+  --color-theme-secondary: var(--theme-secondary);
+  --color-theme-accent: var(--theme-accent);
+
+  /* Semantic Colors */
+  --color-theme-success: var(--theme-success);
+  --color-theme-warning: var(--theme-warning);
+  --color-theme-error: var(--theme-error);
+  --color-theme-info: var(--theme-info);
+
+  /* Surface Colors */
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-card: var(--theme-card);
+  --color-theme-modal: var(--theme-modal);
+
+  /* Text Colors */
+  --color-theme-text-primary: var(--theme-text-primary);
+  --color-theme-text-secondary: var(--theme-text-secondary);
+  --color-theme-text-tertiary: var(--theme-text-tertiary);
+
+  /* Border Colors */
+  --color-theme-border: var(--theme-border);
+  --color-theme-border-focus: var(--theme-border-focus);
+
+  /* Spacing */
+  --spacing-button-px: var(--theme-button-px);
+  --spacing-button-py: var(--theme-button-py);
+  --spacing-card-padding: var(--theme-card-padding);
+
+  /* Radius */
+  --radius-theme-sm: var(--theme-radius-sm);
+  --radius-theme-md: var(--theme-radius-md);
+  --radius-theme-lg: var(--theme-radius-lg);
+
+  /* Shadows */
+  --shadow-theme-sm: var(--theme-shadow-sm);
+  --shadow-theme-md: var(--theme-shadow-md);
+  --shadow-theme-lg: var(--theme-shadow-lg);
+}
