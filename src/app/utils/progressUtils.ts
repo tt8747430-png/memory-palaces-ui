@@ -25,7 +25,7 @@ export const ProgressUtils = {
    * Import progress data from a JSON file
    */
   importProgress: (file: File): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {

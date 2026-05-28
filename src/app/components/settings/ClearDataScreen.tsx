@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { ProgressUtils } from "../../utils/progressUtils";
 
 interface ClearDataScreenProps {
   onBack: () => void;
@@ -19,6 +20,16 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
+  const storageInfo = ProgressUtils.getStorageInfo();
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
   const dataOptions: DataOption[] = [
     {
       id: "cache",
@@ -30,7 +41,7 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
       id: "progress",
       label: "Training Progress",
       description: "Your learning history and stats",
-      size: "2 MB",
+      size: formatBytes(storageInfo.progressSize),
       dangerous: true,
     },
     {
@@ -57,6 +68,11 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
 
   const handleClearData = async () => {
     setIsClearing(true);
+    
+    if (selectedOptions.includes("progress")) {
+      ProgressUtils.clearProgress();
+    }
+
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsClearing(false);
     setShowConfirmDialog(false);

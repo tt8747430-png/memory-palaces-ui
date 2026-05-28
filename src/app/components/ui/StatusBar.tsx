@@ -1,4 +1,4 @@
-import StatusBarIPhone from "../../imports/StatusBarIPhone";
+import { StatusBarIPhone } from "../../imports";
 
 interface StatusBarProps {
   theme?: "light" | "dark";

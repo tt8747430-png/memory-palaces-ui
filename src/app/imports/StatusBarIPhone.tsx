@@ -2,7 +2,7 @@ import {
   BatteryIcon,
   CellularIcon,
   WifiIcon,
-} from "../icons/StatusBarIcons";
+} from "../icons";
 
 function Time({
   textColor,

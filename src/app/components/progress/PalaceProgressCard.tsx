@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import ProgressIllustration from "../../imports/ProgressIllustration";
+import { ProgressIllustration } from "../../imports";
 import { useState, useEffect } from "react";
 
 interface PalaceProgressCardProps {

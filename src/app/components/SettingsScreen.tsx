@@ -14,8 +14,12 @@ import {
   Info,
   Mail,
   Smartphone,
+  DownloadCloud,
+  UploadCloud,
+  RefreshCw,
 } from "lucide-react";
 import { useState, useRef } from "react";
+import { ProgressUtils } from "../utils/progressUtils";
 import { EditProfileScreen } from "./settings/EditProfileScreen";
 import { LanguageScreen } from "./settings/LanguageScreen";
 import { PrivacySettingsScreen } from "./settings/PrivacySettingsScreen";
@@ -47,10 +51,11 @@ interface SettingsItem {
   icon: any;
   label: string;
   value?: string;
-  action?: "navigate" | "toggle" | "danger";
+  action?: "navigate" | "toggle" | "danger" | "function";
   color?: string;
   enabled?: boolean;
   navigationTarget?: string;
+  onClick?: () => void;
 }
 
 type NavigationScreen =
@@ -77,7 +82,35 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     type: "success",
   });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        await ProgressUtils.importProgress(file);
+        showToast("Progress imported successfully");
+      } catch (error) {
+        showToast("Failed to import progress", "error");
+      }
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRestoreBackup = () => {
+    if (ProgressUtils.restoreFromBackup()) {
+      showToast("Progress restored from backup");
+    } else {
+      showToast("No backup found", "warning");
+    }
+  };
 
   // Scroll-based transformations for adaptive header
   const headerOpacity = useTransform(scrollY, [0, 120], [1, 0]);
@@ -163,6 +196,32 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
       ],
     },
     {
+      title: "Data Management",
+      items: [
+        {
+          icon: DownloadCloud,
+          label: "Export Progress",
+          action: "function",
+          onClick: () => {
+            ProgressUtils.exportProgress();
+            showToast("Progress exported successfully");
+          },
+        },
+        {
+          icon: UploadCloud,
+          label: "Import Progress",
+          action: "function",
+          onClick: handleImportClick,
+        },
+        {
+          icon: RefreshCw,
+          label: "Restore Backup",
+          action: "function",
+          onClick: handleRestoreBackup,
+        },
+      ],
+    },
+    {
       title: "Support",
       items: [
         {
@@ -226,6 +285,8 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
       setCurrentScreen(item.navigationTarget as NavigationScreen);
     } else if (item.action === "danger") {
       setShowLogoutDialog(true);
+    } else if (item.action === "function" && item.onClick) {
+      item.onClick();
     }
   };
 
@@ -569,6 +630,15 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Hidden File Input for Import */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept=".json"
+        onChange={handleFileChange}
+      />
 
       {/* Toast Notifications */}
       <SettingsToast
