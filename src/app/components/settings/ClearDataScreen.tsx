@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { ProgressUtils } from "../../utils/progressUtils";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 
 interface ClearDataScreenProps {
   onBack: () => void;
@@ -216,60 +217,47 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
         )}
       </div>
 
-      {/* Confirmation Dialog */}
-      {showConfirmDialog && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"
-          onClick={() => !isClearing && setShowConfirmDialog(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
-          >
+      <Dialog open={showConfirmDialog} onOpenChange={(open) => !isClearing && setShowConfirmDialog(open)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-7 h-7 text-red-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#091A7A] text-center mb-2">
-              Clear Selected Data?
-            </h2>
-            <p className="text-sm text-[#091A7A]/60 text-center mb-6">
+            <DialogTitle className="text-center text-[#091A7A] text-xl">Clear Selected Data?</DialogTitle>
+            <DialogDescription className="text-center text-[#091A7A]/60">
               {hasDangerousSelections
                 ? "This action cannot be undone. Your selected data will be permanently deleted."
                 : "This will free up space on your device. You can always rebuild your cache."}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmDialog(false)}
-                disabled={isClearing}
-                className="flex-1 py-3 bg-gray-100 text-[#091A7A] font-semibold rounded-2xl disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleClearData}
-                disabled={isClearing}
-                className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-2xl disabled:opacity-50"
-              >
-                {isClearing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                    />
-                  </span>
-                ) : (
-                  "Clear Data"
-                )}
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-3 sm:justify-center mt-4">
+            <button
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isClearing}
+              className="flex-1 py-3 bg-gray-100 text-[#091A7A] font-semibold rounded-2xl disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleClearData}
+              disabled={isClearing}
+              className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-2xl disabled:opacity-50"
+            >
+              {isClearing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                </span>
+              ) : (
+                "Clear Data"
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

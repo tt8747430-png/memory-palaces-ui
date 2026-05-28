@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Shield, Eye, Users, Bell, Lock, MapPin } from "lucide-react";
 import { useState } from "react";
-import { Toggle } from "../ui/Toggle";
+import { Switch } from "../ui/switch";
 
 interface PrivacySettingsScreenProps {
   onBack: () => void;
@@ -117,10 +117,9 @@ export function PrivacySettingsScreen({ onBack }: PrivacySettingsScreenProps) {
                   </div>
                 </div>
 
-                <Toggle
+                <Switch
                   checked={setting.enabled}
-                  onChange={() => toggleSetting(setting.id)}
-                  size="md"
+                  onCheckedChange={() => toggleSetting(setting.id)}
                 />
               </div>
             </motion.div>

@@ -16,8 +16,7 @@ import { PalaceDetailScreen } from "./palace/PalaceDetailScreen";
 import { RoomTrainingScreen } from "./palace/RoomTrainingScreen";
 import { CreatePalaceScreen } from "./palace/CreatePalaceScreen";
 import { EditPalaceScreen } from "./palace/EditPalaceScreen";
-import { SuccessModal } from "./modals/SuccessModal";
-import { ErrorModal } from "./modals/ErrorModal";
+import { toast } from "sonner";
 import {
   PalaceQuizScreen,
   QuizResults,
@@ -108,8 +107,7 @@ export default function HomePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCreatePalace, setShowCreatePalace] = useState(false);
   const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
-  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
-  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
+
 
   // Handler functions - declared before conditional returns
   const handleStartTraining = () => {
@@ -171,20 +169,12 @@ export default function HomePage() {
 
   const handleCreatePalaceSuccess = () => {
     setShowCreatePalace(false);
-    setSuccessModal({
-      isOpen: true,
-      title: "Palace Created!",
-      message: "Your new memory palace has been created successfully.",
-    });
+    toast.success("Palace Created!");
   };
 
   const handleEditPalaceSuccess = () => {
     setEditingPalaceId(null);
-    setSuccessModal({
-      isOpen: true,
-      title: "Palace Updated!",
-      message: "Your palace has been updated successfully.",
-    });
+    toast.success("Palace Updated!");
   };
 
 
@@ -357,23 +347,6 @@ export default function HomePage() {
         status={saveStatus.saveStatus}
       />
 
-      {successModal && (
-        <SuccessModal
-          isOpen={successModal.isOpen}
-          onClose={() => setSuccessModal(null)}
-          title={successModal.title}
-          message={successModal.message}
-        />
-      )}
-
-      {errorModal && (
-        <ErrorModal
-          isOpen={errorModal.isOpen}
-          onClose={() => setErrorModal(null)}
-          title={errorModal.title}
-          message={errorModal.message}
-        />
-      )}
     </div>
   );
 }

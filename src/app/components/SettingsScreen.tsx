@@ -21,26 +21,24 @@ import {
 import { useState, useRef, type ChangeEvent } from "react";
 import { ProgressUtils } from "../utils/progressUtils";
 import { EditProfileScreen } from "./settings/EditProfileScreen";
-import { LanguageScreen } from "./settings/LanguageScreen";
 import { PrivacySettingsScreen } from "./settings/PrivacySettingsScreen";
 import { ChangePasswordScreen } from "./settings/ChangePasswordScreen";
 import { ClearDataScreen } from "./settings/ClearDataScreen";
 import { HelpCenterScreen } from "./settings/HelpCenterScreen";
 import { AboutScreen } from "./settings/AboutScreen";
 import { PhoneConnectScreen } from "./settings/PhoneConnectScreen";
-import { SettingsToast } from "./settings/SettingsToast";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
-import { Toggle } from "./ui";
+import { Switch } from "./ui/switch";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface SettingsScreenProps {
   onBack: () => void;
 }
 
-interface Toast {
-  show: boolean;
-  message: string;
-  type: "success" | "error" | "info" | "warning";
-}
+
 
 interface SettingsSection {
   title: string;
@@ -51,10 +49,13 @@ interface SettingsItem {
   icon: any;
   label: string;
   value?: string;
-  action?: "navigate" | "toggle" | "danger" | "function";
+  action?: "navigate" | "toggle" | "danger" | "function" | "select";
   color?: string;
   enabled?: boolean;
   navigationTarget?: string;
+  options?: { value: string; label: string }[];
+  selectedValue?: string;
+  onSelect?: (val: string) => void;
   onClick?: () => void;
 }
 
@@ -76,11 +77,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
   const [language, setLanguage] = useState("en");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [toast, setToast] = useState<Toast>({
-    show: false,
-    message: "",
-    type: "success",
-  });
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
@@ -94,9 +91,9 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     if (file) {
       try {
         await ProgressUtils.importProgress(file);
-        showToast("Progress imported successfully");
+        toast.success("Progress imported successfully");
       } catch (error) {
-        showToast("Failed to import progress", "error");
+        toast.error("Failed to import progress");
       }
     }
     if (fileInputRef.current) {
@@ -106,9 +103,9 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
 
   const handleRestoreBackup = () => {
     if (ProgressUtils.restoreFromBackup()) {
-      showToast("Progress restored from backup");
+      toast.success("Progress restored from backup");
     } else {
-      showToast("No backup found", "warning");
+      toast.warning("No backup found");
     }
   };
 
@@ -167,9 +164,21 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         {
           icon: Globe,
           label: "Language",
-          value: getLanguageName(language),
-          action: "navigate",
-          navigationTarget: "language",
+          action: "select",
+          selectedValue: language,
+          onSelect: (val) => handleLanguageChange(val),
+          options: [
+            { value: "en", label: "English" },
+            { value: "es", label: "Español" },
+            { value: "fr", label: "Français" },
+            { value: "de", label: "Deutsch" },
+            { value: "it", label: "Italiano" },
+            { value: "pt", label: "Português" },
+            { value: "ru", label: "Русский" },
+            { value: "ja", label: "日本語" },
+            { value: "ko", label: "한국어" },
+            { value: "zh", label: "中文" },
+          ]
         },
       ],
     },
@@ -205,7 +214,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           action: "function",
           onClick: () => {
             ProgressUtils.exportProgress();
-            showToast("Progress exported successfully");
+            toast.success("Progress exported successfully");
           },
         },
         {
@@ -298,26 +307,22 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     }, 300);
   };
 
-  const showToast = (message: string, type: Toast["type"] = "success") => {
-    setToast({ show: true, message, type });
-  };
-
   const handleProfileSave = () => {
-    showToast("Profile updated successfully");
+    toast.success("Profile updated successfully");
   };
 
   const handlePasswordChanged = () => {
-    showToast("Password changed successfully");
+    toast.success("Password changed successfully");
   };
 
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
-    showToast("Language updated");
+    toast.success("Language updated");
   };
 
   const handlePhoneConnected = (phone: string) => {
     setPhoneNumber(phone);
-    showToast("Phone number connected");
+    toast.success("Phone number connected");
   };
 
   if (currentScreen !== "main") {
@@ -341,13 +346,6 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
             <PhoneConnectScreen
               onBack={() => setCurrentScreen("main")}
               onPhoneConnected={handlePhoneConnected}
-            />
-          )}
-          {currentScreen === "language" && (
-            <LanguageScreen
-              onBack={() => setCurrentScreen("main")}
-              currentLanguage={language}
-              onLanguageChange={handleLanguageChange}
             />
           )}
           {currentScreen === "privacy" && (
@@ -441,14 +439,21 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
                 className="w-20 h-20 rounded-full border-4 border-white shadow-xl object-cover"
                 style={{ objectPosition: "center 20%" }}
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setCurrentScreen("edit-profile")}
-                className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-              >
-                <User className="w-3 h-3 text-white" />
-              </motion.button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setCurrentScreen("edit-profile")}
+                    className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                  >
+                    <User className="w-3 h-3 text-white" />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Edit Profile</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             {/* Name and Username */}
@@ -530,11 +535,26 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
 
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {item.action === "toggle" && (
-                        <Toggle
+                        <Switch
                           checked={item.enabled || false}
-                          onChange={() => handleToggle(item.label)}
-                          size="sm"
+                          onCheckedChange={() => handleToggle(item.label)}
                         />
+                      )}
+                      {item.action === "select" && item.options && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Select value={item.selectedValue} onValueChange={item.onSelect}>
+                            <SelectTrigger className="w-[120px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-[#091A7A]/70 text-[15px] font-medium p-0 pr-2">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                              {item.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       )}
                       {item.action === "navigate" && (
                         <ChevronRight
@@ -566,67 +586,32 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         </div>
       </div>
 
-      {/* Logout Confirmation Dialog */}
-      <AnimatePresence>
-        {showLogoutDialog && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#1f2024]/85 z-50"
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-center">Log out</DialogTitle>
+            <DialogDescription className="text-center">
+              Are you sure you want to log out? You'll need to login again to use the app.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-center">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={() => setShowLogoutDialog(false)}
-            />
-
-            {/* Dialog */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
+              className="flex-1 h-[40px] rounded-xl border-[1.5px] border-[#091A7A] flex items-center justify-center font-semibold text-[12px] text-[#091A7A]"
             >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-2xl p-4 w-[300px] shadow-2xl pointer-events-auto"
-              >
-                {/* Content */}
-                <div className="flex flex-col gap-2 items-center text-center p-2 mb-5">
-                  <h2 className="font-extrabold text-[16px] text-[#1f2024] tracking-[0.08px]">
-                    Log out
-                  </h2>
-                  <p className="font-normal text-[12px] text-[#71727a] leading-[16px] tracking-[0.12px]">
-                    Are you sure you want to log out? You'll need to login again to use the app.
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowLogoutDialog(false)}
-                    className="flex-1 h-[40px] rounded-xl border-[1.5px] border-[#091A7A] flex items-center justify-center"
-                  >
-                    <span className="font-semibold text-[12px] text-[#091A7A]">
-                      Cancel
-                    </span>
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleLogout}
-                    className="flex-1 h-[40px] rounded-xl bg-[#091A7A] flex items-center justify-center"
-                  >
-                    <span className="font-semibold text-[12px] text-white">
-                      Log out
-                    </span>
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleLogout}
+              className="flex-1 h-[40px] rounded-xl bg-[#091A7A] flex items-center justify-center font-semibold text-[12px] text-white"
+            >
+              Log out
+            </motion.button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Hidden File Input for Import */}
       <input
@@ -635,14 +620,6 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         style={{ display: "none" }}
         accept=".json"
         onChange={handleFileChange}
-      />
-
-      {/* Toast Notifications */}
-      <SettingsToast
-        show={toast.show}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ ...toast, show: false })}
       />
     </div>
   );
