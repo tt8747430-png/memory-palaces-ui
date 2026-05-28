@@ -9,7 +9,7 @@ import {
   HomeOutlineIcon,
   PalaceNavIcon,
   ProfileNavIcon,
-} from "../icons/NavIcons";
+} from "../icons";
 
 interface LiquidGlassBottomNavProps {
   activeTab: string;
@@ -38,12 +38,12 @@ export function LiquidGlassBottomNav({
       label: "Home",
     },
     {
-      icon: (active) => <PalaceNavIcon className="w-6 h-6" />,
+      icon: () => <PalaceNavIcon className="w-6 h-6" />,
       tab: "palaces",
       label: "Palaces",
     },
     {
-      icon: (active) => <ProfileNavIcon className="w-6 h-6" />,
+      icon: () => <ProfileNavIcon className="w-6 h-6" />,
       tab: "profile",
       label: "Profile",
     },

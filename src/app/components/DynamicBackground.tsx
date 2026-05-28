@@ -24,7 +24,7 @@ const ANIMATION_CONFIG = {
       opacity: [0.1, 0.3, 0.1],
     },
   },
-} as const;
+};
 
 export function DynamicBackground() {
   return (
@@ -45,7 +45,7 @@ export function DynamicBackground() {
         style={{
           background:
             "radial-gradient(circle at 20% 30%, rgba(173, 200, 255, 0.2) 0%, transparent 50%)",
-          transform: "translateZ(0)",
+          transform: "translate3d(0, 0, 0)",
         }}
       />
 
@@ -63,7 +63,7 @@ export function DynamicBackground() {
         style={{
           background:
             "radial-gradient(circle at 80% 70%, rgba(173, 200, 255, 0.15) 0%, transparent 40%)",
-          transform: "translateZ(0)",
+          transform: "translate3d(0, 0, 0)",
         }}
       />
 
@@ -80,7 +80,7 @@ export function DynamicBackground() {
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(173, 200, 255, 0.12) 0%, transparent 60%)",
-          transform: "translateZ(0)",
+          transform: "translate3d(0, 0, 0)",
         }}
       />
 

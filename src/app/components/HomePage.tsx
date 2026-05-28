@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import { LiquidGlassBottomNav } from "./LiquidGlassBottomNav";
 import { SearchPopup } from "./SearchPopup";
 import { DynamicBackground } from "./DynamicBackground";
@@ -188,16 +187,6 @@ export default function HomePage() {
     });
   };
 
-
-  // Full-screen overlays that hide navigation
-  const showFullScreenView =
-    selectedRoomTitle ||
-    (quizResults && selectedPalaceId) ||
-    (showQuiz && selectedPalaceId) ||
-    selectedPalaceId ||
-    showSettings ||
-    showCreatePalace ||
-    editingPalaceId;
 
   if (editingPalaceId) {
     return (

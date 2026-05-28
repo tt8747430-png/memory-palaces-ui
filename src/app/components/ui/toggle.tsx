@@ -1,4 +1,6 @@
 import { motion } from "motion/react";
+import {KeyboardEvent} from "react";
+import {MouseEvent} from "react";
 
 interface ToggleProps {
   checked: boolean;
@@ -38,14 +40,14 @@ export function Toggle({
 }: ToggleProps) {
   const sizeConfig = SIZES[size];
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     e.stopPropagation();
     if (!disabled) {
       onChange(!checked);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
       e.stopPropagation();

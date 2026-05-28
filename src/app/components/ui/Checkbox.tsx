@@ -1,38 +1,61 @@
-"use client";
-
-import * as React from "react";
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { CheckIcon } from "lucide-react";
-
+import { motion } from "motion/react";
 import { cn } from "./utils";
 
-function Checkbox({
-  className,
-  ...props
-}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
-  return (
-    <CheckboxPrimitive.Root
-      data-slot="checkbox"
-      className={cn(
-        "peer border bg-input-background dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    >
-      <CheckboxPrimitive.Indicator
-        data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current transition-none"
-      >
-        <CheckIcon className="size-3.5" />
-      </CheckboxPrimitive.Indicator>
-    </CheckboxPrimitive.Root>
-  );
+interface CheckboxProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label?: string;
+  className?: string;
 }
 
-export { Checkbox };l4 4L19 7"
-            />
-          </motion.svg>
-        )}
+export function Checkbox({ checked, onChange, label, className }: CheckboxProps) {
+  return (
+    <label
+      className={cn(
+        "flex items-center gap-3 cursor-pointer group",
+        className
+      )}
+    >
+      <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <motion.div
+          initial={false}
+          animate={{
+            backgroundColor: checked ? "#091A7A" : "rgba(255, 255, 255, 0.4)",
+            borderColor: checked ? "#091A7A" : "rgba(255, 255, 255, 0.8)",
+            scale: checked ? 1 : 1,
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 rounded-[6px] border backdrop-blur-md shadow-sm"
+        />
+        <motion.svg
+          initial={false}
+          animate={{
+            pathLength: checked ? 1 : 0,
+            opacity: checked ? 1 : 0,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+          }}
+          className="absolute inset-0 w-full h-full pointer-events-none p-[3px] text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <motion.path d="M4 12.6111L8.92308 17.5L20 6.5" />
+        </motion.svg>
       </div>
       {label && (
         <span
