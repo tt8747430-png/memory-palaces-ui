@@ -21,6 +21,22 @@ import {
   Unlock,
 } from "lucide-react";
 import { useProgressState, Floor as StateFloor, Room as StateRoom } from "../../hooks/useProgressState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface PalaceDetailScreenProps {
   palaceId: string;
@@ -93,8 +109,6 @@ export function PalaceDetailScreen({
   const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
   const [showAddFloor, setShowAddFloor] = useState(false);
   const [showAddRoom, setShowAddRoom] = useState<string | null>(null);
-  const [activeFloorMenu, setActiveFloorMenu] = useState<string | null>(null);
-  const [activeRoomMenu, setActiveRoomMenu] = useState<string | null>(null);
   const [showDeleteFloorConfirm, setShowDeleteFloorConfirm] = useState<string | null>(null);
   const [showDeleteRoomConfirm, setShowDeleteRoomConfirm] = useState<{ floorId: string; roomId: string } | null>(null);
 
@@ -574,82 +588,44 @@ export function PalaceDetailScreen({
                           <ChevronRight className="w-5 h-5 text-[#091A7A]/70" />
                         </motion.div>
 
-                        <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveFloorMenu(activeFloorMenu === floor.id ? null : floor.id);
-                          }}
-                          className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md relative"
-                        >
-                          <MoreVertical size={18} className="text-[#000000]" />
-                        </motion.button>
-
-                        <AnimatePresence>
-                          {activeFloorMenu === floor.id && (
-                            <>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 z-40"
-                                onClick={() => setActiveFloorMenu(null)}
-                              />
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                                className="absolute right-6 top-20 bg-white rounded-2xl shadow-2xl border border-[#E5E5EA] z-50 overflow-hidden min-w-[160px]"
-                              >
-                                <motion.button
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveFloorMenu(null);
-                                    setShowAddRoom(floor.id);
-                                    setExpandedFloors((prev) =>
-                                      prev.includes(floor.id) ? prev : [...prev, floor.id]
-                                    );
-                                  }}
-                                  className="w-full px-4 py-3 text-left hover:bg-[#F5F5F7] transition-colors flex items-center gap-3"
-                                >
-                                  <Plus size={16} className="text-[#007AFF]" />
-                                  <span className="text-[14px] font-medium text-[#000000]">
-                                    Add Room
-                                  </span>
-                                </motion.button>
-                                <motion.button
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveFloorMenu(null);
-                                    handleEditFloor(floor);
-                                  }}
-                                  className="w-full px-4 py-3 text-left hover:bg-[#F5F5F7] transition-colors flex items-center gap-3"
-                                >
-                                  <Edit2 size={16} className="text-[#007AFF]" />
-                                  <span className="text-[14px] font-medium text-[#000000]">
-                                    Edit Floor
-                                  </span>
-                                </motion.button>
-                                <motion.button
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveFloorMenu(null);
-                                    setShowDeleteFloorConfirm(floor.id);
-                                  }}
-                                  className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
-                                >
-                                  <Trash2 size={16} className="text-red-600" />
-                                  <span className="text-[14px] font-medium text-red-600">
-                                    Delete Floor
-                                  </span>
-                                </motion.button>
-                              </motion.div>
-                            </>
-                          )}
-                        </AnimatePresence>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md relative outline-none border-none"
+                            >
+                              <MoreVertical size={18} className="text-[#000000]" />
+                            </motion.button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-[#E5E5EA]">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setShowAddRoom(floor.id);
+                                setExpandedFloors((prev) =>
+                                  prev.includes(floor.id) ? prev : [...prev, floor.id]
+                                );
+                              }}
+                              className="px-3 py-3 rounded-xl hover:bg-[#F5F5F7] cursor-pointer flex items-center gap-3"
+                            >
+                              <Plus size={16} className="text-[#007AFF]" />
+                              <span className="text-[14px] font-medium text-[#000000]">Add Room</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEditFloor(floor)}
+                              className="px-3 py-3 rounded-xl hover:bg-[#F5F5F7] cursor-pointer flex items-center gap-3"
+                            >
+                              <Edit2 size={16} className="text-[#007AFF]" />
+                              <span className="text-[14px] font-medium text-[#000000]">Edit Floor</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setShowDeleteFloorConfirm(floor.id)}
+                              className="px-3 py-3 rounded-xl hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
+                            >
+                              <Trash2 size={16} className="text-red-600" />
+                              <span className="text-[14px] font-medium text-red-600">Delete Floor</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   )}
@@ -907,65 +883,32 @@ export function PalaceDetailScreen({
                                   </div>
                                 )}
 
-                                <motion.button
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveRoomMenu(activeRoomMenu === room.id ? null : room.id);
-                                  }}
-                                  className="w-8 h-8 bg-[#F5F5F7] rounded-full flex items-center justify-center relative"
-                                >
-                                  <MoreVertical size={16} className="text-[#000000]" />
-                                </motion.button>
-
-                                <AnimatePresence>
-                                  {activeRoomMenu === room.id && (
-                                    <>
-                                      <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="fixed inset-0 z-40"
-                                        onClick={() => setActiveRoomMenu(null)}
-                                      />
-                                      <motion.div
-                                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                                        className="absolute right-0 bg-white rounded-2xl shadow-2xl border border-[#E5E5EA] z-50 overflow-hidden min-w-[140px]"
-                                      >
-                                        <motion.button
-                                          whileTap={{ scale: 0.98 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setActiveRoomMenu(null);
-                                            handleEditRoom(floor.id, room);
-                                          }}
-                                          className="w-full px-4 py-3 text-left hover:bg-[#F5F5F7] transition-colors flex items-center gap-3"
-                                        >
-                                          <Edit2 size={16} className="text-[#007AFF]" />
-                                          <span className="text-[14px] font-medium text-[#000000]">
-                                            Edit
-                                          </span>
-                                        </motion.button>
-                                        <motion.button
-                                          whileTap={{ scale: 0.98 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setActiveRoomMenu(null);
-                                            setShowDeleteRoomConfirm({ floorId: floor.id, roomId: room.id });
-                                          }}
-                                          className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
-                                        >
-                                          <Trash2 size={16} className="text-red-600" />
-                                          <span className="text-[14px] font-medium text-red-600">
-                                            Delete
-                                          </span>
-                                        </motion.button>
-                                      </motion.div>
-                                    </>
-                                  )}
-                                </AnimatePresence>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <motion.button
+                                      whileTap={{ scale: 0.9 }}
+                                      className="w-8 h-8 bg-[#F5F5F7] rounded-full flex items-center justify-center relative outline-none border-none"
+                                    >
+                                      <MoreVertical size={16} className="text-[#000000]" />
+                                    </motion.button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-40 rounded-2xl shadow-xl border-[#E5E5EA]">
+                                    <DropdownMenuItem
+                                      onClick={() => handleEditRoom(floor.id, room)}
+                                      className="px-3 py-3 rounded-xl hover:bg-[#F5F5F7] cursor-pointer flex items-center gap-3"
+                                    >
+                                      <Edit2 size={16} className="text-[#007AFF]" />
+                                      <span className="text-[14px] font-medium text-[#000000]">Edit</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => setShowDeleteRoomConfirm({ floorId: floor.id, roomId: room.id })}
+                                      className="px-3 py-3 rounded-xl hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
+                                    >
+                                      <Trash2 size={16} className="text-red-600" />
+                                      <span className="text-[14px] font-medium text-red-600">Delete</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
 
@@ -1089,110 +1032,66 @@ export function PalaceDetailScreen({
       </AnimatePresence>
 
       {/* Delete Floor Confirmation */}
-      <AnimatePresence>
-        {showDeleteFloorConfirm && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-50"
-              onClick={() => setShowDeleteFloorConfirm(null)}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 shadow-2xl"
+      <AlertDialog
+        open={!!showDeleteFloorConfirm}
+        onOpenChange={(open) => !open && setShowDeleteFloorConfirm(null)}
+      >
+        <AlertDialogContent className="rounded-3xl!">
+          <AlertDialogHeader>
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={32} className="text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-xl font-bold text-[#000000]">
+              Delete Floor?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-[15px] text-[#86868B]">
+              This will delete all rooms in this floor. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-3 sm:justify-center mt-6">
+            <AlertDialogCancel className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#000000] border-none hover:bg-[#E5E5EA]">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => showDeleteFloorConfirm && handleDeleteFloor(showDeleteFloorConfirm)}
+              className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white hover:bg-red-700"
             >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trash2 size={32} className="text-red-600" />
-                </div>
-                <h3 className="text-xl font-bold text-[#000000] mb-2">
-                  Delete Floor?
-                </h3>
-                <p className="text-[15px] text-[#86868B]">
-                  This will delete all rooms in this floor. This action cannot be undone.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowDeleteFloorConfirm(null)}
-                  className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#000000]"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleDeleteFloor(showDeleteFloorConfirm)}
-                  className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white"
-                >
-                  Delete
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Room Confirmation */}
-      <AnimatePresence>
-        {showDeleteRoomConfirm && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-50"
-              onClick={() => setShowDeleteRoomConfirm(null)}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 shadow-2xl"
+      <AlertDialog
+        open={!!showDeleteRoomConfirm}
+        onOpenChange={(open) => !open && setShowDeleteRoomConfirm(null)}
+      >
+        <AlertDialogContent className="rounded-3xl!">
+          <AlertDialogHeader>
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={32} className="text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-xl font-bold text-[#000000]">
+              Delete Room?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-[15px] text-[#86868B]">
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-3 sm:justify-center mt-6">
+            <AlertDialogCancel className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#000000] border-none hover:bg-[#E5E5EA]">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => showDeleteRoomConfirm && handleDeleteRoom(showDeleteRoomConfirm.floorId, showDeleteRoomConfirm.roomId)}
+              className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white hover:bg-red-700"
             >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trash2 size={32} className="text-red-600" />
-                </div>
-                <h3 className="text-xl font-bold text-[#000000] mb-2">
-                  Delete Room?
-                </h3>
-                <p className="text-[15px] text-[#86868B]">
-                  This action cannot be undone.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowDeleteRoomConfirm(null)}
-                  className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#000000]"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleDeleteRoom(showDeleteRoomConfirm.floorId, showDeleteRoomConfirm.roomId)}
-                  className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white"
-                >
-                  Delete
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

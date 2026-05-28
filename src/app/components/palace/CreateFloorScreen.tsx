@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
@@ -8,6 +11,16 @@ import { StatusBar } from "../ui/StatusBar";
 import { DynamicBackground } from "../DynamicBackground";
 import { AmbientParticles } from "../AmbientParticles";
 import { useProgressState } from "../../hooks/useProgressState";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+
+const formSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(1, "Description is required"),
+  order: z.number().min(1),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 interface CreateFloorScreenProps {
   palaceId: string;
@@ -23,15 +36,18 @@ export function CreateFloorScreen({
   const { state, actions } = useProgressState();
   const palace = state.palaces.find((p) => p.id === palaceId);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    order: (palace?.floors?.length || 0) + 1,
-  });
-
-  const [errors, setErrors] = useState({
-    title: "",
-    description: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      order: (palace?.floors?.length || 0) + 1,
+    },
+    mode: "onChange",
   });
 
   if (!palace) {
@@ -42,37 +58,12 @@ export function CreateFloorScreen({
     );
   }
 
-  const validateForm = () => {
-    const newErrors = {
-      title: "",
-      description: "",
-    };
-
-    if (!formData.title.trim()) {
-      newErrors.title = "Floor title is required";
-    } else if (formData.title.trim().length < 3) {
-      newErrors.title = "Title must be at least 3 characters";
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
-    }
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  };
-
-  const handleSubmit = () => {
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = (data: FormData) => {
     actions.createFloor(palaceId, {
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      order: formData.order,
+      title: data.title.trim(),
+      description: data.description.trim(),
+      order: data.order,
     });
-
     onSuccess();
   };
 
@@ -111,7 +102,7 @@ export function CreateFloorScreen({
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pt-6 pb-24">
-          <div className="space-y-6">
+          <form id="create-floor-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="bg-white/95 rounded-3xl p-6 border border-white/60">
               <div className="flex items-start gap-4 mb-4">
                 <div
@@ -151,15 +142,13 @@ export function CreateFloorScreen({
               <label className="text-[#000000] text-[14px] font-medium mb-2 block">
                 Floor Title
               </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              <Input
+                {...register("title")}
                 placeholder="e.g., Introduction Level"
-                className="w-full px-5 py-4 bg-white rounded-2xl text-[#000000] placeholder:text-[#86868B] outline-none border-2 border-[#E5E5EA] focus:border-[#007AFF] transition-all"
+                className="w-full px-5 py-4 h-auto bg-white rounded-2xl text-[#000000] placeholder:text-[#86868B] outline-none border-2 border-[#E5E5EA] focus:border-[#007AFF] transition-all"
               />
               {errors.title && (
-                <p className="text-red-600 text-[13px] mt-2">{errors.title}</p>
+                <p className="text-red-600 text-[13px] mt-2">{errors.title.message}</p>
               )}
               <p className="text-[13px] text-[#86868B] mt-2">
                 Give this floor a descriptive name
@@ -170,15 +159,14 @@ export function CreateFloorScreen({
               <label className="text-[#000000] text-[14px] font-medium mb-2 block">
                 Description
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              <Textarea
+                {...register("description")}
                 placeholder="Describe what users will learn on this floor..."
                 rows={4}
                 className="w-full px-5 py-4 bg-white rounded-2xl text-[#000000] placeholder:text-[#86868B] outline-none border-2 border-[#E5E5EA] focus:border-[#007AFF] transition-all resize-none"
               />
               {errors.description && (
-                <p className="text-red-600 text-[13px] mt-2">{errors.description}</p>
+                <p className="text-red-600 text-[13px] mt-2">{errors.description.message}</p>
               )}
             </div>
 
@@ -186,15 +174,15 @@ export function CreateFloorScreen({
               <label className="text-[#000000] text-[14px] font-medium mb-2 block">
                 Floor Order
               </label>
-              <input
+              <Input
                 type="number"
                 min="1"
-                value={formData.order}
-                onChange={(e) =>
-                  setFormData({ ...formData, order: Number(e.target.value) })
-                }
-                className="w-full px-5 py-4 bg-white rounded-2xl text-[#000000] outline-none border-2 border-[#E5E5EA] focus:border-[#007AFF] transition-all"
+                {...register("order", { valueAsNumber: true })}
+                className="w-full px-5 py-4 h-auto bg-white rounded-2xl text-[#000000] outline-none border-2 border-[#E5E5EA] focus:border-[#007AFF] transition-all"
               />
+              {errors.order && (
+                <p className="text-red-600 text-[13px] mt-2">{errors.order.message}</p>
+              )}
               <p className="text-[13px] text-[#86868B] mt-2">
                 This determines the floor's position in the palace
               </p>
@@ -216,14 +204,15 @@ export function CreateFloorScreen({
                 </div>
               </div>
             </div>
-          </div>
+          </form>
         </div>
 
         <div className="p-6 bg-white/95 backdrop-blur-xl border-t border-[#E5E5EA]">
           <motion.button
+            type="submit"
+            form="create-floor-form"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleSubmit}
             className="w-full py-4 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
           >
             <Sparkles size={20} />

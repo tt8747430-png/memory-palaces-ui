@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { ProgressUtils } from "../../utils/progressUtils";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "../ui/alert-dialog";
 
 interface ClearDataScreenProps {
   onBack: () => void;
@@ -217,31 +217,34 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
         )}
       </div>
 
-      <Dialog open={showConfirmDialog} onOpenChange={(open) => !isClearing && setShowConfirmDialog(open)}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
+      <AlertDialog open={showConfirmDialog} onOpenChange={(open) => !isClearing && setShowConfirmDialog(open)}>
+        <AlertDialogContent className="sm:max-w-[400px] rounded-3xl!">
+          <AlertDialogHeader>
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-7 h-7 text-red-600" />
             </div>
-            <DialogTitle className="text-center text-[#091A7A] text-xl">Clear Selected Data?</DialogTitle>
-            <DialogDescription className="text-center text-[#091A7A]/60">
+            <AlertDialogTitle className="text-center text-[#091A7A] text-xl">Clear Selected Data?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-[#091A7A]/60">
               {hasDangerousSelections
                 ? "This action cannot be undone. Your selected data will be permanently deleted."
                 : "This will free up space on your device. You can always rebuild your cache."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-3 sm:justify-center mt-4">
-            <button
-              onClick={() => setShowConfirmDialog(false)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">
+            <AlertDialogCancel
               disabled={isClearing}
-              className="flex-1 py-3 bg-gray-100 text-[#091A7A] font-semibold rounded-2xl disabled:opacity-50"
+              onClick={() => setShowConfirmDialog(false)}
+              className="flex-1 py-4 h-auto border-none hover:bg-gray-200 bg-gray-100 text-[#091A7A] font-semibold rounded-2xl disabled:opacity-50"
             >
               Cancel
-            </button>
-            <button
-              onClick={handleClearData}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleClearData();
+              }}
               disabled={isClearing}
-              className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-2xl disabled:opacity-50"
+              className="flex-1 py-4 h-auto bg-gradient-to-r hover:bg-gradient-to-r from-red-500 hover:from-red-600 to-red-600 hover:to-red-700 text-white font-semibold rounded-2xl disabled:opacity-50"
             >
               {isClearing ? (
                 <span className="flex items-center justify-center gap-2">
@@ -254,10 +257,10 @@ export function ClearDataScreen({ onBack }: ClearDataScreenProps) {
               ) : (
                 "Clear Data"
               )}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

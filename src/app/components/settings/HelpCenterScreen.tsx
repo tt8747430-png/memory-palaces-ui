@@ -1,5 +1,11 @@
 import { motion } from "motion/react";
-import { ArrowLeft, MessageCircle, Mail, BookOpen, ChevronRight, ExternalLink } from "lucide-react";
+import { ArrowLeft, MessageCircle, Mail, BookOpen, ExternalLink } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 
 interface HelpCenterScreenProps {
   onBack: () => void;
@@ -9,37 +15,37 @@ const helpCategories = [
   {
     title: "Getting Started",
     items: [
-      "How to create your first memory palace",
-      "Understanding the memory technique",
-      "Navigating the app interface",
-      "Setting up your profile",
+      { q: "How to create your first memory palace", a: "Navigate to the Home tab and click the '+' button in the top right corner. Follow the wizard to name your palace and choose an icon." },
+      { q: "Understanding the memory technique", a: "The Memory Palace technique involves associating information you want to remember with specific locations in a familiar environment." },
+      { q: "Navigating the app interface", a: "Use the bottom navigation bar to switch between Home, Training, Progress, and Profile screens." },
+      { q: "Setting up your profile", a: "Go to the Profile tab and tap 'Edit Profile' to update your username, avatar, and personal preferences." },
     ],
   },
   {
     title: "Learning & Progress",
     items: [
-      "How XP and levels work",
-      "Building training streaks",
-      "Completing rooms and palaces",
-      "Taking quizzes effectively",
+      { q: "How XP and levels work", a: "You earn XP by completing training sessions and quizzes. Accumulate XP to level up and unlock new customization options." },
+      { q: "Building training streaks", a: "Complete at least one training session per day to build your streak. Longer streaks earn you bonus XP multipliers." },
+      { q: "Completing rooms and palaces", a: "A room is completed when you finish its associated quiz. Complete all rooms to master the palace." },
+      { q: "Taking quizzes effectively", a: "Take quizzes regularly spaced out over time. Active recall is the most effective way to solidify your memory." },
     ],
   },
   {
     title: "Account & Settings",
     items: [
-      "Managing your account",
-      "Privacy and data settings",
-      "Notification preferences",
-      "Changing your password",
+      { q: "Managing your account", a: "Access Account Settings from your Profile tab to manage personal details and linked accounts." },
+      { q: "Privacy and data settings", a: "You can control what data is shared and manage your visibility from the Privacy Settings menu." },
+      { q: "Notification preferences", a: "Customize push and email notifications in Settings > Notifications to stay updated on your training schedule." },
+      { q: "Changing your password", a: "Navigate to Settings > Security > Change Password. You will need your current password to set a new one." },
     ],
   },
   {
     title: "Troubleshooting",
     items: [
-      "App not loading properly",
-      "Progress not saving",
-      "Audio or video issues",
-      "Login problems",
+      { q: "App not loading properly", a: "Try force closing the app and clearing your cache. If the issue persists, reinstall the application." },
+      { q: "Progress not saving", a: "Ensure you have a stable internet connection. Progress is synced automatically when you are online." },
+      { q: "Audio or video issues", a: "Check your device's volume and media settings. Make sure you haven't muted the app in your system settings." },
+      { q: "Login problems", a: "If you forgot your password, use the 'Forgot Password' link on the login screen. For other issues, contact support." },
     ],
   },
 ];
@@ -144,23 +150,18 @@ export function HelpCenterScreen({ onBack }: HelpCenterScreenProps) {
                   <h4 className="font-semibold text-[#091A7A] mb-3 px-2">
                     {category.title}
                   </h4>
-                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card overflow-hidden">
+                  <Accordion type="single" collapsible className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card px-5">
                     {category.items.map((item, itemIndex) => (
-                      <button
-                        key={itemIndex}
-                        className={`w-full flex items-center justify-between px-5 py-4 hover:bg-[#F5F5F7] transition-colors ${
-                          itemIndex !== category.items.length - 1
-                            ? "border-b border-[#E5E5EA]"
-                            : ""
-                        }`}
-                      >
-                        <span className="text-[15px] text-[#091A7A] text-left">
-                          {item}
-                        </span>
-                        <ChevronRight className="w-5 h-5 text-[#C7C7CC] flex-shrink-0" />
-                      </button>
+                      <AccordionItem key={itemIndex} value={`item-${itemIndex}`} className="border-b border-[#E5E5EA] last:border-0">
+                        <AccordionTrigger className="text-[15px] text-[#091A7A] hover:no-underline text-left py-4">
+                          {item.q}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-[14px] text-[#091A7A]/70 pb-4">
+                          {item.a}
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </div>
+                  </Accordion>
                 </motion.div>
               ))}
             </div>

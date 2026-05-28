@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft,
@@ -10,6 +13,18 @@ import { StatusBar } from "../ui/StatusBar";
 import { DynamicBackground } from "../DynamicBackground";
 import { AmbientParticles } from "../AmbientParticles";
 import { useProgressState } from "../../hooks/useProgressState";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+
+const formSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  category: z.string().min(1, "Please select a category"),
+  icon: z.string(),
+  color: z.string(),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 interface CreatePalaceScreenProps {
   onBack: () => void;
@@ -54,54 +69,36 @@ export function CreatePalaceScreen({
 }: CreatePalaceScreenProps) {
   const { actions } = useProgressState();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "",
-    icon: "🏛️",
-    color: "from-purple-500 to-pink-500",
-  });
-
-  const [errors, setErrors] = useState({
-    name: "",
-    description: "",
-    category: "",
-  });
-
   const totalSteps = 3;
 
-  const validateStep1 = () => {
-    const newErrors = {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    trigger,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       name: "",
       description: "",
       category: "",
-    };
+      icon: "🏛️",
+      color: "from-purple-500 to-pink-500",
+    },
+    mode: "onChange",
+  });
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Palace name is required";
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = "Name must be at least 3 characters";
+  const watchIcon = watch("icon");
+  const watchColor = watch("color");
+  const watchCategory = watch("category");
+
+  const handleNext = async () => {
+    if (currentStep === 1) {
+      const isValid = await trigger(["name", "description", "category"]);
+      if (!isValid) return;
     }
-
-    if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
-    } else if (formData.description.trim().length < 10) {
-      newErrors.description = "Description must be at least 10 characters";
-    }
-
-    if (!formData.category) {
-      newErrors.category = "Please select a category";
-    }
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  };
-
-  const handleNext = () => {
-    if (currentStep === 1 && !validateStep1()) {
-      return;
-    }
-
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -115,21 +112,15 @@ export function CreatePalaceScreen({
     }
   };
 
-  const handleSubmit = () => {
-    if (!validateStep1()) {
-      setCurrentStep(1);
-      return;
-    }
-
+  const onSubmit = (data: FormData) => {
     actions.createPalace({
-      name: formData.name.trim(),
-      description: formData.description.trim(),
-      category: formData.category,
-      icon: formData.icon,
-      color: formData.color,
+      name: data.name.trim(),
+      description: data.description.trim(),
+      category: data.category,
+      icon: data.icon,
+      color: data.color,
       totalRooms: 0,
     });
-
     onSuccess();
   };
 
@@ -167,15 +158,13 @@ export function CreatePalaceScreen({
         <label className="text-white text-[14px] font-medium mb-2 block">
           Palace Name
         </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        <Input
+          {...register("name")}
           placeholder="e.g., Ancient Rome"
-          className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
+          className="w-full px-5 py-4 h-auto bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
         />
         {errors.name && (
-          <p className="text-red-300 text-[13px] mt-2">{errors.name}</p>
+          <p className="text-red-300 text-[13px] mt-2">{errors.name.message}</p>
         )}
       </div>
 
@@ -183,15 +172,14 @@ export function CreatePalaceScreen({
         <label className="text-white text-[14px] font-medium mb-2 block">
           Description
         </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        <Textarea
+          {...register("description")}
           placeholder="Describe what you'll learn in this memory palace..."
           rows={4}
           className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all resize-none"
         />
         {errors.description && (
-          <p className="text-red-300 text-[13px] mt-2">{errors.description}</p>
+          <p className="text-red-300 text-[13px] mt-2">{errors.description.message}</p>
         )}
       </div>
 
@@ -203,10 +191,14 @@ export function CreatePalaceScreen({
           {categoryOptions.map((category) => (
             <motion.button
               key={category}
+              type="button"
               whileTap={{ scale: 0.96 }}
-              onClick={() => setFormData({ ...formData, category })}
+              onClick={() => {
+                setValue("category", category);
+                trigger("category");
+              }}
               className={`px-4 py-3 rounded-2xl font-medium text-[14px] transition-all ${
-                formData.category === category
+                watchCategory === category
                   ? "bg-white text-[#007AFF]"
                   : "bg-white/20 text-white"
               }`}
@@ -216,7 +208,7 @@ export function CreatePalaceScreen({
           ))}
         </div>
         {errors.category && (
-          <p className="text-red-300 text-[13px] mt-2">{errors.category}</p>
+          <p className="text-red-300 text-[13px] mt-2">{errors.category.message}</p>
         )}
       </div>
     </motion.div>
@@ -240,9 +232,9 @@ export function CreatePalaceScreen({
       <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
         <div className="flex items-center justify-center mb-6">
           <div
-            className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${formData.color} flex items-center justify-center shadow-2xl`}
+            className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${watchColor} flex items-center justify-center shadow-2xl`}
           >
-            <span className="text-[56px]">{formData.icon}</span>
+            <span className="text-[56px]">{watchIcon}</span>
           </div>
         </div>
 
@@ -250,11 +242,12 @@ export function CreatePalaceScreen({
           {iconOptions.map((icon) => (
             <motion.button
               key={icon}
+              type="button"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => setFormData({ ...formData, icon })}
+              onClick={() => setValue("icon", icon)}
               className={`aspect-square rounded-2xl flex items-center justify-center text-[28px] transition-all ${
-                formData.icon === icon
+                watchIcon === icon
                   ? "bg-white shadow-lg"
                   : "bg-white/20 hover:bg-white/30"
               }`}
@@ -285,9 +278,9 @@ export function CreatePalaceScreen({
       <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
         <div className="flex items-center justify-center mb-6">
           <div
-            className={`w-32 h-32 rounded-3xl bg-gradient-to-br ${formData.color} flex items-center justify-center shadow-2xl`}
+            className={`w-32 h-32 rounded-3xl bg-gradient-to-br ${watchColor} flex items-center justify-center shadow-2xl`}
           >
-            <span className="text-[64px]">{formData.icon}</span>
+            <span className="text-[64px]">{watchIcon}</span>
           </div>
         </div>
 
@@ -295,10 +288,11 @@ export function CreatePalaceScreen({
           {colorOptions.map((color) => (
             <motion.button
               key={color.value}
+              type="button"
               whileTap={{ scale: 0.98 }}
-              onClick={() => setFormData({ ...formData, color: color.value })}
+              onClick={() => setValue("color", color.value)}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                formData.color === color.value
+                watchColor === color.value
                   ? "bg-white shadow-lg"
                   : "bg-white/20 hover:bg-white/30"
               }`}
@@ -308,12 +302,12 @@ export function CreatePalaceScreen({
               />
               <span
                 className={`font-medium text-[15px] ${
-                  formData.color === color.value ? "text-[#007AFF]" : "text-white"
+                  watchColor === color.value ? "text-[#007AFF]" : "text-white"
                 }`}
               >
                 {color.name}
               </span>
-              {formData.color === color.value && (
+              {watchColor === color.value && (
                 <Check size={20} className="text-[#007AFF] ml-auto" />
               )}
             </motion.button>
@@ -339,6 +333,7 @@ export function CreatePalaceScreen({
           <div className="px-6 pt-3 pb-6 relative z-10">
             <div className="flex items-center justify-between mb-6">
               <motion.button
+                type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleBack}
@@ -357,11 +352,13 @@ export function CreatePalaceScreen({
             {renderProgressBar()}
 
             <div className="flex-1 overflow-y-auto scrollbar-hide">
-              <AnimatePresence mode="wait">
-                {currentStep === 1 && renderStep1()}
-                {currentStep === 2 && renderStep2()}
-                {currentStep === 3 && renderStep3()}
-              </AnimatePresence>
+              <form id="create-palace-form" onSubmit={handleSubmit(onSubmit)}>
+                <AnimatePresence mode="wait">
+                  {currentStep === 1 && renderStep1()}
+                  {currentStep === 2 && renderStep2()}
+                  {currentStep === 3 && renderStep3()}
+                </AnimatePresence>
+              </form>
             </div>
           </div>
         </div>
@@ -370,6 +367,7 @@ export function CreatePalaceScreen({
           <div className="flex gap-3">
             {currentStep < totalSteps ? (
               <motion.button
+                type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleNext}
@@ -380,9 +378,10 @@ export function CreatePalaceScreen({
               </motion.button>
             ) : (
               <motion.button
+                type="submit"
+                form="create-palace-form"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={handleSubmit}
                 className="flex-1 py-4 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
               >
                 <Sparkles size={20} />

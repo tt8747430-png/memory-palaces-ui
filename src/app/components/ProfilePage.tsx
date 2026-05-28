@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { useProgressState } from "../hooks/useProgressState";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 
 const achievements = [
   {
@@ -70,6 +71,7 @@ export function ProfilePage({
   const { state } = useProgressState();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
+  const [activeTab, setActiveTab] = useState("statistics");
 
   // Parallax and scale transformations based on scroll
   const headerOpacity = useTransform(scrollY, [0, 120], [1, 0]);
@@ -240,113 +242,128 @@ export function ProfilePage({
       {/* Content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-[140px]">
         <div className="p-6 space-y-8">
-          {/* Stats Grid */}
-          <div>
-            <h3 className="font-semibold text-[#091A7A] mb-4">
-              Your Stats
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: 0.5 + index * 0.1,
-                    duration: 0.4,
-                  }}
-                  className="p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card"
-                >
-                  <div
-                    className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3 shadow-sm`}
-                  >
-                    <stat.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <p className="text-2xl font-bold text-[#091A7A]">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-[#091A7A]/70">
-                    {stat.label}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Achievements */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-[#091A7A]">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/40 backdrop-blur-md rounded-2xl h-auto p-1 border border-white/60">
+              <TabsTrigger value="statistics" className="rounded-xl py-3 data-[state=active]:bg-white data-[state=active]:text-[#091A7A] data-[state=active]:shadow-sm text-[#091A7A]/70">
+                Statistics
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="rounded-xl py-3 data-[state=active]:bg-white data-[state=active]:text-[#091A7A] data-[state=active]:shadow-sm text-[#091A7A]/70">
                 Achievements
-              </h3>
-              <span className="text-sm text-[#091A7A]/70">
-                {achievements.filter((a) => a.earned).length}/
-                {achievements.length}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {achievements.map((achievement, index) => (
-                <motion.div
-                  key={achievement.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    delay: 0.8 + index * 0.08,
-                    duration: 0.4,
-                  }}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    achievement.earned
-                      ? "bg-gradient-to-r from-green-50 to-green-100/50 border-green-200 shadow-sm"
-                      : "bg-white/60 border-white/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="statistics" className="mt-0 outline-none">
+              <div className="space-y-8">
+                <div>
+                  <h3 className="font-semibold text-[#091A7A] mb-4">
+                    Your Stats
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {stats.map((stat, index) => (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          delay: 0.2 + index * 0.1,
+                          duration: 0.4,
+                        }}
+                        className="p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card"
+                      >
+                        <div
+                          className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3 shadow-sm`}
+                        >
+                          <stat.icon className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-2xl font-bold text-[#091A7A]">
+                          {stat.value}
+                        </p>
+                        <p className="text-xs text-[#091A7A]/70">
+                          {stat.label}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="achievements" className="mt-0 outline-none">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-[#091A7A]">
+                    Badges & Awards
+                  </h3>
+                  <span className="text-sm text-[#091A7A]/70">
+                    {achievements.filter((a) => a.earned).length}/
+                    {achievements.length}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {achievements.map((achievement, index) => (
+                    <motion.div
+                      key={achievement.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.1 + index * 0.08,
+                        duration: 0.4,
+                      }}
+                      className={`p-4 rounded-2xl border transition-all ${
                         achievement.earned
-                          ? "bg-gradient-to-br from-green-400 to-green-600 shadow-md"
-                          : "bg-gray-200"
+                          ? "bg-gradient-to-r from-green-50 to-green-100/50 border-green-200 shadow-sm"
+                          : "bg-white/60 border-white/40"
                       }`}
                     >
-                      <achievement.icon
-                        className={`w-6 h-6 ${
-                          achievement.earned
-                            ? "text-white"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4
-                          className={`font-semibold ${
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
                             achievement.earned
-                              ? "text-green-800"
-                              : "text-[#091A7A]/60"
+                              ? "bg-gradient-to-br from-green-400 to-green-600 shadow-md"
+                              : "bg-gray-200"
                           }`}
                         >
-                          {achievement.title}
-                        </h4>
-                        {achievement.earned && (
-                          <Award className="w-4 h-4 text-green-600" />
-                        )}
+                          <achievement.icon
+                            className={`w-6 h-6 ${
+                              achievement.earned
+                                ? "text-white"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4
+                              className={`font-semibold ${
+                                achievement.earned
+                                  ? "text-green-800"
+                                  : "text-[#091A7A]/60"
+                              }`}
+                            >
+                              {achievement.title}
+                            </h4>
+                            {achievement.earned && (
+                              <Award className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                          <p
+                            className={`text-sm ${
+                              achievement.earned
+                                ? "text-green-700"
+                                : "text-[#091A7A]/50"
+                            }`}
+                          >
+                            {achievement.description}
+                          </p>
+                        </div>
                       </div>
-                      <p
-                        className={`text-sm ${
-                          achievement.earned
-                            ? "text-green-700"
-                            : "text-[#091A7A]/50"
-                        }`}
-                      >
-                        {achievement.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

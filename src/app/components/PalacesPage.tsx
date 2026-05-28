@@ -18,6 +18,9 @@ import { AmbientParticles } from "./AmbientParticles";
 import { Palace } from "../hooks/useProgressState";
 import { PalaceCard } from "./cards/PalaceCard";
 import { FeaturedPalaceBanner } from "./cards/FeaturedPalaceBanner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface PalacesPageProps {
   palaces: Palace[];
@@ -42,7 +45,6 @@ export function PalacesPage({
   const [selectedCategory, setSelectedCategory] =
     useState("All");
   const [sortBy, setSortBy] = useState("Recent");
-  const [showSortMenu, setShowSortMenu] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
@@ -121,111 +123,52 @@ export function PalacesPage({
 
             {/* View Controls */}
             <div className="flex items-center gap-[12px]">
-              <div className="flex-1 bg-white/15 backdrop-blur-md rounded-[16px] p-[4px] flex">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`flex-1 flex items-center justify-center gap-[6px] px-[16px] py-[8px] rounded-[12px] transition-all ${
-                    viewMode === "grid"
-                      ? "bg-white/90 text-[#007AFF]"
-                      : "text-white/80"
-                  }`}
-                >
-                  <Grid size={18} strokeWidth={2.5} />
-                  <span className="text-[15px] font-medium">
-                    Grid
-                  </span>
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`flex-1 flex items-center justify-center gap-[6px] px-[16px] py-[8px] rounded-[12px] transition-all ${
-                    viewMode === "list"
-                      ? "bg-white/90 text-[#007AFF]"
-                      : "text-white/80"
-                  }`}
-                >
-                  <List size={18} strokeWidth={2.5} />
-                  <span className="text-[15px] font-medium">
-                    List
-                  </span>
-                </button>
+              <div className="flex-1">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[16px] h-auto p-1">
+                    <TabsTrigger value="grid" className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#007AFF] text-white/80">
+                      <Grid size={18} strokeWidth={2.5} className="mr-2" />
+                      Grid
+                    </TabsTrigger>
+                    <TabsTrigger value="list" className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#007AFF] text-white/80">
+                      <List size={18} strokeWidth={2.5} className="mr-2" />
+                      List
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
 
-              <button
-                onClick={() => setShowSortMenu(!showSortMenu)}
-                className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white"
-              >
-                <SlidersHorizontal
-                  size={20}
-                  strokeWidth={2.5}
-                />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none">
+                    <SlidersHorizontal size={20} strokeWidth={2.5} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[180px] rounded-[20px] p-2">
+                  <p className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider px-2 py-2">
+                    Sort By
+                  </p>
+                  {sortOptions.map((option) => (
+                    <DropdownMenuItem
+                      key={option}
+                      onClick={() => setSortBy(option)}
+                      className={`rounded-[12px] px-3 py-2 cursor-pointer transition-all ${
+                        sortBy === option ? "bg-[#007AFF]/10 text-[#007AFF]" : ""
+                      }`}
+                    >
+                      <span className="flex-1 font-medium">{option}</span>
+                      {sortBy === option && (
+                        <div className="w-2 h-2 rounded-full bg-[#007AFF]" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
 
-        {/* Sort Menu */}
-        <AnimatePresence>
-          {showSortMenu && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/20 z-40"
-                onClick={() => setShowSortMenu(false)}
-              />
 
-              {/* Menu */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ type: "spring", damping: 25, stiffness: 400 }}
-                className="absolute top-[180px] right-[20px] bg-white rounded-[20px] shadow-2xl border border-[#E5E5EA] z-50 overflow-hidden min-w-[180px]"
-              >
-                <div className="p-3">
-                  <p className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider px-3 py-2">
-                    Sort By
-                  </p>
-                  {sortOptions.map((option, index) => (
-                    <motion.button
-                      key={option}
-                      onClick={() => {
-                        setSortBy(option);
-                        setShowSortMenu(false);
-                      }}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full px-[16px] py-[10px] text-left rounded-[12px] transition-all flex items-center justify-between mb-1 ${
-                        sortBy === option
-                          ? "bg-gradient-to-r from-[#007AFF]/10 to-[#007AFF]/5 border border-[#007AFF]/30"
-                          : "hover:bg-[#F5F5F7]"
-                      }`}
-                    >
-                      <span
-                        className={`text-[15px] font-medium ${
-                          sortBy === option ? "text-[#007AFF]" : "text-[#000000]"
-                        }`}
-                      >
-                        {option}
-                      </span>
-                      {sortBy === option && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="w-2 h-2 rounded-full bg-[#007AFF]"
-                        />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide">
@@ -612,61 +555,39 @@ export function PalacesPage({
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-50"
+      <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
+        <AlertDialogContent className="sm:max-w-[400px] rounded-3xl!">
+          <AlertDialogHeader>
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={32} className="text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-[#000000] text-xl">Delete Palace?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-[#86868B]">
+              This action cannot be undone. All floors, rooms, and progress will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">
+            <AlertDialogCancel
               onClick={() => setShowDeleteConfirm(null)}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 shadow-2xl"
+              className="flex-1 py-4 h-auto border-none bg-[#F5F5F7] hover:bg-gray-200 text-[#000000] font-semibold rounded-2xl"
             >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trash2 size={32} className="text-red-600" />
-                </div>
-                <h3 className="text-xl font-bold text-[#000000] mb-2">
-                  Delete Palace?
-                </h3>
-                <p className="text-[15px] text-[#86868B]">
-                  This action cannot be undone. All floors, rooms, and progress will be permanently deleted.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#000000]"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    onDeletePalace(showDeleteConfirm);
-                    setShowDeleteConfirm(null);
-                  }}
-                  className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white"
-                >
-                  Delete
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (showDeleteConfirm) {
+                  onDeletePalace(showDeleteConfirm);
+                  setShowDeleteConfirm(null);
+                }
+              }}
+              className="flex-1 py-4 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
