@@ -4,7 +4,7 @@ import {
   ArrowLeft,
   Sparkles,
 } from "lucide-react";
-import { StatusBar } from "../StatusBar";
+import { StatusBar } from "../ui/StatusBar";
 import { DynamicBackground } from "../DynamicBackground";
 import { AmbientParticles } from "../AmbientParticles";
 import { useProgressState } from "../../hooks/useProgressState";

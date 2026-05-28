@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { Zap, BellRing, Plus, Brain } from "lucide-react";
 import { useState, useEffect } from "react";
-import { StatusBar } from "../StatusBar";
+import { StatusBar } from "../ui/StatusBar";
 
 interface ProgressHeaderProps {
   profileImage: string;

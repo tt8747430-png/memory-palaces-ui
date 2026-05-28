@@ -1,15 +1,19 @@
 import StatusBarIPhone from "../../imports/StatusBarIPhone";
 
+interface StatusBarProps {
+  theme?: "light" | "dark";
+  textColor?: "black" | "white";
+}
+
 export function StatusBar({
   theme = "light",
-}: {
-  theme?: "light" | "dark";
-}) {
-  const textColor = theme === "dark" ? "white" : "black";
+  textColor,
+}: StatusBarProps) {
+  const color = textColor ?? (theme === "dark" ? "white" : "black");
 
   return (
     <div className="w-full h-[44px]">
-      <StatusBarIPhone textColor={textColor} />
+      <StatusBarIPhone textColor={color} />
     </div>
   );
 }
