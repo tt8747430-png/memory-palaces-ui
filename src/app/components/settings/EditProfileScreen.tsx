@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import { useState } from "react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 interface EditProfileScreenProps {
   onBack: () => void;

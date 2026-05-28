@@ -11,7 +11,7 @@ import {
   Crown,
   Star,
 } from "lucide-react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { useProgressState } from "../hooks/useProgressState";
 import { useRef } from "react";
 

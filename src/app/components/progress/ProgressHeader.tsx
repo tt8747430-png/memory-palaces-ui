@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { Zap, BellRing, Plus, Brain } from "lucide-react";
 import { useState, useEffect } from "react";
 import { StatusBar } from "../ui/StatusBar";

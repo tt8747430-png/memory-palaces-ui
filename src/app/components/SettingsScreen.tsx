@@ -25,7 +25,7 @@ import { HelpCenterScreen } from "./settings/HelpCenterScreen";
 import { AboutScreen } from "./settings/AboutScreen";
 import { PhoneConnectScreen } from "./settings/PhoneConnectScreen";
 import { SettingsToast } from "./settings/SettingsToast";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { Toggle } from "./ui/Toggle";
 
 interface SettingsScreenProps {
