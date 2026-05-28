@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
-import { AppIcon } from "./ui/AppIcon";
+import { AppIcon } from "./ui";
 
 interface OpeningAnimationProps {
   onAnimationComplete: () => void;

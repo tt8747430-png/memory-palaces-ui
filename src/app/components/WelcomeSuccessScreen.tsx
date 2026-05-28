@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { Sparkles, Crown, Trophy, Star } from "lucide-react";
-import { AppIcon } from "./ui/AppIcon";
+import { AppIcon } from "./ui";
 
 interface WelcomeSuccessScreenProps {
   onComplete: () => void;

@@ -12,7 +12,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
-import { StatusBar } from "./ui/StatusBar";
+import { StatusBar } from "./ui";
 import { DynamicBackground } from "./DynamicBackground";
 import { AmbientParticles } from "./AmbientParticles";
 import { Palace } from "../hooks/useProgressState";

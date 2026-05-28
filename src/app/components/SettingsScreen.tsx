@@ -18,7 +18,7 @@ import {
   UploadCloud,
   RefreshCw,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
 import { ProgressUtils } from "../utils/progressUtils";
 import { EditProfileScreen } from "./settings/EditProfileScreen";
 import { LanguageScreen } from "./settings/LanguageScreen";
@@ -30,7 +30,7 @@ import { AboutScreen } from "./settings/AboutScreen";
 import { PhoneConnectScreen } from "./settings/PhoneConnectScreen";
 import { SettingsToast } from "./settings/SettingsToast";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
-import { Toggle } from "./ui/Toggle";
+import { Toggle } from "./ui";
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -89,7 +89,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
@@ -113,11 +113,12 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
   };
 
   // Scroll-based transformations for adaptive header
-  const headerOpacity = useTransform(scrollY, [0, 120], [1, 0]);
-  const headerScale = useTransform(scrollY, [0, 120], [1, 0.9]);
-  const headerY = useTransform(scrollY, [0, 120], [0, -40]);
-  const headerMaxHeight = useTransform(scrollY, [0, 120], [500, 0]);
-  const profileScale = useTransform(scrollY, [0, 120], [1, 0.7]);
+  const scrollRange = [0, 120];
+  const headerOpacity = useTransform(scrollY, scrollRange, [1, 0]);
+  const headerScale = useTransform(scrollY, scrollRange, [1, 0.9]);
+  const headerY = useTransform(scrollY, scrollRange, [0, -40]);
+  const headerMaxHeight = useTransform(scrollY, scrollRange, [500, 0]);
+  const profileScale = useTransform(scrollY, scrollRange, [1, 0.7]);
   const compactHeaderOpacity = useTransform(scrollY, [80, 120], [0, 1]);
   const gradientOpacity = useTransform(scrollY, [0, 100], [1, 0]);
   const headerPointerEvents = useTransform(headerOpacity, (value) =>
@@ -301,25 +302,21 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     setToast({ show: true, message, type });
   };
 
-  const handleProfileSave = (data: any) => {
-    console.log("Profile saved:", data);
+  const handleProfileSave = () => {
     showToast("Profile updated successfully");
   };
 
   const handlePasswordChanged = () => {
-    console.log("Password changed successfully");
     showToast("Password changed successfully");
   };
 
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
-    console.log("Language changed to:", newLanguage);
     showToast("Language updated");
   };
 
   const handlePhoneConnected = (phone: string) => {
     setPhoneNumber(phone);
-    console.log("Phone connected:", phone);
     showToast("Phone number connected");
   };
 
