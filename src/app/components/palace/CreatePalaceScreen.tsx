@@ -15,6 +15,7 @@ import { AmbientParticles } from "../AmbientParticles";
 import { useProgressState } from "../../hooks/useProgressState";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { Drawer } from "vaul";
 
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -27,7 +28,9 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 interface CreatePalaceScreenProps {
-  onBack: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onBack?: () => void;
   onSuccess: () => void;
 }
 
@@ -64,6 +67,8 @@ const categoryOptions = [
 ];
 
 export function CreatePalaceScreen({
+  open = true,
+  onOpenChange,
   onBack,
   onSuccess,
 }: CreatePalaceScreenProps) {
@@ -108,7 +113,8 @@ export function CreatePalaceScreen({
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
-      onBack();
+      if (onOpenChange) onOpenChange(false);
+      if (onBack) onBack();
     }
   };
 
@@ -317,53 +323,49 @@ export function CreatePalaceScreen({
     </motion.div>
   );
 
-  return (
-    <div className="size-full flex flex-col relative">
+  const content = (
+    <div className="size-full flex flex-col relative h-full">
       <DynamicBackground />
       <AmbientParticles />
 
-      <div className="relative z-10 flex-1 flex flex-col">
-        <div className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md">
+      <div className="relative z-10 flex-1 flex flex-col h-full overflow-hidden">
+        <div className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md pb-4 pt-2">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]" />
 
-          <div className="relative z-10">
-            <StatusBar textColor="white" />
-          </div>
-
-          <div className="px-6 pt-3 pb-6 relative z-10">
+          <div className="px-6 relative z-10">
             <div className="flex items-center justify-between mb-6">
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleBack}
-                className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center"
+                className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center"
               >
-                <ArrowLeft className="w-5 h-5 text-white" />
+                <ArrowLeft className="w-4 h-4 text-white" />
               </motion.button>
 
-              <h1 className="text-[18px] font-bold text-white">
+              <h1 className="text-[16px] font-bold text-white">
                 Create Palace
               </h1>
 
-              <div className="w-12" />
+              <div className="w-10" />
             </div>
 
             {renderProgressBar()}
-
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-              <form id="create-palace-form" onSubmit={handleSubmit(onSubmit)}>
-                <AnimatePresence mode="wait">
-                  {currentStep === 1 && renderStep1()}
-                  {currentStep === 2 && renderStep2()}
-                  {currentStep === 3 && renderStep3()}
-                </AnimatePresence>
-              </form>
-            </div>
           </div>
         </div>
 
-        <div className="p-6 bg-white/95 backdrop-blur-xl">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-6 py-4 bg-gradient-to-b from-[#4F8EFF]/95 to-[#ADC8FF]/95 relative">
+          <form id="create-palace-form" onSubmit={handleSubmit(onSubmit)}>
+            <AnimatePresence mode="wait">
+              {currentStep === 1 && renderStep1()}
+              {currentStep === 2 && renderStep2()}
+              {currentStep === 3 && renderStep3()}
+            </AnimatePresence>
+          </form>
+        </div>
+
+        <div className="p-6 bg-white/95 backdrop-blur-xl shrink-0">
           <div className="flex gap-3">
             {currentStep < totalSteps ? (
               <motion.button
@@ -392,5 +394,21 @@ export function CreatePalaceScreen({
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <Drawer.Root open={open} onOpenChange={onOpenChange}>
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
+        <Drawer.Content className="bg-white flex flex-col rounded-t-[10px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none overflow-hidden">
+          <div className="pt-4 bg-[#091A7A] rounded-t-[10px] flex-1 flex flex-col overflow-hidden">
+            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-white/50 mb-2" />
+            <div className="flex-1 overflow-hidden">
+              {content}
+            </div>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

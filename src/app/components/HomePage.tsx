@@ -188,15 +188,6 @@ export default function HomePage() {
     );
   }
 
-  if (showCreatePalace) {
-    return (
-      <CreatePalaceScreen
-        onBack={() => setShowCreatePalace(false)}
-        onSuccess={handleCreatePalaceSuccess}
-      />
-    );
-  }
-
   if (selectedRoomTitle) {
     return (
       <RoomTrainingScreen
@@ -240,12 +231,6 @@ export default function HomePage() {
         onRoomClick={handleRoomClick}
         onQuizClick={handleQuizClick}
       />
-    );
-  }
-
-  if (showSettings) {
-    return (
-      <SettingsScreen onBack={() => setShowSettings(false)} />
     );
   }
 
@@ -347,6 +332,17 @@ export default function HomePage() {
         status={saveStatus.saveStatus}
       />
 
+      <SettingsScreen 
+        open={showSettings} 
+        onOpenChange={setShowSettings} 
+      />
+
+      {showCreatePalace && (
+        <CreatePalaceScreen
+          onBack={() => setShowCreatePalace(false)}
+          onSuccess={handleCreatePalaceSuccess}
+        />
+      )}
     </div>
   );
 }

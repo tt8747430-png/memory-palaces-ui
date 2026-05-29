@@ -33,9 +33,12 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Drawer } from "vaul";
 
 interface SettingsScreenProps {
-  onBack: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onBack?: () => void;
 }
 
 
@@ -55,7 +58,7 @@ interface SettingsItem {
   navigationTarget?: string;
   options?: { value: string; label: string }[];
   selectedValue?: string;
-  onSelect?: (val: string) => void;
+  onSelect?: (val: string | null) => void;
   onClick?: () => void;
 }
 
@@ -70,7 +73,7 @@ type NavigationScreen =
   | "help"
   | "about";
 
-export function SettingsScreen({ onBack }: SettingsScreenProps) {
+export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsScreenProps) {
   const [currentScreen, setCurrentScreen] = useState<NavigationScreen>("main");
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -166,18 +169,18 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           label: "Language",
           action: "select",
           selectedValue: language,
-          onSelect: (val) => handleLanguageChange(val),
+          onSelect: (val) => handleLanguageChange(val || "en"),
           options: [
             { value: "en", label: "English" },
-            { value: "es", label: "Español" },
-            { value: "fr", label: "Français" },
-            { value: "de", label: "Deutsch" },
-            { value: "it", label: "Italiano" },
-            { value: "pt", label: "Português" },
-            { value: "ru", label: "Русский" },
-            { value: "ja", label: "日本語" },
-            { value: "ko", label: "한국어" },
-            { value: "zh", label: "中文" },
+            { value: "es", label: "Spanish" },
+            { value: "fr", label: "French" },
+            { value: "de", label: "German" },
+            { value: "it", label: "Italian" },
+            { value: "pt", label: "Portuguese" },
+            { value: "ru", label: "Russian" },
+            { value: "ja", label: "Japanese" },
+            { value: "ko", label: "Korean" },
+            { value: "zh", label: "Chinese" },
           ]
         },
       ],
@@ -262,23 +265,6 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     },
   ];
 
-  function getLanguageName(code: string): string {
-    const languages: Record<string, string> = {
-      en: "English",
-      es: "Español",
-      fr: "Français",
-      de: "Deutsch",
-      it: "Italiano",
-      pt: "Português",
-      ru: "Русский",
-      ja: "日本語",
-      ko: "한국어",
-      zh: "中文",
-      ar: "العربية",
-      hi: "हिन्दी",
-    };
-    return languages[code] || "English";
-  }
 
   const handleToggle = (label: string) => {
     if (label === "Dark Mode") {
@@ -303,7 +289,8 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
   const handleLogout = () => {
     setShowLogoutDialog(false);
     setTimeout(() => {
-      onBack();
+      if (onOpenChange) onOpenChange(false);
+      if (onBack) onBack();
     }, 300);
   };
 
@@ -371,7 +358,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
     );
   }
 
-  return (
+  const content = (
     <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
       {/* Compact Header (visible on scroll) */}
       <motion.div
@@ -382,7 +369,10 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           <div className="flex items-center gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={onBack}
+              onClick={() => {
+                if (onOpenChange) onOpenChange(false);
+                if (onBack) onBack();
+              }}
               className="w-10 h-10 bg-[#F5F5F7] rounded-full flex items-center justify-center"
             >
               <ArrowLeft className="w-4 h-4 text-[#091A7A]" />
@@ -414,7 +404,10 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           <div className="flex items-center gap-4 mb-6">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={onBack}
+              onClick={() => {
+                if (onOpenChange) onOpenChange(false);
+                if (onBack) onBack();
+              }}
               className="w-12 h-12 bg-card-glass backdrop-blur-lg rounded-full flex items-center justify-center shadow-card border border-white/20"
             >
               <ArrowLeft className="w-5 h-5 text-[#091A7A]" />
@@ -440,16 +433,18 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
                 style={{ objectPosition: "center 20%" }}
               />
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setCurrentScreen("edit-profile")}
-                    className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                  >
-                    <User className="w-3 h-3 text-white" />
-                  </motion.button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentScreen("edit-profile")}
+                      className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                    >
+                      <User className="w-3 h-3 text-white" />
+                    </motion.button>
+                  }
+                />
                 <TooltipContent side="right">
                   <p>Edit Profile</p>
                 </TooltipContent>
@@ -542,7 +537,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
                       )}
                       {item.action === "select" && item.options && (
                         <div onClick={(e) => e.stopPropagation()}>
-                          <Select value={item.selectedValue} onValueChange={item.onSelect}>
+                          <Select value={item.selectedValue} onValueChange={(val) => item.onSelect?.(val)}>
                             <SelectTrigger className="w-[120px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-[#091A7A]/70 text-[15px] font-medium p-0 pr-2">
                               <SelectValue />
                             </SelectTrigger>
@@ -622,5 +617,21 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
         onChange={handleFileChange}
       />
     </div>
+  );
+
+  return (
+    <Drawer.Root open={open} onOpenChange={onOpenChange}>
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
+        <Drawer.Content className="bg-white flex flex-col rounded-t-[10px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none">
+          <div className="p-4 bg-white rounded-t-[10px] flex-1 overflow-hidden">
+            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4" />
+            <div className="h-full overflow-hidden rounded-xl">
+              {content}
+            </div>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

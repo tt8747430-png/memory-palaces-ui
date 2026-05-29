@@ -139,11 +139,13 @@ export function PalacesPage({
               </div>
 
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none">
-                    <SlidersHorizontal size={20} strokeWidth={2.5} />
-                  </button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                  render={
+                    <button className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none">
+                      <SlidersHorizontal size={20} strokeWidth={2.5} />
+                    </button>
+                  }
+                />
                 <DropdownMenuContent align="end" className="w-[180px] rounded-[20px] p-2">
                   <p className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider px-2 py-2">
                     Sort By

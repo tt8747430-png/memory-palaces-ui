@@ -13,6 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { useProgressState } from "../../hooks/useProgressState";
+import { RiveAnimation } from "../ui/RiveAnimation";
 
 interface RoomTrainingScreenProps {
   onBack: () => void;
@@ -45,6 +46,7 @@ export function RoomTrainingScreen({
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [flashCards, setFlashCards] = useState<FlashCard[]>([
     {
       id: 1,
@@ -107,9 +109,12 @@ export function RoomTrainingScreen({
   };
 
   const handleComplete = () => {
-    actions.recordTrainingDay();
-    actions.addXP(100);
-    onComplete();
+    setShowSuccess(true);
+    setTimeout(() => {
+      actions.recordTrainingDay();
+      actions.addXP(100);
+      onComplete();
+    }, 2500);
   };
 
   const handleLike = () => {
@@ -357,6 +362,39 @@ export function RoomTrainingScreen({
           </span>
         </motion.button>
       </div>
+
+      {showSuccess && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center"
+        >
+          <div className="w-64 h-64 mb-8">
+            {/* Using a public Rive animation as a placeholder for the success state */}
+            <RiveAnimation 
+              src="https://cdn.rive.app/animations/vehicles.riv" 
+              className="w-full h-full"
+            />
+          </div>
+          <motion.h2 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-4xl font-bold text-[#091A7A] mb-2"
+          >
+            Room Mastered!
+          </motion.h2>
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="text-2xl text-[#10B981] font-semibold flex items-center gap-2"
+          >
+            <Sparkles className="w-6 h-6" />
+            +100 XP
+          </motion.p>
+        </motion.div>
+      )}
     </div>
   );
 }

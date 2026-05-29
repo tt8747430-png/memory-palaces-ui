@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Search, Clock, Filter, Star } from "lucide-react";
+import { useState } from "react";
+import { Clock, Star } from "lucide-react";
 import { Palace } from "../hooks/useProgressState";
 import {
   Command,
