@@ -113,7 +113,12 @@ export function HelpCenterScreen({ onBack }: HelpCenterScreenProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="w-full flex items-center justify-between p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card hover:bg-[#F5F5F7] transition-all"
+                  onClick={() => {
+                    if (option.label === "Email Support") window.location.href = "mailto:support@memorypalace.app";
+                    else if (option.label === "Documentation") window.open("https://docs.memorypalace.app", "_blank");
+                    else window.open("https://chat.memorypalace.app", "_blank");
+                  }}
+                  className="w-full flex items-center justify-between p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card hover:bg-[#F5F5F7] transition-all text-left"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-xl flex items-center justify-center">

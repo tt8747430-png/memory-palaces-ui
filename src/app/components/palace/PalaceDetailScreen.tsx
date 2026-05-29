@@ -20,6 +20,7 @@ import {
   Unlock,
   Edit2,
   Plus,
+  Zap,
 } from "lucide-react";
 import { useProgressState, Floor as StateFloor, Room as StateRoom } from "../../hooks/useProgressState";
 import { useDrag } from "@use-gesture/react";

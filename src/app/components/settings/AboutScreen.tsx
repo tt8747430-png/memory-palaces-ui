@@ -13,9 +13,9 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
   ];
 
   const links = [
-    { label: "Terms of Service", url: "#" },
-    { label: "Privacy Policy", url: "#" },
-    { label: "Open Source Licenses", url: "#" },
+    { label: "Terms of Service", url: "https://memorypalace.app/terms" },
+    { label: "Privacy Policy", url: "https://memorypalace.app/privacy" },
+    { label: "Open Source Licenses", url: "https://memorypalace.app/licenses" },
   ];
 
   const stats = [
@@ -130,6 +130,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
               {links.map((link, index) => (
                 <button
                   key={index}
+                  onClick={() => window.open(link.url, "_blank")}
                   className={`w-full flex items-center justify-between px-5 py-4 hover:bg-[#F5F5F7] transition-colors ${
                     index !== links.length - 1 ? "border-b border-[#E5E5EA]" : ""
                   }`}
