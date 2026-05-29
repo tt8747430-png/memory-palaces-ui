@@ -312,53 +312,7 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
     toast.success("Phone number connected");
   };
 
-  if (currentScreen !== "main") {
-    return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentScreen}
-          initial={{ x: "100%", opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: "100%", opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="size-full"
-        >
-          {currentScreen === "edit-profile" && (
-            <EditProfileScreen
-              onBack={() => setCurrentScreen("main")}
-              onSave={handleProfileSave}
-            />
-          )}
-          {currentScreen === "phone" && (
-            <PhoneConnectScreen
-              onBack={() => setCurrentScreen("main")}
-              onPhoneConnected={handlePhoneConnected}
-            />
-          )}
-          {currentScreen === "privacy" && (
-            <PrivacySettingsScreen onBack={() => setCurrentScreen("main")} />
-          )}
-          {currentScreen === "change-password" && (
-            <ChangePasswordScreen
-              onBack={() => setCurrentScreen("main")}
-              onPasswordChanged={handlePasswordChanged}
-            />
-          )}
-          {currentScreen === "clear-data" && (
-            <ClearDataScreen onBack={() => setCurrentScreen("main")} />
-          )}
-          {currentScreen === "help" && (
-            <HelpCenterScreen onBack={() => setCurrentScreen("main")} />
-          )}
-          {currentScreen === "about" && (
-            <AboutScreen onBack={() => setCurrentScreen("main")} />
-          )}
-        </motion.div>
-      </AnimatePresence>
-    );
-  }
-
-  const content = (
+  const mainContent = (
     <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
       {/* Compact Header (visible on scroll) */}
       <motion.div
@@ -626,8 +580,61 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
         <Drawer.Content className="bg-white flex flex-col rounded-t-[10px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none">
           <div className="p-4 bg-white rounded-t-[10px] flex-1 overflow-hidden">
             <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4" />
-            <div className="h-full overflow-hidden rounded-xl">
-              {content}
+            <div className="h-full overflow-hidden rounded-xl relative">
+              <AnimatePresence mode="wait">
+                {currentScreen === "main" ? (
+                  <motion.div
+                    key="main"
+                    initial={{ x: "-100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "-100%", opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="size-full"
+                  >
+                    {mainContent}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={currentScreen}
+                    initial={{ x: "100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "100%", opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="size-full absolute inset-0 z-50 bg-white"
+                  >
+                    {currentScreen === "edit-profile" && (
+                      <EditProfileScreen
+                        onBack={() => setCurrentScreen("main")}
+                        onSave={handleProfileSave}
+                      />
+                    )}
+                    {currentScreen === "phone" && (
+                      <PhoneConnectScreen
+                        onBack={() => setCurrentScreen("main")}
+                        onPhoneConnected={handlePhoneConnected}
+                      />
+                    )}
+                    {currentScreen === "privacy" && (
+                      <PrivacySettingsScreen onBack={() => setCurrentScreen("main")} />
+                    )}
+                    {currentScreen === "change-password" && (
+                      <ChangePasswordScreen
+                        onBack={() => setCurrentScreen("main")}
+                        onPasswordChanged={handlePasswordChanged}
+                      />
+                    )}
+                    {currentScreen === "clear-data" && (
+                      <ClearDataScreen onBack={() => setCurrentScreen("main")} />
+                    )}
+                    {currentScreen === "help" && (
+                      <HelpCenterScreen onBack={() => setCurrentScreen("main")} />
+                    )}
+                    {currentScreen === "about" && (
+                      <AboutScreen onBack={() => setCurrentScreen("main")} />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </Drawer.Content>
