@@ -83,4 +83,5 @@
 - Clear focus states for accessibility
 - No hover-dependent functionality
 
-Remember: This is a mobile learning app designed specifically for iPhone. Every design decision should prioritize touch interaction and mobile performance.
+Remember: This is a mobile learning app designed specifically for iPhone. Every design decision should prioritize touch
+interaction and mobile performance.

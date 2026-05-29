@@ -1,70 +1,70 @@
-import { useState } from "react";
+import {useState} from "react";
 import LoginScreen from "./components/LoginScreen";
 import SignupScreen from "./components/SignupScreen";
 import HomePage from "./components/HomePage";
-import { OpeningAnimation } from "./components/OpeningAnimation";
-import { WelcomeSuccessScreen } from "./components/WelcomeSuccessScreen";
+import {OpeningAnimation} from "./components/OpeningAnimation";
+import {WelcomeSuccessScreen} from "./components/WelcomeSuccessScreen";
 
 type Screen = "opening" | "login" | "signup" | "success" | "home";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("isAuthenticated") === "true";
-  });
-  const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
-    return localStorage.getItem("isAuthenticated") === "true" ? "home" : "opening";
-  });
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return localStorage.getItem("isAuthenticated") === "true";
+    });
+    const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+        return localStorage.getItem("isAuthenticated") === "true" ? "home" : "opening";
+    });
 
-  const handleSignIn = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
-    setCurrentScreen("home");
-  };
+    const handleSignIn = () => {
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+        setCurrentScreen("home");
+    };
 
-  const handleSignUp = () => {
-    setCurrentScreen("success");
-  };
+    const handleSignUp = () => {
+        setCurrentScreen("success");
+    };
 
-  const handleOpeningComplete = () => {
-    setCurrentScreen("login");
-  };
+    const handleOpeningComplete = () => {
+        setCurrentScreen("login");
+    };
 
-  const handleWelcomeComplete = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
-    setCurrentScreen("home");
-  };
+    const handleWelcomeComplete = () => {
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+        setCurrentScreen("home");
+    };
 
-  if (currentScreen === "opening") {
-    return <OpeningAnimation onAnimationComplete={handleOpeningComplete} />;
-  }
+    if (currentScreen === "opening") {
+        return <OpeningAnimation onAnimationComplete={handleOpeningComplete}/>;
+    }
 
-  if (currentScreen === "success") {
-    return <WelcomeSuccessScreen onComplete={handleWelcomeComplete} />;
-  }
+    if (currentScreen === "success") {
+        return <WelcomeSuccessScreen onComplete={handleWelcomeComplete}/>;
+    }
 
-  if (currentScreen === "home" && isAuthenticated) {
-    return <HomePage />;
-  }
+    if (currentScreen === "home" && isAuthenticated) {
+        return <HomePage/>;
+    }
 
-  if (currentScreen === "login") {
-    return (
-      <LoginScreen
-        onSignup={() => setCurrentScreen("signup")}
-        onSignIn={handleSignIn}
-      />
-    );
-  }
+    if (currentScreen === "login") {
+        return (
+            <LoginScreen
+                onSignup={() => setCurrentScreen("signup")}
+                onSignIn={handleSignIn}
+            />
+        );
+    }
 
-  if (currentScreen === "signup") {
-    return (
-      <SignupScreen
-        onClose={() => setCurrentScreen("login")}
-        onLogin={() => setCurrentScreen("login")}
-        onSignUp={handleSignUp}
-      />
-    );
-  }
+    if (currentScreen === "signup") {
+        return (
+            <SignupScreen
+                onClose={() => setCurrentScreen("login")}
+                onLogin={() => setCurrentScreen("login")}
+                onSignUp={handleSignUp}
+            />
+        );
+    }
 
-  return null;
+    return null;
 }

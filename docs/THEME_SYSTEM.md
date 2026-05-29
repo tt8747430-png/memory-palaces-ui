@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Memory Palace application features a comprehensive, professional-grade theme system adapted from modern design system principles. The system provides 150+ design tokens, full light/dark mode support, and theme-aware components.
+The Memory Palace application features a comprehensive, professional-grade theme system adapted from modern design
+system principles. The system provides 150+ design tokens, full light/dark mode support, and theme-aware components.
 
 ## Architecture
 
@@ -11,7 +12,9 @@ The Memory Palace application features a comprehensive, professional-grade theme
 The theme system is organized in three layers:
 
 #### Layer 1: Primitives (`src/app/theme/`)
+
 Core design values defined in TypeScript:
+
 - **Colors** (`colors.ts`) - Brand, neutral, and semantic colors
 - **Typography** (`typography.ts`) - Font families, sizes, weights, line heights
 - **Spacing** (`spacing.ts`) - Base spacing scale and component spacing
@@ -21,13 +24,17 @@ Core design values defined in TypeScript:
 - **Motion** (`motion.ts`) - Animation durations and easings
 
 #### Layer 2: CSS Variables (`src/styles/theme-system.css`)
+
 Design tokens exposed as CSS custom properties:
+
 - Automatic light/dark mode switching
 - Tailwind CSS integration
 - Browser-native performance
 
 #### Layer 3: React Components (`src/app/components/theme-system/`)
+
 Pre-built, theme-aware components:
+
 - `ThemedButton` - Button variants with full theme support
 - `ThemedCard` - Card layouts with glass/elevated variants
 - `ThemedInput` - Form inputs with validation states
@@ -149,6 +156,7 @@ function MyPage() {
 ### Color Tokens
 
 #### Brand Colors
+
 ```css
 --theme-primary              /* Primary brand color */
 --theme-primary-hover        /* Primary hover state */
@@ -170,6 +178,7 @@ function MyPage() {
 ```
 
 #### Semantic Colors
+
 ```css
 --theme-success              /* Success state */
 --theme-success-light        /* Success background */
@@ -189,11 +198,13 @@ function MyPage() {
 ```
 
 #### Neutral Colors
+
 ```css
 --theme-gray-50 to --theme-gray-900
 ```
 
 #### Surface Colors
+
 ```css
 --theme-bg                   /* Main background */
 --theme-bg-subtle            /* Subtle background */
@@ -205,6 +216,7 @@ function MyPage() {
 ```
 
 #### Text Colors
+
 ```css
 --theme-text-primary         /* Primary text */
 --theme-text-secondary       /* Secondary text */
@@ -216,6 +228,7 @@ function MyPage() {
 ```
 
 #### Border Colors
+
 ```css
 --theme-border               /* Default border */
 --theme-border-muted         /* Subtle border */
@@ -226,6 +239,7 @@ function MyPage() {
 ### Spacing Tokens
 
 #### Base Spacing
+
 ```css
 --theme-space-0              /* 0rem */
 --theme-space-1              /* 0.25rem (4px) */
@@ -243,6 +257,7 @@ function MyPage() {
 ```
 
 #### Component Spacing
+
 ```css
 --theme-button-px            /* Button horizontal padding */
 --theme-button-py            /* Button vertical padding */
@@ -253,6 +268,7 @@ function MyPage() {
 ```
 
 #### Layout Spacing
+
 ```css
 --theme-container-max        /* Max container width */
 --theme-container-padding    /* Container padding */
@@ -288,6 +304,7 @@ function MyPage() {
 ### Motion Tokens
 
 #### Durations
+
 ```css
 --theme-duration-fast        /* 150ms */
 --theme-duration-base        /* 200ms */
@@ -296,6 +313,7 @@ function MyPage() {
 ```
 
 #### Easings
+
 ```css
 --theme-ease-linear
 --theme-ease-in
@@ -305,6 +323,7 @@ function MyPage() {
 ```
 
 #### Transitions
+
 ```css
 --theme-transition-fast      /* all 150ms ease-out */
 --theme-transition-base      /* all 200ms ease-in-out */
@@ -327,6 +346,7 @@ function MyPage() {
 ```
 
 **Variants:**
+
 - `primary` - Primary brand button
 - `secondary` - Secondary button
 - `accent` - Accent button
@@ -334,6 +354,7 @@ function MyPage() {
 - `ghost` - Transparent button
 
 **Sizes:**
+
 - `sm` - Small (px-3 py-1.5)
 - `md` - Medium (uses theme tokens)
 - `lg` - Large (px-6 py-3)
@@ -358,6 +379,7 @@ function MyPage() {
 ```
 
 **Props:**
+
 - `hoverable` - Adds hover effects with scale and shadow
 - `elevated` - Enhanced shadow for emphasis
 - `glass` - Frosted glass effect with backdrop blur
@@ -376,6 +398,7 @@ function MyPage() {
 ```
 
 **Variants:**
+
 - `default` - Transparent background with border
 - `filled` - Filled background
 
@@ -394,6 +417,7 @@ function MyPage() {
 ## Dark Mode
 
 Dark mode is automatically applied when:
+
 1. User's system preference is dark mode, OR
 2. User toggles theme via `toggleTheme()`
 3. The `.dark` class is on `<html>`
@@ -473,18 +497,21 @@ import type {
 If migrating from the previous design token system:
 
 **Before:**
+
 ```css
 background: var(--btn-primary-bg);
 color: var(--btn-primary-text);
 ```
 
 **After:**
+
 ```css
 background: var(--theme-primary);
 color: var(--theme-text-on-primary);
 ```
 
 Or use components:
+
 ```tsx
 <ThemedButton variant="primary">Click</ThemedButton>
 ```
@@ -492,6 +519,7 @@ Or use components:
 ## Examples
 
 See live examples in:
+
 - `/src/app/components/ThemeSystemShowcase.tsx` - Complete showcase
 - `/src/app/components/theme-system/` - Component implementations
 

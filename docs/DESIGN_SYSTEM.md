@@ -2,13 +2,15 @@
 
 ## Overview
 
-The Memory Palace application now uses a comprehensive design system adapted from Figma design tokens. This system provides a consistent, theme-aware foundation for building UI components.
+The Memory Palace application now uses a comprehensive design system adapted from Figma design tokens. This system
+provides a consistent, theme-aware foundation for building UI components.
 
 ## Architecture
 
 ### 1. Design Tokens (`src/styles/design-tokens.css`)
 
 CSS custom properties organized by component type:
+
 - **Button Tokens**: Primary, secondary, outline, and disabled states
 - **Form Tokens**: Input fields, labels, error states
 - **Card Tokens**: Background, borders, shadows, hover states
@@ -162,26 +164,31 @@ function MyComponent() {
 ## Token Categories
 
 ### Button Tokens
+
 - `--btn-primary-bg`, `--btn-primary-text`, `--btn-primary-hover`
 - `--btn-secondary-bg`, `--btn-secondary-text`
 - `--btn-outline-border`
 - `--btn-disabled-bg`, `--btn-disabled-text`
 
 ### Form Tokens
+
 - `--form-input-bg`, `--form-input-border`, `--form-input-border-focus`
 - `--form-input-text`, `--form-input-placeholder`
 - `--form-label-text`
 - `--form-error-text`, `--form-error-border`
 
 ### Card Tokens
+
 - `--card-bg`, `--card-border`, `--card-hover-bg`
 - `--card-shadow`, `--card-shadow-hover`
 
 ### Navigation Tokens
+
 - `--nav-bg`, `--nav-border`
 - `--nav-link-text`, `--nav-link-active`, `--nav-link-hover`
 
 ### Modal Tokens
+
 - `--modal-bg`, `--modal-overlay`, `--modal-shadow`
 - `--modal-radius`
 
@@ -199,6 +206,7 @@ Each variant has: `bg`, `border`, `text`, `icon`
 ## Dark Mode
 
 Dark mode is automatically applied when:
+
 1. User's system preference is dark mode, OR
 2. The `.dark` class is applied to `<html>` or any parent element
 
@@ -225,6 +233,7 @@ All design tokens automatically switch to their dark mode values.
 ### Migrating Existing Components
 
 **Before:**
+
 ```typescript
 <button
   style={{
@@ -237,6 +246,7 @@ All design tokens automatically switch to their dark mode values.
 ```
 
 **After:**
+
 ```typescript
 <Button variant="primary">
   Submit
@@ -256,6 +266,7 @@ Or:
 ## Adding New Tokens
 
 1. **Add to CSS** (`src/styles/design-tokens.css`):
+
 ```css
 :root {
   --my-new-token: #value;
@@ -267,6 +278,7 @@ Or:
 ```
 
 2. **Add to TypeScript** (`src/app/utils/designTokens.ts`):
+
 ```typescript
 export const myTokens = {
   newToken: {
@@ -277,6 +289,7 @@ export const myTokens = {
 ```
 
 3. **Integrate in hook** (`src/app/hooks/useDesignTokens.ts`):
+
 ```typescript
 return useMemo(
   () => ({
@@ -292,6 +305,7 @@ return useMemo(
 ## Source Files
 
 Original Figma design system tokens are available in:
+
 - `/src/imports/react-design-system-tokens.json` (54 semantic tokens)
 - `/src/imports/react-design-system-primitives.json` (163 primitive tokens)
 - `/src/imports/README-1.md` (import guide)
@@ -310,6 +324,7 @@ const size: ButtonSize = 'md'; // ✅ Type-safe
 ## Examples
 
 See live examples:
+
 - Alert: `/src/app/components/design-system/Alert.tsx`
 - Button: `/src/app/components/design-system/Button.tsx`
 - Card: `/src/app/components/design-system/Card.tsx`

@@ -10,7 +10,8 @@ _Your Memory Palace_
 
 ## About
 
-Mindscape is a memory training application based on the ancient method of loci (memory palace technique). The app helps users build mental landscapes to enhance memory retention and recall.
+Mindscape is a memory training application based on the ancient method of loci (memory palace technique). The app helps
+users build mental landscapes to enhance memory retention and recall.
 
 ## Logo & Icon
 

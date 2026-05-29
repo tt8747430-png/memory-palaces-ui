@@ -1,6 +1,7 @@
 # iOS UI Kit - Design System
 
-This project uses an iOS-inspired design system with liquid glass effects and native iOS components following Apple's Human Interface Guidelines.
+This project uses an iOS-inspired design system with liquid glass effects and native iOS components following Apple's
+Human Interface Guidelines.
 
 ## Components
 
@@ -11,18 +12,18 @@ iOS-native text input with support for icons, password toggle, and error states.
 #### Variants
 
 1. **filled** (Default)
-   - Light gray background (iOS style)
-   - No border in default state
-   - Perfect for modern iOS apps
+    - Light gray background (iOS style)
+    - No border in default state
+    - Perfect for modern iOS apps
 
    ```tsx
    <TextField placeholder="Email" variant="filled" />
    ```
 
 2. **outlined**
-   - White background with border
-   - Blue ring on focus
-   - Traditional form style
+    - White background with border
+    - Blue ring on focus
+    - Traditional form style
    ```tsx
    <TextField placeholder="Email" variant="outlined" />
    ```
@@ -156,33 +157,33 @@ The Button component comes in multiple variants following iOS design patterns:
 #### Variants
 
 1. **liquid-glass** (Default)
-   - Frosted glass effect with backdrop blur
-   - Multi-layer shadow and blend modes
-   - Perfect for overlays on colored backgrounds
+    - Frosted glass effect with backdrop blur
+    - Multi-layer shadow and blend modes
+    - Perfect for overlays on colored backgrounds
 
    ```tsx
    <Button variant="liquid-glass">Get Started</Button>
    ```
 
 2. **liquid-glass-text**
-   - Similar to liquid-glass but optimized for text-only buttons
+    - Similar to liquid-glass but optimized for text-only buttons
 
    ```tsx
    <Button variant="liquid-glass-text">Cancel</Button>
    ```
 
 3. **primary**
-   - Solid iOS blue (#007AFF)
-   - White text
-   - Best for primary actions
+    - Solid iOS blue (#007AFF)
+    - White text
+    - Best for primary actions
 
    ```tsx
    <Button variant="primary">Sign In</Button>
    ```
 
 4. **secondary**
-   - Light gray background with iOS blue text
-   - Perfect for secondary actions
+    - Light gray background with iOS blue text
+    - Perfect for secondary actions
    ```tsx
    <Button variant="secondary">Learn More</Button>
    ```
