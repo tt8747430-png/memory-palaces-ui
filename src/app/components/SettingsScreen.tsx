@@ -30,18 +30,28 @@ import { PhoneConnectScreen } from "./settings/PhoneConnectScreen";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { Switch } from "./ui/switch";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { Drawer } from "vaul";
 
 interface SettingsScreenProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onBack?: () => void;
 }
-
-
 
 interface SettingsSection {
   title: string;
@@ -73,7 +83,11 @@ type NavigationScreen =
   | "help"
   | "about";
 
-export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsScreenProps) {
+export function SettingsScreen({
+  open = true,
+  onOpenChange,
+  onBack,
+}: SettingsScreenProps) {
   const [currentScreen, setCurrentScreen] = useState<NavigationScreen>("main");
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -84,6 +98,21 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
+
+  // Modern Parallax & Overscroll (Pull-to-refresh style)
+  const headerOpacity = useTransform(scrollY, [0, 80], [1, 0]);
+  const headerScale = useTransform(scrollY, [0, 80], [1, 0.95]);
+  const headerY = useTransform(scrollY, [0, 80], [0, 20]);
+
+  // Magic: Negative scrollY (overscroll on iOS/Mac) scales up the profile image
+  const profileScale = useTransform(scrollY, [-150, 0, 80], [1.2, 1, 0.9]);
+  const profileY = useTransform(scrollY, [-150, 0], [20, 0]);
+
+  const compactHeaderOpacity = useTransform(scrollY, [40, 80], [0, 1]);
+  const gradientOpacity = useTransform(scrollY, [0, 100], [1, 0]);
+  const headerPointerEvents = useTransform(headerOpacity, (v) =>
+    v > 0.5 ? "auto" : "none"
+  );
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -111,19 +140,6 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
       toast.warning("No backup found");
     }
   };
-
-  // Scroll-based transformations for adaptive header
-  const scrollRange = [0, 120];
-  const headerOpacity = useTransform(scrollY, scrollRange, [1, 0]);
-  const headerScale = useTransform(scrollY, scrollRange, [1, 0.9]);
-  const headerY = useTransform(scrollY, scrollRange, [0, -40]);
-  const headerMaxHeight = useTransform(scrollY, scrollRange, [500, 0]);
-  const profileScale = useTransform(scrollY, scrollRange, [1, 0.7]);
-  const compactHeaderOpacity = useTransform(scrollY, [80, 120], [0, 1]);
-  const gradientOpacity = useTransform(scrollY, [0, 100], [1, 0]);
-  const headerPointerEvents = useTransform(headerOpacity, (value) =>
-    value > 0.5 ? "auto" : "none"
-  );
 
   const sections: SettingsSection[] = [
     {
@@ -181,7 +197,7 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
             { value: "ja", label: "Japanese" },
             { value: "ko", label: "Korean" },
             { value: "zh", label: "Chinese" },
-          ]
+          ],
         },
       ],
     },
@@ -265,7 +281,6 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
     },
   ];
 
-
   const handleToggle = (label: string) => {
     if (label === "Dark Mode") {
       setDarkMode(!darkMode);
@@ -288,9 +303,11 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
 
   const handleLogout = () => {
     setShowLogoutDialog(false);
+    localStorage.removeItem("isAuthenticated");
     setTimeout(() => {
       if (onOpenChange) onOpenChange(false);
       if (onBack) onBack();
+      window.location.reload();
     }, 300);
   };
 
@@ -313,226 +330,228 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
   };
 
   const mainContent = (
-    <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
-      {/* Compact Header (visible on scroll) */}
+    <div
+      ref={scrollRef}
+      className="size-full overflow-y-auto scrollbar-hide relative bg-[#FAFAFC] pb-[100px]"
+    >
+      {/* Sticky Compact Header */}
       <motion.div
         style={{ opacity: compactHeaderOpacity }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-xl border-b border-[#E5E5EA] shadow-sm"
+        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-black/[0.05] shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
       >
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (onOpenChange) onOpenChange(false);
                 if (onBack) onBack();
               }}
-              className="w-10 h-10 bg-[#F5F5F7] rounded-full flex items-center justify-center"
+              className="w-9 h-9 bg-gray-100/80 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 text-[#091A7A]" />
+              <ArrowLeft className="w-4 h-4" />
             </motion.button>
-            <h2 className="text-base font-bold text-[#091A7A]">Settings</h2>
+            <h2 className="text-[15px] font-semibold text-gray-900 leading-tight">
+              Settings
+            </h2>
           </div>
         </div>
       </motion.div>
 
-      {/* Header */}
+      {/* Decorative Background Mesh/Gradient */}
       <motion.div
-        style={{ maxHeight: headerMaxHeight }}
-        className="relative overflow-hidden flex-shrink-0 transition-all"
-      >
-        <motion.div
-          style={{ opacity: gradientOpacity }}
-          className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent pointer-events-none"
-        />
+        style={{ opacity: gradientOpacity }}
+        className="absolute inset-x-0 top-0 h-[300px] bg-gradient-to-b from-[#ADC8FF]/30 via-[#E2EBFF]/10 to-transparent pointer-events-none"
+      />
 
+      {/* Large Header */}
+      <motion.div
+        style={{
+          opacity: headerOpacity,
+          scale: headerScale,
+          y: headerY,
+          pointerEvents: headerPointerEvents,
+        }}
+        className="relative px-6 pt-12 pb-6 will-change-transform flex flex-col items-center"
+      >
+        <div className="w-full flex items-center justify-start mb-6">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              if (onOpenChange) onOpenChange(false);
+              if (onBack) onBack();
+            }}
+            className="w-11 h-11 bg-white/60 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-sm border border-white/80 text-gray-700 hover:bg-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
+        </div>
+
+        {/* Profile Section */}
         <motion.div
-          style={{
-            opacity: headerOpacity,
-            scale: headerScale,
-            y: headerY,
-            pointerEvents: headerPointerEvents
-          }}
-          className="relative p-6 pb-0 will-change-transform"
+          style={{ scale: profileScale, y: profileY }}
+          className="flex flex-col items-center gap-3 relative origin-bottom"
         >
-          <div className="flex items-center gap-4 mb-6">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (onOpenChange) onOpenChange(false);
-                if (onBack) onBack();
-              }}
-              className="w-12 h-12 bg-card-glass backdrop-blur-lg rounded-full flex items-center justify-center shadow-card border border-white/20"
-            >
-              <ArrowLeft className="w-5 h-5 text-[#091A7A]" />
-            </motion.button>
-            <h1 className="text-2xl font-bold text-[#091A7A]">
-              Settings
-            </h1>
+          {/* Avatar with Edit Button */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#091A7A] to-[#4F8EFF] rounded-[2rem] blur-xl opacity-20 transform scale-90 translate-y-2" />
+            <ImageWithFallback
+              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
+              alt="Profile"
+              className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-xl object-cover bg-white"
+              style={{ objectPosition: "center 20%" }}
+            />
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setCurrentScreen("edit-profile")}
+                    className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl flex items-center justify-center shadow-lg border-2 border-white"
+                  >
+                    <User className="w-4 h-4 text-white" />
+                  </motion.button>
+                }
+              />
+              <TooltipContent side="right">
+                <p>Edit Profile</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
-          {/* Profile Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ scale: profileScale }}
-            className="flex flex-col items-center gap-4 py-6"
-          >
-            {/* Avatar with Edit Button */}
-            <div className="relative">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
-                alt="Profile"
-                className="w-20 h-20 rounded-full border-4 border-white shadow-xl object-cover"
-                style={{ objectPosition: "center 20%" }}
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setCurrentScreen("edit-profile")}
-                      className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-                    >
-                      <User className="w-3 h-3 text-white" />
-                    </motion.button>
-                  }
-                />
-                <TooltipContent side="right">
-                  <p>Edit Profile</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Name and Username */}
-            <div className="flex flex-col items-center gap-1">
-              <h2 className="text-lg font-bold text-[#091A7A]">Memory Master</h2>
-              <p className="text-sm text-[#091A7A]/60">@memorymaster</p>
-            </div>
-          </motion.div>
+          <div className="flex flex-col items-center gap-0.5 mt-2">
+            <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+              Memory Master
+            </h1>
+            <p className="text-[14px] text-gray-500 font-medium">
+              @memorymaster
+            </p>
+          </div>
         </motion.div>
       </motion.div>
 
-      {/* Content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide pb-8">
-        <div className="px-6 space-y-2">
-          {sections.map((section, sectionIndex) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: sectionIndex * 0.05,
-                duration: 0.3,
-              }}
-            >
-              {section.title && (
-                <h3 className="text-xs font-semibold text-[#091A7A]/50 mb-2 px-4 pt-4 uppercase tracking-wider">
-                  {section.title}
-                </h3>
-              )}
+      {/* Content Area */}
+      <div className="px-6 relative z-10 space-y-6">
+        {sections.map((section, sectionIndex) => (
+          <motion.div
+            key={sectionIndex}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: sectionIndex * 0.05,
+              type: "spring",
+              bounce: 0,
+            }}
+          >
+            {section.title && (
+              <h3 className="text-[13px] font-bold text-gray-400 mb-2 px-1 uppercase tracking-wider">
+                {section.title}
+              </h3>
+            )}
 
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/60 shadow-sm overflow-hidden">
-                {section.items.map((item, itemIndex) => (
-                  <motion.button
-                    key={item.label}
-                    onClick={() => handleItemClick(item)}
-                    whileHover={{ backgroundColor: "rgba(173, 200, 255, 0.05)" }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 transition-colors ${
-                      itemIndex !== section.items.length - 1
-                        ? "border-b border-[#E5E5EA]/50"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          item.color
-                            ? "bg-red-50"
-                            : "bg-[#ADC8FF]/15"
+            <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
+              {section.items.map((item, itemIndex) => (
+                <motion.button
+                  key={item.label}
+                  onClick={() => handleItemClick(item)}
+                  whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.02)" }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 transition-colors relative ${
+                    itemIndex !== section.items.length - 1
+                      ? "after:content-[''] after:absolute after:bottom-0 after:left-14 after:right-0 after:h-[1px] after:bg-gray-100"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 ${
+                        item.color ? "bg-red-50" : "bg-gray-50"
+                      }`}
+                    >
+                      <item.icon
+                        className={`w-5 h-5 ${
+                          item.color ? "text-red-500" : "text-gray-700"
+                        }`}
+                        strokeWidth={2.2}
+                      />
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <p
+                        className={`text-[15px] font-semibold truncate ${
+                          item.color ? "text-red-500" : "text-gray-900"
                         }`}
                       >
-                        <item.icon
-                          size={16}
-                          className={
-                            item.color
-                              ? "text-red-500"
-                              : "text-[#091A7A]"
-                          }
-                          strokeWidth={2.5}
-                        />
-                      </div>
-                      <div className="text-left flex-1 min-w-0">
-                        <p
-                          className={`text-[15px] font-medium truncate ${
-                            item.color
-                              ? "text-red-500"
-                              : "text-[#091A7A]"
-                          }`}
-                        >
-                          {item.label}
+                        {item.label}
+                      </p>
+                      {item.value && (
+                        <p className="text-[13px] font-medium text-gray-500 truncate leading-tight mt-0.5">
+                          {item.value}
                         </p>
-                        {item.value && (
-                          <p className="text-[13px] text-[#091A7A]/50 truncate">
-                            {item.value}
-                          </p>
-                        )}
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {item.action === "toggle" && (
+                      <Switch
+                        checked={item.enabled || false}
+                        onCheckedChange={() => handleToggle(item.label)}
+                      />
+                    )}
+                    {item.action === "select" && item.options && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={item.selectedValue}
+                          onValueChange={(val) => item.onSelect?.(val)}
+                        >
+                          <SelectTrigger className="w-auto min-w-[100px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-gray-500 hover:text-gray-900 text-[15px] font-medium p-0 pr-1 transition-colors">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent
+                            align="end"
+                            className="rounded-xl border border-gray-100 shadow-xl"
+                          >
+                            {item.options.map((opt) => (
+                              <SelectItem
+                                key={opt.value}
+                                value={opt.value}
+                                className="font-medium rounded-lg text-[14px]"
+                              >
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {item.action === "toggle" && (
-                        <Switch
-                          checked={item.enabled || false}
-                          onCheckedChange={() => handleToggle(item.label)}
-                        />
-                      )}
-                      {item.action === "select" && item.options && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <Select value={item.selectedValue} onValueChange={(val) => item.onSelect?.(val)}>
-                            <SelectTrigger className="w-[120px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-[#091A7A]/70 text-[15px] font-medium p-0 pr-2">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent align="end">
-                              {item.options.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      {item.action === "navigate" && (
-                        <ChevronRight
-                          size={18}
-                          className="text-[#C7C7CC]"
-                        />
-                      )}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-
-          {/* App Info */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center pt-8 pb-2"
-          >
-            <p className="text-xs text-[#091A7A]/40">
-              Memory Palace App
-            </p>
-            <p className="text-xs text-[#091A7A]/40 mt-1">
-              Version 1.0.0
-            </p>
+                    )}
+                    {item.action === "navigate" && (
+                      <ChevronRight className="w-5 h-5 text-gray-300" />
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
-        </div>
+        ))}
+
+        {/* App Info */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center pt-6 pb-4"
+        >
+          <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-2xl flex items-center justify-center shadow-lg shadow-[#091A7A]/20 mb-3">
+            <Shield className="w-6 h-6 text-white" />
+          </div>
+          <p className="text-[13px] font-bold text-gray-400">
+            Memory Palace App
+          </p>
+          <p className="text-[11px] font-medium text-gray-400 mt-1">
+            Version 1.0.0
+          </p>
+        </motion.div>
       </div>
 
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
@@ -540,7 +559,8 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
           <DialogHeader>
             <DialogTitle className="text-center">Log out</DialogTitle>
             <DialogDescription className="text-center">
-              Are you sure you want to log out? You'll need to login again to use the app.
+              Are you sure you want to log out? You'll need to login again to
+              use the app.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:justify-center">
@@ -574,71 +594,75 @@ export function SettingsScreen({ open = true, onOpenChange, onBack }: SettingsSc
   );
 
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-        <Drawer.Content className="bg-white flex flex-col rounded-t-[10px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none">
-          <div className="p-4 bg-white rounded-t-[10px] flex-1 overflow-hidden">
-            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4" />
-            <div className="h-full overflow-hidden rounded-xl relative">
-              <AnimatePresence mode="wait">
-                {currentScreen === "main" ? (
-                  <motion.div
-                    key="main"
-                    initial={{ x: "-100%", opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: "-100%", opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="size-full"
-                  >
-                    {mainContent}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={currentScreen}
-                    initial={{ x: "100%", opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: "100%", opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="size-full absolute inset-0 z-50 bg-white"
-                  >
-                    {currentScreen === "edit-profile" && (
-                      <EditProfileScreen
-                        onBack={() => setCurrentScreen("main")}
-                        onSave={handleProfileSave}
-                      />
-                    )}
-                    {currentScreen === "phone" && (
-                      <PhoneConnectScreen
-                        onBack={() => setCurrentScreen("main")}
-                        onPhoneConnected={handlePhoneConnected}
-                      />
-                    )}
-                    {currentScreen === "privacy" && (
-                      <PrivacySettingsScreen onBack={() => setCurrentScreen("main")} />
-                    )}
-                    {currentScreen === "change-password" && (
-                      <ChangePasswordScreen
-                        onBack={() => setCurrentScreen("main")}
-                        onPasswordChanged={handlePasswordChanged}
-                      />
-                    )}
-                    {currentScreen === "clear-data" && (
-                      <ClearDataScreen onBack={() => setCurrentScreen("main")} />
-                    )}
-                    {currentScreen === "help" && (
-                      <HelpCenterScreen onBack={() => setCurrentScreen("main")} />
-                    )}
-                    {currentScreen === "about" && (
-                      <AboutScreen onBack={() => setCurrentScreen("main")} />
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "100%" }}
+          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+          className="fixed inset-0 z-[100] bg-white flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.08)]"
+        >
+          <div className="h-full overflow-hidden relative">
+            <AnimatePresence initial={false} mode="wait">
+              {currentScreen === "main" ? (
+                <motion.div
+                  key="main"
+                  initial={{ x: "-10%", opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: "-10%", opacity: 0 }}
+                  transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+                  className="size-full absolute inset-0"
+                >
+                  {mainContent}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={currentScreen}
+                  initial={{ x: "100%", opacity: 1 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: "100%", opacity: 1 }}
+                  transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                  className="size-full absolute inset-0 z-50 bg-white shadow-[-20px_0_40px_rgba(0,0,0,0.08)]"
+                >
+                  {currentScreen === "edit-profile" && (
+                    <EditProfileScreen
+                      onBack={() => setCurrentScreen("main")}
+                      onSave={handleProfileSave}
+                    />
+                  )}
+                  {currentScreen === "phone" && (
+                    <PhoneConnectScreen
+                      onBack={() => setCurrentScreen("main")}
+                      onPhoneConnected={handlePhoneConnected}
+                    />
+                  )}
+                  {currentScreen === "privacy" && (
+                    <PrivacySettingsScreen
+                      onBack={() => setCurrentScreen("main")}
+                    />
+                  )}
+                  {currentScreen === "change-password" && (
+                    <ChangePasswordScreen
+                      onBack={() => setCurrentScreen("main")}
+                      onPasswordChanged={handlePasswordChanged}
+                    />
+                  )}
+                  {currentScreen === "clear-data" && (
+                    <ClearDataScreen onBack={() => setCurrentScreen("main")} />
+                  )}
+                  {currentScreen === "help" && (
+                    <HelpCenterScreen onBack={() => setCurrentScreen("main")} />
+                  )}
+                  {currentScreen === "about" && (
+                    <AboutScreen onBack={() => setCurrentScreen("main")} />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

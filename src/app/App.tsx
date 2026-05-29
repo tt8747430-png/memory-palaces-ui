@@ -8,10 +8,15 @@ import { WelcomeSuccessScreen } from "./components/WelcomeSuccessScreen";
 type Screen = "opening" | "login" | "signup" | "success" | "home";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("opening");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("isAuthenticated") === "true";
+  });
+  const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+    return localStorage.getItem("isAuthenticated") === "true" ? "home" : "opening";
+  });
 
   const handleSignIn = () => {
+    localStorage.setItem("isAuthenticated", "true");
     setIsAuthenticated(true);
     setCurrentScreen("home");
   };
@@ -25,6 +30,7 @@ export default function App() {
   };
 
   const handleWelcomeComplete = () => {
+    localStorage.setItem("isAuthenticated", "true");
     setIsAuthenticated(true);
     setCurrentScreen("home");
   };
