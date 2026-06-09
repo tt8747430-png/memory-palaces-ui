@@ -1,0 +1,1024 @@
+{
+  "name": "memory-palaces",
+  "description": "Mindscape (Your Memory Palace) is a phone-first, client-only React single-page app that turns the method of loci into a guided, repeatable memory-training practice: users build mental landscapes, place items along them, and train recall through spaced review and quizzes with progress tracked locally. Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results.",
+  "languages": [
+    "css",
+    "html",
+    "json",
+    "markdown",
+    "typescript"
+  ],
+  "frameworks": [
+    "React",
+    "Vite",
+    "Tailwind CSS",
+    "React Hook Form",
+    "Zod",
+    "Rive",
+    "Motion",
+    "cmdk",
+    "Lenis",
+    "next-themes",
+    "Sonner",
+    "Vaul"
+  ],
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 68,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "components.json",
+      "language": "json",
+      "sizeLines": 25,
+      "fileCategory": "config"
+    },
+    {
+      "path": "DESIGN.md",
+      "language": "markdown",
+      "sizeLines": 238,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ai_docs/GENERATE_AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 25,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ai_docs/role.md",
+      "language": "markdown",
+      "sizeLines": 21,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ai_docs/UPDATE_AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 31,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "index.html",
+      "language": "html",
+      "sizeLines": 28,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 42,
+      "fileCategory": "config"
+    },
+    {
+      "path": "PRODUCT.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skills-lock.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/app/App.tsx",
+      "language": "typescript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/BooksIcon3D.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/EnglishIcon3D.tsx",
+      "language": "typescript",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/index.ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/MathIcon3D.tsx",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/ScienceIcon3D.tsx",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/3d-icons/SocialStudiesIcon3D.tsx",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/AmbientParticles.tsx",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/auth/AuthBackground.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/auth/AuthInput.tsx",
+      "language": "typescript",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/auth/index.ts",
+      "language": "typescript",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/auth/SocialLogin.tsx",
+      "language": "typescript",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/cards/FeaturedPalaceBanner.tsx",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/cards/PalaceCard.tsx",
+      "language": "typescript",
+      "sizeLines": 303,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/cards/PalaceCardGrid.tsx",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/cards/PalaceCardSkeleton.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/DynamicBackground.tsx",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/HomePage.tsx",
+      "language": "typescript",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/LiquidGlassBottomNav.tsx",
+      "language": "typescript",
+      "sizeLines": 228,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/LoginScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 444,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/notifications/InlineXPNotification.tsx",
+      "language": "typescript",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/notifications/ProgressNotification.tsx",
+      "language": "typescript",
+      "sizeLines": 213,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/notifications/SaveIndicator.tsx",
+      "language": "typescript",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/OpeningAnimation.tsx",
+      "language": "typescript",
+      "sizeLines": 333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/CreateFloorScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 224,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/CreatePalaceScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 412,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/CreateRoomScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 274,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/EditPalaceScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 316,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/PalaceDetailScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 1130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/PalaceManagementScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 339,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/RoomManagementScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 430,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/palace/RoomTrainingScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 399,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/PalacesPage.tsx",
+      "language": "typescript",
+      "sizeLines": 592,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ProfilePage.tsx",
+      "language": "typescript",
+      "sizeLines": 330,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/PalaceProgressCard.tsx",
+      "language": "typescript",
+      "sizeLines": 186,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/PalacesOverview.tsx",
+      "language": "typescript",
+      "sizeLines": 350,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/ProgressDebugPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/ProgressHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 207,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/TrainingCalendar.tsx",
+      "language": "typescript",
+      "sizeLines": 197,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/progress/TrainingStreak.tsx",
+      "language": "typescript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/quiz/PalaceQuizCompletionScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 353,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/quiz/PalaceQuizScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 445,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/quiz/QuizStatusNotification.tsx",
+      "language": "typescript",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/search/SearchResults.tsx",
+      "language": "typescript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/SearchPopup.tsx",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/AboutScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/ChangePasswordScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/ClearDataScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 279,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/EditProfileScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/HelpCenterScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/PhoneConnectScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/settings/PrivacySettingsScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/SettingsScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 692,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/SignupScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 479,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/accordion.tsx",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/alert-dialog.tsx",
+      "language": "typescript",
+      "sizeLines": 187,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/AppIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 195,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/button.tsx",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/Checkbox.tsx",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/command.tsx",
+      "language": "typescript",
+      "sizeLines": 187,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/dialog.tsx",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/Divider.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/dropdown-menu.tsx",
+      "language": "typescript",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/EmptyState.tsx",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/ImageWithFallback.tsx",
+      "language": "typescript",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/index.ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/input-group.tsx",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/input.tsx",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/RiveAnimation.tsx",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/scroll-area.tsx",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/select.tsx",
+      "language": "typescript",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/Skeleton.tsx",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/SmoothScrollProvider.tsx",
+      "language": "typescript",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/sonner.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/StatusBar.tsx",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/switch.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/tabs.tsx",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/textarea.tsx",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/tooltip.tsx",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/ui/utils.ts",
+      "language": "typescript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/components/WelcomeSuccessScreen.tsx",
+      "language": "typescript",
+      "sizeLines": 446,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/hooks/useLocalStorage.ts",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/hooks/useNotifications.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/hooks/useProgressState.ts",
+      "language": "typescript",
+      "sizeLines": 519,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/hooks/useSaveStatus.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/icons/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/icons/NavIcons.tsx",
+      "language": "typescript",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/icons/StatusBarIcons.tsx",
+      "language": "typescript",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/imports/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/imports/ProgressIllustration.tsx",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/imports/StatusBarIPhone.tsx",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/utils/progressUtils.ts",
+      "language": "typescript",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/utils/utils.ts",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/styles/fonts.css",
+      "language": "css",
+      "sizeLines": 0,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/styles/index.css",
+      "language": "css",
+      "sizeLines": 2,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/styles/tailwind.css",
+      "language": "css",
+      "sizeLines": 133,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/styles/theme.css",
+      "language": "css",
+      "sizeLines": 351,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "sizeLines": 37,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "language": "json",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 112,
+  "filteredByIgnore": 209,
+  "estimatedComplexity": "moderate",
+  "importMap": {
+    "CLAUDE.md": [],
+    "components.json": [],
+    "DESIGN.md": [],
+    "docs/ai_docs/GENERATE_AGENTS.md": [],
+    "docs/ai_docs/role.md": [],
+    "docs/ai_docs/UPDATE_AGENTS.md": [],
+    "index.html": [],
+    "package.json": [],
+    "PRODUCT.md": [],
+    "skills-lock.json": [],
+    "src/app/App.tsx": [
+      "src/app/components/HomePage.tsx",
+      "src/app/components/LoginScreen.tsx",
+      "src/app/components/OpeningAnimation.tsx",
+      "src/app/components/SignupScreen.tsx",
+      "src/app/components/WelcomeSuccessScreen.tsx"
+    ],
+    "src/app/components/3d-icons/BooksIcon3D.tsx": [],
+    "src/app/components/3d-icons/EnglishIcon3D.tsx": [],
+    "src/app/components/3d-icons/index.ts": [],
+    "src/app/components/3d-icons/MathIcon3D.tsx": [],
+    "src/app/components/3d-icons/ScienceIcon3D.tsx": [],
+    "src/app/components/3d-icons/SocialStudiesIcon3D.tsx": [],
+    "src/app/components/AmbientParticles.tsx": [],
+    "src/app/components/auth/AuthBackground.tsx": [],
+    "src/app/components/auth/AuthInput.tsx": [],
+    "src/app/components/auth/index.ts": [],
+    "src/app/components/auth/SocialLogin.tsx": [],
+    "src/app/components/cards/FeaturedPalaceBanner.tsx": [],
+    "src/app/components/cards/PalaceCard.tsx": [],
+    "src/app/components/cards/PalaceCardGrid.tsx": [
+      "src/app/components/cards/PalaceCard.tsx"
+    ],
+    "src/app/components/cards/PalaceCardSkeleton.tsx": [
+      "src/app/components/ui/Skeleton.tsx"
+    ],
+    "src/app/components/DynamicBackground.tsx": [],
+    "src/app/components/HomePage.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/LiquidGlassBottomNav.tsx",
+      "src/app/components/notifications/ProgressNotification.tsx",
+      "src/app/components/notifications/SaveIndicator.tsx",
+      "src/app/components/palace/CreatePalaceScreen.tsx",
+      "src/app/components/palace/EditPalaceScreen.tsx",
+      "src/app/components/palace/PalaceDetailScreen.tsx",
+      "src/app/components/palace/RoomTrainingScreen.tsx",
+      "src/app/components/PalacesPage.tsx",
+      "src/app/components/ProfilePage.tsx",
+      "src/app/components/progress/PalaceProgressCard.tsx",
+      "src/app/components/progress/PalacesOverview.tsx",
+      "src/app/components/progress/ProgressDebugPanel.tsx",
+      "src/app/components/progress/ProgressHeader.tsx",
+      "src/app/components/progress/TrainingCalendar.tsx",
+      "src/app/components/progress/TrainingStreak.tsx",
+      "src/app/components/quiz/PalaceQuizCompletionScreen.tsx",
+      "src/app/components/quiz/PalaceQuizScreen.tsx",
+      "src/app/components/SearchPopup.tsx",
+      "src/app/components/SettingsScreen.tsx",
+      "src/app/hooks/useNotifications.ts",
+      "src/app/hooks/useProgressState.ts",
+      "src/app/hooks/useSaveStatus.ts"
+    ],
+    "src/app/components/LiquidGlassBottomNav.tsx": [
+      "src/app/icons/index.ts"
+    ],
+    "src/app/components/LoginScreen.tsx": [
+      "src/app/components/auth/index.ts",
+      "src/app/components/ui/index.ts"
+    ],
+    "src/app/components/notifications/InlineXPNotification.tsx": [],
+    "src/app/components/notifications/ProgressNotification.tsx": [],
+    "src/app/components/notifications/SaveIndicator.tsx": [],
+    "src/app/components/OpeningAnimation.tsx": [
+      "src/app/components/ui/index.ts"
+    ],
+    "src/app/components/palace/CreateFloorScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/input.tsx",
+      "src/app/components/ui/StatusBar.tsx",
+      "src/app/components/ui/textarea.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/CreatePalaceScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/input.tsx",
+      "src/app/components/ui/textarea.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/CreateRoomScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/input.tsx",
+      "src/app/components/ui/StatusBar.tsx",
+      "src/app/components/ui/textarea.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/EditPalaceScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/input.tsx",
+      "src/app/components/ui/StatusBar.tsx",
+      "src/app/components/ui/textarea.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/PalaceDetailScreen.tsx": [
+      "src/app/components/ui/alert-dialog.tsx",
+      "src/app/components/ui/dropdown-menu.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/PalaceManagementScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/StatusBar.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/RoomManagementScreen.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/StatusBar.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/palace/RoomTrainingScreen.tsx": [
+      "src/app/components/ui/RiveAnimation.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/PalacesPage.tsx": [
+      "src/app/components/AmbientParticles.tsx",
+      "src/app/components/cards/FeaturedPalaceBanner.tsx",
+      "src/app/components/cards/PalaceCard.tsx",
+      "src/app/components/cards/PalaceCardSkeleton.tsx",
+      "src/app/components/DynamicBackground.tsx",
+      "src/app/components/ui/alert-dialog.tsx",
+      "src/app/components/ui/dropdown-menu.tsx",
+      "src/app/components/ui/EmptyState.tsx",
+      "src/app/components/ui/index.ts",
+      "src/app/components/ui/tabs.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/ProfilePage.tsx": [
+      "src/app/components/ui/ImageWithFallback.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/progress/PalaceProgressCard.tsx": [
+      "src/app/imports/index.ts"
+    ],
+    "src/app/components/progress/PalacesOverview.tsx": [
+      "src/app/components/cards/PalaceCard.tsx",
+      "src/app/components/ui/EmptyState.tsx",
+      "src/app/components/ui/Skeleton.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/progress/ProgressDebugPanel.tsx": [
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/progress/ProgressHeader.tsx": [
+      "src/app/components/ui/ImageWithFallback.tsx",
+      "src/app/components/ui/StatusBar.tsx"
+    ],
+    "src/app/components/progress/TrainingCalendar.tsx": [
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/progress/TrainingStreak.tsx": [],
+    "src/app/components/quiz/PalaceQuizCompletionScreen.tsx": [
+      "src/app/components/quiz/PalaceQuizScreen.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/quiz/PalaceQuizScreen.tsx": [
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/quiz/QuizStatusNotification.tsx": [],
+    "src/app/components/search/SearchResults.tsx": [],
+    "src/app/components/SearchPopup.tsx": [
+      "src/app/components/ui/command.tsx",
+      "src/app/hooks/useProgressState.ts"
+    ],
+    "src/app/components/settings/AboutScreen.tsx": [],
+    "src/app/components/settings/ChangePasswordScreen.tsx": [],
+    "src/app/components/settings/ClearDataScreen.tsx": [
+      "src/app/components/ui/alert-dialog.tsx",
+      "src/app/utils/progressUtils.ts"
+    ],
+    "src/app/components/settings/EditProfileScreen.tsx": [
+      "src/app/components/ui/ImageWithFallback.tsx"
+    ],
+    "src/app/components/settings/HelpCenterScreen.tsx": [
+      "src/app/components/ui/accordion.tsx"
+    ],
+    "src/app/components/settings/PhoneConnectScreen.tsx": [],
+    "src/app/components/settings/PrivacySettingsScreen.tsx": [
+      "src/app/components/ui/switch.tsx"
+    ],
+    "src/app/components/SettingsScreen.tsx": [
+      "src/app/components/settings/AboutScreen.tsx",
+      "src/app/components/settings/ChangePasswordScreen.tsx",
+      "src/app/components/settings/ClearDataScreen.tsx",
+      "src/app/components/settings/EditProfileScreen.tsx",
+      "src/app/components/settings/HelpCenterScreen.tsx",
+      "src/app/components/settings/PhoneConnectScreen.tsx",
+      "src/app/components/settings/PrivacySettingsScreen.tsx",
+      "src/app/components/ui/dialog.tsx",
+      "src/app/components/ui/ImageWithFallback.tsx",
+      "src/app/components/ui/select.tsx",
+      "src/app/components/ui/Skeleton.tsx",
+      "src/app/components/ui/switch.tsx",
+      "src/app/components/ui/tooltip.tsx",
+      "src/app/utils/progressUtils.ts"
+    ],
+    "src/app/components/SignupScreen.tsx": [
+      "src/app/components/auth/index.ts",
+      "src/app/components/ui/index.ts"
+    ],
+    "src/app/components/ui/accordion.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/alert-dialog.tsx": [
+      "src/app/components/ui/button.tsx",
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/AppIcon.tsx": [],
+    "src/app/components/ui/button.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/Checkbox.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/command.tsx": [
+      "src/app/components/ui/dialog.tsx",
+      "src/app/components/ui/input-group.tsx",
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/dialog.tsx": [
+      "src/app/components/ui/button.tsx",
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/Divider.tsx": [],
+    "src/app/components/ui/dropdown-menu.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/EmptyState.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/ImageWithFallback.tsx": [],
+    "src/app/components/ui/index.ts": [],
+    "src/app/components/ui/input-group.tsx": [
+      "src/app/components/ui/button.tsx",
+      "src/app/components/ui/input.tsx",
+      "src/app/components/ui/textarea.tsx",
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/input.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/RiveAnimation.tsx": [],
+    "src/app/components/ui/scroll-area.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/select.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/Skeleton.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/SmoothScrollProvider.tsx": [],
+    "src/app/components/ui/sonner.tsx": [],
+    "src/app/components/ui/StatusBar.tsx": [
+      "src/app/imports/index.ts"
+    ],
+    "src/app/components/ui/switch.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/tabs.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/textarea.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/tooltip.tsx": [
+      "src/app/components/ui/utils.ts"
+    ],
+    "src/app/components/ui/utils.ts": [],
+    "src/app/components/WelcomeSuccessScreen.tsx": [
+      "src/app/components/ui/index.ts"
+    ],
+    "src/app/hooks/useLocalStorage.ts": [],
+    "src/app/hooks/useNotifications.ts": [
+      "src/app/components/notifications/ProgressNotification.tsx"
+    ],
+    "src/app/hooks/useProgressState.ts": [
+      "src/app/hooks/useLocalStorage.ts",
+      "src/app/hooks/useSaveStatus.ts"
+    ],
+    "src/app/hooks/useSaveStatus.ts": [],
+    "src/app/icons/index.ts": [],
+    "src/app/icons/NavIcons.tsx": [],
+    "src/app/icons/StatusBarIcons.tsx": [],
+    "src/app/imports/index.ts": [],
+    "src/app/imports/ProgressIllustration.tsx": [],
+    "src/app/imports/StatusBarIPhone.tsx": [
+      "src/app/icons/index.ts"
+    ],
+    "src/app/utils/progressUtils.ts": [],
+    "src/app/utils/utils.ts": [],
+    "src/main.tsx": [
+      "src/app/App.tsx",
+      "src/app/components/ui/SmoothScrollProvider.tsx",
+      "src/app/components/ui/sonner.tsx",
+      "src/app/components/ui/tooltip.tsx",
+      "src/styles/index.css"
+    ],
+    "src/styles/fonts.css": [],
+    "src/styles/index.css": [],
+    "src/styles/tailwind.css": [],
+    "src/styles/theme.css": [],
+    "src/vite-env.d.ts": [],
+    "tsconfig.json": [],
+    "tsconfig.node.json": [],
+    "vite.config.ts": []
+  }
+}

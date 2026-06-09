@@ -1,0 +1,5170 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "de5c042f14ac62cfe0a99f8ea11d3dde321b232e",
+  "generatedAt": "2026-06-09T11:34:31.804Z",
+  "files": {
+    "CLAUDE.md": {
+      "filePath": "CLAUDE.md",
+      "contentHash": "c692de2cac3b70754d90613eacd6fdd3e60bbdd385e0900887c37ab709b8d774",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 69,
+      "hasStructuralAnalysis": true
+    },
+    "components.json": {
+      "filePath": "components.json",
+      "contentHash": "24c9cd2053a0996e137d2e1d049782b784d4704f6d8b29cea33418313fdf9c08",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "DESIGN.md": {
+      "filePath": "DESIGN.md",
+      "contentHash": "82983af584fa0e2a8cb52ed88c15e5b475d722d7343f02f5a6bdbd6fbe6262fe",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 239,
+      "hasStructuralAnalysis": true
+    },
+    "docs/ai_docs/GENERATE_AGENTS.md": {
+      "filePath": "docs/ai_docs/GENERATE_AGENTS.md",
+      "contentHash": "5235bf46690a93dd96de2b7d849b95818122d363385f1688ebd4db9ec4bbe3ef",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "docs/ai_docs/role.md": {
+      "filePath": "docs/ai_docs/role.md",
+      "contentHash": "71137ff8f10c2117f436e4a0866e73d101c2ff502a17d1ec64a682ad241ba0ae",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "docs/ai_docs/UPDATE_AGENTS.md": {
+      "filePath": "docs/ai_docs/UPDATE_AGENTS.md",
+      "contentHash": "aef1d0d5e1b9436d5f4b6e13c4e25206755b93d7d9b7c411d30d7f6f4ef2c1b8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "index.html": {
+      "filePath": "index.html",
+      "contentHash": "2ad732528a4b9634d0fab5c0c90be26e04708e2ac90383a2dbc4b242caef421d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": false
+    },
+    "package.json": {
+      "filePath": "package.json",
+      "contentHash": "07b1ddf4c4d48658649f9417dfd54ff6307990160c1f550de39420adc379d995",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 43,
+      "hasStructuralAnalysis": true
+    },
+    "PRODUCT.md": {
+      "filePath": "PRODUCT.md",
+      "contentHash": "035a97c6b0be9c351913cf242d92dd5f2572ea0a1adc2857a07fd3ca85753260",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "skills-lock.json": {
+      "filePath": "skills-lock.json",
+      "contentHash": "a20f07224c458d6c9d60db864878b04d58649e2d4399b604e599f21e60bb0283",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/App.tsx": {
+      "filePath": "src/app/App.tsx",
+      "contentHash": "0a5c1a1ef2cbcf7951dbd3fa623835fbc6e41b91945cace400c3722f37846488",
+      "functions": [
+        {
+          "name": "App",
+          "params": [],
+          "exported": true,
+          "lineCount": 61
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "./components/LoginScreen",
+          "specifiers": [
+            "LoginScreen"
+          ]
+        },
+        {
+          "source": "./components/SignupScreen",
+          "specifiers": [
+            "SignupScreen"
+          ]
+        },
+        {
+          "source": "./components/HomePage",
+          "specifiers": [
+            "HomePage"
+          ]
+        },
+        {
+          "source": "./components/OpeningAnimation",
+          "specifiers": [
+            "OpeningAnimation"
+          ]
+        },
+        {
+          "source": "./components/WelcomeSuccessScreen",
+          "specifiers": [
+            "WelcomeSuccessScreen"
+          ]
+        }
+      ],
+      "exports": [
+        "App"
+      ],
+      "totalLines": 70,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/BooksIcon3D.tsx": {
+      "filePath": "src/app/components/3d-icons/BooksIcon3D.tsx",
+      "contentHash": "da62b62993657200cba74b67a4d9a1efbe4fcee409522ef06e9c98f91ddcd09a",
+      "functions": [
+        {
+          "name": "BooksIcon3D",
+          "params": [],
+          "exported": true,
+          "lineCount": 93
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "BooksIcon3D"
+      ],
+      "totalLines": 95,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/EnglishIcon3D.tsx": {
+      "filePath": "src/app/components/3d-icons/EnglishIcon3D.tsx",
+      "contentHash": "fbe8b7f3e86cccacf397fa639b8e43308b22071ae179f859afaf1fd29905c780",
+      "functions": [
+        {
+          "name": "EnglishIcon3D",
+          "params": [],
+          "exported": true,
+          "lineCount": 112
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "EnglishIcon3D"
+      ],
+      "totalLines": 114,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/index.ts": {
+      "filePath": "src/app/components/3d-icons/index.ts",
+      "contentHash": "893d34c9d384b5462c3c9d442850c569eecdff3d55e85b9f1c52117f997fc137",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "BooksIcon3D",
+        "EnglishIcon3D",
+        "MathIcon3D",
+        "ScienceIcon3D",
+        "SocialStudiesIcon3D"
+      ],
+      "totalLines": 5,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/MathIcon3D.tsx": {
+      "filePath": "src/app/components/3d-icons/MathIcon3D.tsx",
+      "contentHash": "a01ac192a817ec2c83ef1ea0b9318f8d3ec86a9f38faa94997d25b68a8f5c2b8",
+      "functions": [
+        {
+          "name": "MathIcon3D",
+          "params": [],
+          "exported": true,
+          "lineCount": 84
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "MathIcon3D"
+      ],
+      "totalLines": 86,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/ScienceIcon3D.tsx": {
+      "filePath": "src/app/components/3d-icons/ScienceIcon3D.tsx",
+      "contentHash": "e490e8f53272ab9115a1f1d0003c427fecedfdb896c28db8f84af41c5e335ff5",
+      "functions": [
+        {
+          "name": "ScienceIcon3D",
+          "params": [],
+          "exported": true,
+          "lineCount": 123
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "ScienceIcon3D"
+      ],
+      "totalLines": 125,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/3d-icons/SocialStudiesIcon3D.tsx": {
+      "filePath": "src/app/components/3d-icons/SocialStudiesIcon3D.tsx",
+      "contentHash": "0a668d2851ab160a68933bc2d64e146f180b6bb2659684dd42ca73ea5f6d208b",
+      "functions": [
+        {
+          "name": "SocialStudiesIcon3D",
+          "params": [],
+          "exported": true,
+          "lineCount": 123
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "SocialStudiesIcon3D"
+      ],
+      "totalLines": 125,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/AmbientParticles.tsx": {
+      "filePath": "src/app/components/AmbientParticles.tsx",
+      "contentHash": "273992dac62ae95d625bc5ee615ec726fe8019110e337daaae9c2e1a6bb825cb",
+      "functions": [
+        {
+          "name": "AmbientParticles",
+          "params": [],
+          "exported": true,
+          "lineCount": 36
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "AmbientParticles"
+      ],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/auth/AuthBackground.tsx": {
+      "filePath": "src/app/components/auth/AuthBackground.tsx",
+      "contentHash": "7277777a2a2ea93f039c7a79e9543ae8237e26eee2f7c84e6a5f9c7c113d2198",
+      "functions": [
+        {
+          "name": "AuthBackground",
+          "params": [],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "AuthBackground"
+      ],
+      "totalLines": 33,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/auth/AuthInput.tsx": {
+      "filePath": "src/app/components/auth/AuthInput.tsx",
+      "contentHash": "8d6de6f2df8661763f847130fbb1eec9ed43b0df8a0b8c72bba75c3d74a6f30b",
+      "functions": [
+        {
+          "name": "ValidCheckmark",
+          "params": [],
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "AuthInput",
+          "params": [
+            "{\n                              id,\n                              label,\n                              type,\n                              placeholder,\n                              value,\n                              onChange,\n                              focusedField,\n                              setFocusedField,\n                              icon,\n                              rightElement,\n                              bottomElement,\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 64
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode"
+          ]
+        }
+      ],
+      "exports": [
+        "ValidCheckmark",
+        "AuthInput"
+      ],
+      "totalLines": 113,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/auth/index.ts": {
+      "filePath": "src/app/components/auth/index.ts",
+      "contentHash": "4a6efbb3a0aea30b5be86b4a3791365a52bec940055c076303e79515dd7f7844",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/auth/SocialLogin.tsx": {
+      "filePath": "src/app/components/auth/SocialLogin.tsx",
+      "contentHash": "ed177f295e139b7167182c394d26ac5c3f2f34f3bfb683beb9fe8e2100d2df15",
+      "functions": [
+        {
+          "name": "SocialLogin",
+          "params": [],
+          "exported": true,
+          "lineCount": 103
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        }
+      ],
+      "exports": [
+        "SocialLogin"
+      ],
+      "totalLines": 106,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/cards/FeaturedPalaceBanner.tsx": {
+      "filePath": "src/app/components/cards/FeaturedPalaceBanner.tsx",
+      "contentHash": "23ba65e0ddd13069690939ad469b62fe5b8b9becf0d75f32e1c8616593390282",
+      "functions": [
+        {
+          "name": "FeaturedPalaceBanner",
+          "params": [
+            "{\n                                         title,\n                                         subtitle,\n                                         count,\n                                         backgroundImage,\n                                         icon = \"🏛️\",\n                                         onExplore,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 51
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowRight"
+          ]
+        }
+      ],
+      "exports": [
+        "FeaturedPalaceBanner"
+      ],
+      "totalLines": 64,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/cards/PalaceCard.tsx": {
+      "filePath": "src/app/components/cards/PalaceCard.tsx",
+      "contentHash": "05bcaddd47d521109446a7fcbc57bb853b5219e8d9ce2d5b93856f131febccb8",
+      "functions": [
+        {
+          "name": "PalaceCard",
+          "params": [
+            "{\n                               id,\n                               name,\n                               description,\n                               icon,\n                               progress,\n                               totalRooms,\n                               roomsCompleted,\n                               estimatedTime,\n                               difficulty = \"Beginner\",\n                               rating,\n                               isLocked = false,\n                               isFavorite = false,\n                               variant = \"default\",\n                               onClick,\n                               onFavoriteToggle,\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 281
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Clock",
+            "Heart",
+            "Lock",
+            "Play",
+            "Star"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceCard"
+      ],
+      "totalLines": 304,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/cards/PalaceCardGrid.tsx": {
+      "filePath": "src/app/components/cards/PalaceCardGrid.tsx",
+      "contentHash": "43cd55793a7b6384ff62e1264ec2d744d72562f8ececa966793fa034e84d293c",
+      "functions": [
+        {
+          "name": "PalaceCardGrid",
+          "params": [
+            "{\n                                   palaces,\n                                   variant = \"default\",\n                                   columns = 2,\n                                   onPalaceClick,\n                                   onFavoriteToggle,\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 37
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "./PalaceCard",
+          "specifiers": [
+            "PalaceCard"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceCardGrid"
+      ],
+      "totalLines": 64,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/cards/PalaceCardSkeleton.tsx": {
+      "filePath": "src/app/components/cards/PalaceCardSkeleton.tsx",
+      "contentHash": "4e7c2c00d07b8c25f9404ee498d8cfe3a363052762bcbfeeb81e1d0b858ff770",
+      "functions": [
+        {
+          "name": "PalaceCardSkeleton",
+          "params": [],
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../ui/Skeleton",
+          "specifiers": [
+            "Skeleton"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceCardSkeleton"
+      ],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/DynamicBackground.tsx": {
+      "filePath": "src/app/components/DynamicBackground.tsx",
+      "contentHash": "88a8df0d8474a435db492a703bc74a85bdcd68dd255ee64c764971d6a9832999",
+      "functions": [
+        {
+          "name": "DynamicBackground",
+          "params": [],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "DynamicBackground"
+      ],
+      "totalLines": 34,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/HomePage.tsx": {
+      "filePath": "src/app/components/HomePage.tsx",
+      "contentHash": "1b3c84261e3b5cda576641929d1aebfeb00f6440133579845e0397f39c97d4e6",
+      "functions": [
+        {
+          "name": "HomePage",
+          "params": [],
+          "exported": true,
+          "lineCount": 320
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "./LiquidGlassBottomNav",
+          "specifiers": [
+            "LiquidGlassBottomNav"
+          ]
+        },
+        {
+          "source": "./SearchPopup",
+          "specifiers": [
+            "SearchPopup"
+          ]
+        },
+        {
+          "source": "./DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "./AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "./PalacesPage",
+          "specifiers": [
+            "PalacesPage"
+          ]
+        },
+        {
+          "source": "./ProfilePage",
+          "specifiers": [
+            "ProfilePage"
+          ]
+        },
+        {
+          "source": "./SettingsScreen",
+          "specifiers": [
+            "SettingsScreen"
+          ]
+        },
+        {
+          "source": "./progress/ProgressHeader",
+          "specifiers": [
+            "ProgressHeader"
+          ]
+        },
+        {
+          "source": "./progress/PalaceProgressCard",
+          "specifiers": [
+            "PalaceProgressCard"
+          ]
+        },
+        {
+          "source": "./progress/TrainingStreak",
+          "specifiers": [
+            "TrainingStreak"
+          ]
+        },
+        {
+          "source": "./progress/TrainingCalendar",
+          "specifiers": [
+            "TrainingCalendar"
+          ]
+        },
+        {
+          "source": "./progress/PalacesOverview",
+          "specifiers": [
+            "PalacesOverview"
+          ]
+        },
+        {
+          "source": "./progress/ProgressDebugPanel",
+          "specifiers": [
+            "ProgressDebugPanel"
+          ]
+        },
+        {
+          "source": "./palace/PalaceDetailScreen",
+          "specifiers": [
+            "PalaceDetailScreen"
+          ]
+        },
+        {
+          "source": "./palace/RoomTrainingScreen",
+          "specifiers": [
+            "RoomTrainingScreen"
+          ]
+        },
+        {
+          "source": "./palace/CreatePalaceScreen",
+          "specifiers": [
+            "CreatePalaceScreen"
+          ]
+        },
+        {
+          "source": "./palace/EditPalaceScreen",
+          "specifiers": [
+            "EditPalaceScreen"
+          ]
+        },
+        {
+          "source": "sonner",
+          "specifiers": [
+            "toast"
+          ]
+        },
+        {
+          "source": "./quiz/PalaceQuizScreen",
+          "specifiers": [
+            "PalaceQuizScreen",
+            "QuizResults"
+          ]
+        },
+        {
+          "source": "./quiz/PalaceQuizCompletionScreen",
+          "specifiers": [
+            "PalaceQuizCompletionScreen"
+          ]
+        },
+        {
+          "source": "./notifications/ProgressNotification",
+          "specifiers": [
+            "ProgressNotification"
+          ]
+        },
+        {
+          "source": "./notifications/SaveIndicator",
+          "specifiers": [
+            "SaveIndicator"
+          ]
+        },
+        {
+          "source": "../hooks/useProgressState",
+          "specifiers": [
+            "ProgressEvent",
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../hooks/useNotifications",
+          "specifiers": [
+            "useNotifications"
+          ]
+        },
+        {
+          "source": "../hooks/useSaveStatus",
+          "specifiers": [
+            "useSaveStatus"
+          ]
+        }
+      ],
+      "exports": [
+        "HomePage"
+      ],
+      "totalLines": 347,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/LiquidGlassBottomNav.tsx": {
+      "filePath": "src/app/components/LiquidGlassBottomNav.tsx",
+      "contentHash": "1cf228da8c083ae41c684ba69997f38bd99f83c1de1461a711bee8bf53f71d4d",
+      "functions": [
+        {
+          "name": "LiquidGlassBottomNav",
+          "params": [
+            "{\n                                         activeTab,\n                                         onTabChange,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 214
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion",
+            "useMotionValue",
+            "useSpring"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode",
+            "useEffect",
+            "useRef"
+          ]
+        },
+        {
+          "source": "../icons",
+          "specifiers": [
+            "HomeFilledIcon",
+            "HomeOutlineIcon",
+            "PalaceNavIcon",
+            "ProfileNavIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "LiquidGlassBottomNav"
+      ],
+      "totalLines": 229,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/LoginScreen.tsx": {
+      "filePath": "src/app/components/LoginScreen.tsx",
+      "contentHash": "be98aef6c1df6fc8d34442f633f494384abcd5f8b2a4123a259c36d812ee26b5",
+      "functions": [
+        {
+          "name": "LoginScreen",
+          "params": [
+            "{\n                                        onClose,\n                                        onSignup,\n                                        onSignIn,\n                                    }"
+          ],
+          "exported": true,
+          "lineCount": 439
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Eye",
+            "EyeOff",
+            "Lock",
+            "Mail",
+            "Sparkles"
+          ]
+        },
+        {
+          "source": "./ui",
+          "specifiers": [
+            "AppIcon",
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "./auth",
+          "specifiers": [
+            "AuthBackground",
+            "AuthInput",
+            "SocialLogin",
+            "ValidCheckmark"
+          ]
+        }
+      ],
+      "exports": [
+        "LoginScreen"
+      ],
+      "totalLines": 445,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/notifications/InlineXPNotification.tsx": {
+      "filePath": "src/app/components/notifications/InlineXPNotification.tsx",
+      "contentHash": "ebefb124b1e236e1965a6fa6f188de954b669a98aea37a853255007de83de2d5",
+      "functions": [
+        {
+          "name": "InlineXPNotification",
+          "params": [
+            "{\n                                         show,\n                                         xpGain,\n                                         onComplete,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 105
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Plus",
+            "Zap"
+          ]
+        }
+      ],
+      "exports": [
+        "InlineXPNotification"
+      ],
+      "totalLines": 114,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/notifications/ProgressNotification.tsx": {
+      "filePath": "src/app/components/notifications/ProgressNotification.tsx",
+      "contentHash": "59412af747e52dadda438e55ee578c4151acb1da2b5f32f03a897848894be11a",
+      "functions": [
+        {
+          "name": "ProgressNotification",
+          "params": [
+            "{\n                                         notification,\n                                         onClose,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 193
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Brain",
+            "CheckCircle",
+            "Flame",
+            "Star",
+            "Trophy",
+            "Zap"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressNotification"
+      ],
+      "totalLines": 214,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/notifications/SaveIndicator.tsx": {
+      "filePath": "src/app/components/notifications/SaveIndicator.tsx",
+      "contentHash": "615d2fcdcfacb1c0c283e9a44dc29c185d0bad1582397b64452d4778e8a7cd81",
+      "functions": [
+        {
+          "name": "SaveIndicator",
+          "params": [
+            "{\n                                  show,\n                                  status,\n                              }"
+          ],
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Check",
+            "Cloud",
+            "CloudOff",
+            "Loader"
+          ]
+        }
+      ],
+      "exports": [
+        "SaveIndicator"
+      ],
+      "totalLines": 76,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/OpeningAnimation.tsx": {
+      "filePath": "src/app/components/OpeningAnimation.tsx",
+      "contentHash": "af0500d9ad1a25a78a44d8f00119b7638e8cd1c57f846192ee1353aaff87c910",
+      "functions": [
+        {
+          "name": "OpeningAnimation",
+          "params": [
+            "{\n                                     onAnimationComplete,\n                                 }"
+          ],
+          "exported": true,
+          "lineCount": 326
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "./ui",
+          "specifiers": [
+            "AppIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "OpeningAnimation"
+      ],
+      "totalLines": 334,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/CreateFloorScreen.tsx": {
+      "filePath": "src/app/components/palace/CreateFloorScreen.tsx",
+      "contentHash": "292e4585831d8fa4c140b778dc29cb7c05f398ad79021f0221c97a0b882082e0",
+      "functions": [
+        {
+          "name": "CreateFloorScreen",
+          "params": [
+            "{\n                                      palaceId,\n                                      onBack,\n                                      onSuccess,\n                                  }"
+          ],
+          "exported": true,
+          "lineCount": 198
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-hook-form",
+          "specifiers": [
+            "useForm"
+          ]
+        },
+        {
+          "source": "@hookform/resolvers/zod",
+          "specifiers": [
+            "zodResolver"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "* as z"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Sparkles"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../ui/input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "../ui/textarea",
+          "specifiers": [
+            "Textarea"
+          ]
+        }
+      ],
+      "exports": [
+        "CreateFloorScreen"
+      ],
+      "totalLines": 225,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/CreatePalaceScreen.tsx": {
+      "filePath": "src/app/components/palace/CreatePalaceScreen.tsx",
+      "contentHash": "b4b425221d52b5b70c9335dd16dccb522ec5ae5a972cec52a67a7d578de7c65a",
+      "functions": [
+        {
+          "name": "CreatePalaceScreen",
+          "params": [
+            "{\n                                       open = true,\n                                       onOpenChange,\n                                       onBack,\n                                       onSuccess,\n                                   }"
+          ],
+          "exported": true,
+          "lineCount": 350
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "react-hook-form",
+          "specifiers": [
+            "useForm"
+          ]
+        },
+        {
+          "source": "@hookform/resolvers/zod",
+          "specifiers": [
+            "zodResolver"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "* as z"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Check",
+            "ChevronRight",
+            "Sparkles"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../ui/input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "../ui/textarea",
+          "specifiers": [
+            "Textarea"
+          ]
+        },
+        {
+          "source": "vaul",
+          "specifiers": [
+            "Drawer"
+          ]
+        }
+      ],
+      "exports": [
+        "CreatePalaceScreen"
+      ],
+      "totalLines": 413,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/CreateRoomScreen.tsx": {
+      "filePath": "src/app/components/palace/CreateRoomScreen.tsx",
+      "contentHash": "c095357bfc659d31b15bf7b498499c81b4747031fed40c4f4290ec31b0bc3100",
+      "functions": [
+        {
+          "name": "CreateRoomScreen",
+          "params": [
+            "{\n                                     palaceId,\n                                     floorId,\n                                     onBack,\n                                     onSuccess,\n                                 }"
+          ],
+          "exported": true,
+          "lineCount": 244
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-hook-form",
+          "specifiers": [
+            "useForm"
+          ]
+        },
+        {
+          "source": "@hookform/resolvers/zod",
+          "specifiers": [
+            "zodResolver"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "* as z"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Lock",
+            "Sparkles",
+            "Unlock"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../ui/input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "../ui/textarea",
+          "specifiers": [
+            "Textarea"
+          ]
+        }
+      ],
+      "exports": [
+        "CreateRoomScreen"
+      ],
+      "totalLines": 275,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/EditPalaceScreen.tsx": {
+      "filePath": "src/app/components/palace/EditPalaceScreen.tsx",
+      "contentHash": "c05a1420e320750f6678f195bab55865582a376a0acbdb3b1e14e4941595f792",
+      "functions": [
+        {
+          "name": "EditPalaceScreen",
+          "params": [
+            "{palaceId, onBack, onSuccess}"
+          ],
+          "exported": true,
+          "lineCount": 268
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Check",
+            "Save"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../ui/input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "../ui/textarea",
+          "specifiers": [
+            "Textarea"
+          ]
+        }
+      ],
+      "exports": [
+        "EditPalaceScreen"
+      ],
+      "totalLines": 317,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/PalaceDetailScreen.tsx": {
+      "filePath": "src/app/components/palace/PalaceDetailScreen.tsx",
+      "contentHash": "bab7ff5ba972d406c01b60385e5011a754778577e503ed41d35b64e112702d47",
+      "functions": [
+        {
+          "name": "getCurrentRoom",
+          "params": [
+            "floors"
+          ],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "SwipeableRoomCard",
+          "params": [
+            "{room, roomIndex, floor, onEditRoom, onDeleteRoom, onRoomClick}"
+          ],
+          "exported": false,
+          "lineCount": 145
+        },
+        {
+          "name": "PalaceDetailScreen",
+          "params": [
+            "{\n                                       palaceId,\n                                       onBack,\n                                       onRoomClick,\n                                       onQuizClick,\n                                   }"
+          ],
+          "exported": true,
+          "lineCount": 880
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "animate",
+            "AnimatePresence",
+            "motion",
+            "useMotionValue"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Brain",
+            "CheckCircle",
+            "ChevronRight",
+            "Clock",
+            "Edit2",
+            "Folder",
+            "Lock",
+            "MoreVertical",
+            "Play",
+            "Plus",
+            "Save",
+            "Star",
+            "Trash2",
+            "Unlock",
+            "Users",
+            "X",
+            "Zap"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "StateFloor",
+            "StateRoom",
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "@use-gesture/react",
+          "specifiers": [
+            "useDrag"
+          ]
+        },
+        {
+          "source": "../ui/alert-dialog",
+          "specifiers": [
+            "AlertDialog",
+            "AlertDialogAction",
+            "AlertDialogCancel",
+            "AlertDialogContent",
+            "AlertDialogDescription",
+            "AlertDialogFooter",
+            "AlertDialogHeader",
+            "AlertDialogTitle"
+          ]
+        },
+        {
+          "source": "../ui/dropdown-menu",
+          "specifiers": [
+            "DropdownMenu",
+            "DropdownMenuContent",
+            "DropdownMenuItem",
+            "DropdownMenuTrigger"
+          ]
+        },
+        {
+          "source": "vaul",
+          "specifiers": [
+            "Drawer"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceDetailScreen"
+      ],
+      "totalLines": 1131,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/PalaceManagementScreen.tsx": {
+      "filePath": "src/app/components/palace/PalaceManagementScreen.tsx",
+      "contentHash": "e9e8745b08108382ea1a9c35a3710da2d29073a9610d85e44d432bd8acbfbbf0",
+      "functions": [
+        {
+          "name": "PalaceManagementScreen",
+          "params": [
+            "{\n                                           onBack,\n                                           onCreatePalace,\n                                           onEditPalace,\n                                           onManageRooms,\n                                       }"
+          ],
+          "exported": true,
+          "lineCount": 324
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "CheckCircle",
+            "Edit2",
+            "Filter",
+            "Folder",
+            "MoreVertical",
+            "Plus",
+            "Search",
+            "Trash2"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "Palace",
+            "useProgressState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceManagementScreen"
+      ],
+      "totalLines": 340,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/RoomManagementScreen.tsx": {
+      "filePath": "src/app/components/palace/RoomManagementScreen.tsx",
+      "contentHash": "0cd7369336d23dc49e292488e14c1bc06ae9563b17a665690a9523d739fe5fa1",
+      "functions": [
+        {
+          "name": "RoomManagementScreen",
+          "params": [
+            "{\n                                         palaceId,\n                                         onBack,\n                                         onCreateFloor,\n                                         onCreateRoom,\n                                         onEditRoom,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 414
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "CheckCircle",
+            "Clock",
+            "Edit2",
+            "Folder",
+            "Lock",
+            "Plus",
+            "Trash2"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "../DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "../AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        }
+      ],
+      "exports": [
+        "RoomManagementScreen"
+      ],
+      "totalLines": 431,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/palace/RoomTrainingScreen.tsx": {
+      "filePath": "src/app/components/palace/RoomTrainingScreen.tsx",
+      "contentHash": "1f3fe2eeaff93a75b8a1a35466a1017aae6d211005e1b522a7422a63c6eff4f3",
+      "functions": [
+        {
+          "name": "RoomTrainingScreen",
+          "params": [
+            "{\n                                       onBack,\n                                       onComplete,\n                                       roomTitle = \"Ancient Greek Gods\",\n                                       palaceTitle = \"Greek Mythology Palace\",\n                                   }"
+          ],
+          "exported": true,
+          "lineCount": 364
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Bookmark",
+            "Brain",
+            "Check",
+            "ChevronLeft",
+            "ChevronRight",
+            "Sparkles",
+            "ThumbsDown",
+            "ThumbsUp"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../ui/RiveAnimation",
+          "specifiers": [
+            "RiveAnimation"
+          ]
+        }
+      ],
+      "exports": [
+        "RoomTrainingScreen"
+      ],
+      "totalLines": 400,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/PalacesPage.tsx": {
+      "filePath": "src/app/components/PalacesPage.tsx",
+      "contentHash": "6c01b35973f07c8258a1fac9356b515fc529b0de036b509bb6890e99fc6baf04",
+      "functions": [
+        {
+          "name": "PalacesPage",
+          "params": [
+            "{\n                                palaces,\n                                onSearch,\n                                onPalaceClick,\n                                onCreatePalace,\n                                onEditPalace,\n                                onDeletePalace,\n                                loading = false,\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 547
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ChevronRight",
+            "Edit2",
+            "Grid",
+            "List",
+            "MoreVertical",
+            "Plus",
+            "Search",
+            "SlidersHorizontal",
+            "Star",
+            "Trash2"
+          ]
+        },
+        {
+          "source": "./ui",
+          "specifiers": [
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "./DynamicBackground",
+          "specifiers": [
+            "DynamicBackground"
+          ]
+        },
+        {
+          "source": "./AmbientParticles",
+          "specifiers": [
+            "AmbientParticles"
+          ]
+        },
+        {
+          "source": "../hooks/useProgressState",
+          "specifiers": [
+            "Palace"
+          ]
+        },
+        {
+          "source": "./cards/PalaceCard",
+          "specifiers": [
+            "PalaceCard"
+          ]
+        },
+        {
+          "source": "./cards/PalaceCardSkeleton",
+          "specifiers": [
+            "PalaceCardSkeleton"
+          ]
+        },
+        {
+          "source": "./cards/FeaturedPalaceBanner",
+          "specifiers": [
+            "FeaturedPalaceBanner"
+          ]
+        },
+        {
+          "source": "./ui/EmptyState",
+          "specifiers": [
+            "EmptyState"
+          ]
+        },
+        {
+          "source": "./ui/alert-dialog",
+          "specifiers": [
+            "AlertDialog",
+            "AlertDialogAction",
+            "AlertDialogCancel",
+            "AlertDialogContent",
+            "AlertDialogDescription",
+            "AlertDialogFooter",
+            "AlertDialogHeader",
+            "AlertDialogTitle"
+          ]
+        },
+        {
+          "source": "./ui/dropdown-menu",
+          "specifiers": [
+            "DropdownMenu",
+            "DropdownMenuContent",
+            "DropdownMenuItem",
+            "DropdownMenuTrigger"
+          ]
+        },
+        {
+          "source": "./ui/tabs",
+          "specifiers": [
+            "Tabs",
+            "TabsList",
+            "TabsTrigger"
+          ]
+        }
+      ],
+      "exports": [
+        "PalacesPage"
+      ],
+      "totalLines": 593,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ProfilePage.tsx": {
+      "filePath": "src/app/components/ProfilePage.tsx",
+      "contentHash": "b65fdf46714d00b1a52280962cacda961f83d82fda5e72ee6ef34703ef5a54e5",
+      "functions": [
+        {
+          "name": "ProfilePage",
+          "params": [
+            "{onOpenSettings}"
+          ],
+          "exported": true,
+          "lineCount": 276
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion",
+            "useScroll",
+            "useTransform"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Award",
+            "Book",
+            "Calendar",
+            "Crown",
+            "Settings",
+            "Star",
+            "Target",
+            "TrendingUp",
+            "Trophy",
+            "Zap"
+          ]
+        },
+        {
+          "source": "./ui/ImageWithFallback",
+          "specifiers": [
+            "ImageWithFallback"
+          ]
+        },
+        {
+          "source": "../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useRef",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "ProfilePage"
+      ],
+      "totalLines": 331,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/PalaceProgressCard.tsx": {
+      "filePath": "src/app/components/progress/PalaceProgressCard.tsx",
+      "contentHash": "2a7b028c3f68d8d5de8c5943a9fd76d4fb435342eee611be86c4903824f119e8",
+      "functions": [
+        {
+          "name": "PalaceProgressCard",
+          "params": [
+            "{\n                                       onStartTraining,\n                                       currentProgress = 0,\n                                       totalRoomsCompleted = 0,\n                                       hasPalaces = true,\n                                       onCreatePalace,\n                                   }"
+          ],
+          "exported": true,
+          "lineCount": 173
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowRight",
+            "Plus"
+          ]
+        },
+        {
+          "source": "../../imports",
+          "specifiers": [
+            "ProgressIllustration"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceProgressCard"
+      ],
+      "totalLines": 187,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/PalacesOverview.tsx": {
+      "filePath": "src/app/components/progress/PalacesOverview.tsx",
+      "contentHash": "64005f1bd294e4f94c2f273ea342a56721d51629ff0793c3d5863a03bc68ac05",
+      "functions": [
+        {
+          "name": "PalacesOverview",
+          "params": [
+            "{\n                                    onPalaceClick,\n                                    variant = \"circular\",\n                                    loading = false,\n                                    onCreatePalace,\n                                }"
+          ],
+          "exported": true,
+          "lineCount": 335
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ChevronRight",
+            "Plus",
+            "Star"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "../cards/PalaceCard",
+          "specifiers": [
+            "PalaceCard"
+          ]
+        },
+        {
+          "source": "../ui/Skeleton",
+          "specifiers": [
+            "Skeleton"
+          ]
+        },
+        {
+          "source": "../ui/EmptyState",
+          "specifiers": [
+            "EmptyState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalacesOverview"
+      ],
+      "totalLines": 351,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/ProgressDebugPanel.tsx": {
+      "filePath": "src/app/components/progress/ProgressDebugPanel.tsx",
+      "contentHash": "9739b2c267c5929d84a28e04a3f813def49e7a6b914fae2392651bc1dd0a0555",
+      "functions": [
+        {
+          "name": "ProgressDebugPanel",
+          "params": [],
+          "exported": true,
+          "lineCount": 73
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Plus",
+            "Trash2"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressDebugPanel"
+      ],
+      "totalLines": 77,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/ProgressHeader.tsx": {
+      "filePath": "src/app/components/progress/ProgressHeader.tsx",
+      "contentHash": "8c88cc313d06e918834aa1331a3c4c39a97ed73abd39fc877d29c7be32509812",
+      "functions": [
+        {
+          "name": "ProgressHeader",
+          "params": [
+            "{\n                                   profileImage,\n                                   userName,\n                                   userXP,\n                                   recentXPGain,\n                                   showXPAnimation,\n                                   onXPAnimationComplete,\n                                   levelProgress,\n                                   onNotificationClick,\n                                   onProfileClick,\n                                   hasNotifications = true,\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 185
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "../ui/ImageWithFallback",
+          "specifiers": [
+            "ImageWithFallback"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "BellRing",
+            "Brain",
+            "Plus",
+            "Zap"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "../ui/StatusBar",
+          "specifiers": [
+            "StatusBar"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressHeader"
+      ],
+      "totalLines": 208,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/TrainingCalendar.tsx": {
+      "filePath": "src/app/components/progress/TrainingCalendar.tsx",
+      "contentHash": "95be0dd90db93ffd905e089dfc8e47ec1400f6f899fdefbaf01b7b16b949c24c",
+      "functions": [
+        {
+          "name": "TrainingCalendar",
+          "params": [],
+          "exported": true,
+          "lineCount": 193
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ChevronLeft",
+            "ChevronRight"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useMemo",
+            "useState"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        }
+      ],
+      "exports": [
+        "TrainingCalendar"
+      ],
+      "totalLines": 198,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/progress/TrainingStreak.tsx": {
+      "filePath": "src/app/components/progress/TrainingStreak.tsx",
+      "contentHash": "a95d06d9b6e28b54baa9c00639c7359a5f791d8c09c81eb8f4ea2bfa9d497db5",
+      "functions": [
+        {
+          "name": "TrainingStreak",
+          "params": [
+            "{\n                                   streakCount,\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 86
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Flame"
+          ]
+        }
+      ],
+      "exports": [
+        "TrainingStreak"
+      ],
+      "totalLines": 93,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/quiz/PalaceQuizCompletionScreen.tsx": {
+      "filePath": "src/app/components/quiz/PalaceQuizCompletionScreen.tsx",
+      "contentHash": "0bfb1a2222af349306f0385498696c607e85e681e343f7ba28222a2e45949154",
+      "functions": [
+        {
+          "name": "PalaceQuizCompletionScreen",
+          "params": [
+            "{\n                                               results,\n                                               onBack,\n                                               onRetake,\n                                               onNextPalace,\n                                           }"
+          ],
+          "exported": true,
+          "lineCount": 329
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowRight",
+            "CheckCircle2",
+            "Clock",
+            "Flame",
+            "Home",
+            "RotateCcw",
+            "Sparkles",
+            "Star",
+            "Target",
+            "TrendingUp",
+            "Trophy"
+          ]
+        },
+        {
+          "source": "./PalaceQuizScreen",
+          "specifiers": [
+            "QuizResults"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceQuizCompletionScreen"
+      ],
+      "totalLines": 354,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/quiz/PalaceQuizScreen.tsx": {
+      "filePath": "src/app/components/quiz/PalaceQuizScreen.tsx",
+      "contentHash": "752f709c9af501e3c01d771323a830ab11d01b6a06a0f28e83482ae94d37ca11",
+      "functions": [
+        {
+          "name": "PalaceQuizScreen",
+          "params": [
+            "{\n                                     palaceId,\n                                     onBack,\n                                     onComplete,\n                                 }"
+          ],
+          "exported": true,
+          "lineCount": 333
+        },
+        {
+          "name": "generateQuizQuestions",
+          "params": [
+            "palaceId"
+          ],
+          "returnType": "QuizQuestion[]",
+          "exported": false,
+          "lineCount": 83
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Brain",
+            "CheckCircle",
+            "Clock",
+            "XCircle"
+          ]
+        },
+        {
+          "source": "../../hooks/useProgressState",
+          "specifiers": [
+            "useProgressState"
+          ]
+        }
+      ],
+      "exports": [
+        "PalaceQuizScreen"
+      ],
+      "totalLines": 446,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/quiz/QuizStatusNotification.tsx": {
+      "filePath": "src/app/components/quiz/QuizStatusNotification.tsx",
+      "contentHash": "fbf22e74dd7fe9b98f34c96aa2833a1b567b450786730bd8cc5ce23239f45b72",
+      "functions": [
+        {
+          "name": "QuizStatusNotification",
+          "params": [
+            "{\n                                           show,\n                                           isCorrect,\n                                           xpGained,\n                                       }"
+          ],
+          "exported": true,
+          "lineCount": 59
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CheckCircle",
+            "XCircle",
+            "Zap"
+          ]
+        }
+      ],
+      "exports": [
+        "QuizStatusNotification"
+      ],
+      "totalLines": 68,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/search/SearchResults.tsx": {
+      "filePath": "src/app/components/search/SearchResults.tsx",
+      "contentHash": "06d35c4ecfb22f4f442c126ba53e749c2ca7f3e0f0c4958c346bd304b5cf6220",
+      "functions": [
+        {
+          "name": "SearchResultCard",
+          "params": [
+            "{\n                                     id,\n                                     name,\n                                     description,\n                                     icon,\n                                     difficulty,\n                                     totalRooms,\n                                     estimatedTime,\n                                     rating,\n                                     isFavorite = false,\n                                     isHighlighted = false,\n                                     onClick,\n                                     onFavoriteToggle,\n                                 }"
+          ],
+          "exported": true,
+          "lineCount": 127
+        },
+        {
+          "name": "SearchFilters",
+          "params": [
+            "{filters, onFilterToggle}"
+          ],
+          "exported": true,
+          "lineCount": 54
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Heart",
+            "X"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "SearchResultCard",
+        "SearchFilters"
+      ],
+      "totalLines": 213,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/SearchPopup.tsx": {
+      "filePath": "src/app/components/SearchPopup.tsx",
+      "contentHash": "fa3f4b0200671894178a972efbf1810680a97404c0e76063e5c8de5c8a46f220",
+      "functions": [
+        {
+          "name": "SearchPopup",
+          "params": [
+            "{\n                                isOpen,\n                                onClose,\n                                palaces,\n                                onSelectPalace,\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 82
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Clock",
+            "Star"
+          ]
+        },
+        {
+          "source": "../hooks/useProgressState",
+          "specifiers": [
+            "Palace"
+          ]
+        },
+        {
+          "source": "./ui/command",
+          "specifiers": [
+            "Command",
+            "CommandDialog",
+            "CommandEmpty",
+            "CommandGroup",
+            "CommandInput",
+            "CommandItem",
+            "CommandList"
+          ]
+        }
+      ],
+      "exports": [
+        "SearchPopup"
+      ],
+      "totalLines": 102,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/AboutScreen.tsx": {
+      "filePath": "src/app/components/settings/AboutScreen.tsx",
+      "contentHash": "384dcc6a446dc0cac553bf401af573947967fa30db8cdadc40df09c7ac67033b",
+      "functions": [
+        {
+          "name": "AboutScreen",
+          "params": [
+            "{onBack}"
+          ],
+          "exported": true,
+          "lineCount": 163
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Award",
+            "ExternalLink",
+            "Heart",
+            "Users"
+          ]
+        }
+      ],
+      "exports": [
+        "AboutScreen"
+      ],
+      "totalLines": 171,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/ChangePasswordScreen.tsx": {
+      "filePath": "src/app/components/settings/ChangePasswordScreen.tsx",
+      "contentHash": "7ecd50cf3e602cd2e70384ffffaca716263bd81707a0afaf99e1efb3cc0d8ecc",
+      "functions": [
+        {
+          "name": "ChangePasswordScreen",
+          "params": [
+            "{onBack, onPasswordChanged}"
+          ],
+          "exported": true,
+          "lineCount": 209
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Check",
+            "Eye",
+            "EyeOff",
+            "Lock",
+            "X"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "ChangePasswordScreen"
+      ],
+      "totalLines": 219,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/ClearDataScreen.tsx": {
+      "filePath": "src/app/components/settings/ClearDataScreen.tsx",
+      "contentHash": "6a65bcfb787b91a6f73e4f415e69f9ef665eb5b8fdc4a09a717d7c0bdaac3cec",
+      "functions": [
+        {
+          "name": "ClearDataScreen",
+          "params": [
+            "{onBack}"
+          ],
+          "exported": true,
+          "lineCount": 252
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "AlertTriangle",
+            "ArrowLeft",
+            "Trash2"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "../../utils/progressUtils",
+          "specifiers": [
+            "ProgressUtils"
+          ]
+        },
+        {
+          "source": "../ui/alert-dialog",
+          "specifiers": [
+            "AlertDialog",
+            "AlertDialogAction",
+            "AlertDialogCancel",
+            "AlertDialogContent",
+            "AlertDialogDescription",
+            "AlertDialogFooter",
+            "AlertDialogHeader",
+            "AlertDialogTitle"
+          ]
+        }
+      ],
+      "exports": [
+        "ClearDataScreen"
+      ],
+      "totalLines": 280,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/EditProfileScreen.tsx": {
+      "filePath": "src/app/components/settings/EditProfileScreen.tsx",
+      "contentHash": "2d954d246663e07a399600a1bf7416b40e2d198e4047f6edbee9847fad4ccf71",
+      "functions": [
+        {
+          "name": "EditProfileScreen",
+          "params": [
+            "{onBack, onSave}"
+          ],
+          "exported": true,
+          "lineCount": 150
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Camera",
+            "Save"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "../ui/ImageWithFallback",
+          "specifiers": [
+            "ImageWithFallback"
+          ]
+        }
+      ],
+      "exports": [
+        "EditProfileScreen"
+      ],
+      "totalLines": 168,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/HelpCenterScreen.tsx": {
+      "filePath": "src/app/components/settings/HelpCenterScreen.tsx",
+      "contentHash": "a3de4db0da82f03dc3f52ef48436d307daf793de1ce15c08c373f89f53deb64f",
+      "functions": [
+        {
+          "name": "HelpCenterScreen",
+          "params": [
+            "{onBack}"
+          ],
+          "exported": true,
+          "lineCount": 106
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "BookOpen",
+            "ExternalLink",
+            "Mail",
+            "MessageCircle"
+          ]
+        },
+        {
+          "source": "../ui/accordion",
+          "specifiers": [
+            "Accordion",
+            "AccordionContent",
+            "AccordionItem",
+            "AccordionTrigger"
+          ]
+        }
+      ],
+      "exports": [
+        "HelpCenterScreen"
+      ],
+      "totalLines": 226,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/PhoneConnectScreen.tsx": {
+      "filePath": "src/app/components/settings/PhoneConnectScreen.tsx",
+      "contentHash": "affd5131c2b45fa40ffcf8f61e1898cde5bf0c262d4e92f9ffeabb5e56e5801c",
+      "functions": [
+        {
+          "name": "PhoneConnectScreen",
+          "params": [
+            "{onBack, onPhoneConnected}"
+          ],
+          "exported": true,
+          "lineCount": 299
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "AlertCircle",
+            "ArrowLeft",
+            "Check",
+            "Smartphone"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "PhoneConnectScreen"
+      ],
+      "totalLines": 309,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/settings/PrivacySettingsScreen.tsx": {
+      "filePath": "src/app/components/settings/PrivacySettingsScreen.tsx",
+      "contentHash": "9959fc5592ed54a923bbe1df6387200b69f01c34896fe469d4eeb36e7c2ca01c",
+      "functions": [
+        {
+          "name": "PrivacySettingsScreen",
+          "params": [
+            "{onBack}"
+          ],
+          "exported": true,
+          "lineCount": 115
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Bell",
+            "Eye",
+            "Lock",
+            "MapPin",
+            "Shield",
+            "Users"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "../ui/switch",
+          "specifiers": [
+            "Switch"
+          ]
+        }
+      ],
+      "exports": [
+        "PrivacySettingsScreen"
+      ],
+      "totalLines": 133,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/SettingsScreen.tsx": {
+      "filePath": "src/app/components/SettingsScreen.tsx",
+      "contentHash": "83e75497f857cb1316c5e2abb5808fb1d60a86fa82eefc05953ff4d639157e42",
+      "functions": [
+        {
+          "name": "SettingsScreen",
+          "params": [
+            "{\n                                   open = true,\n                                   onOpenChange,\n                                   onBack,\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 617
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "AnimatePresence",
+            "motion",
+            "useScroll",
+            "useTransform"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Bell",
+            "ChevronRight",
+            "DownloadCloud",
+            "Globe",
+            "HelpCircle",
+            "Info",
+            "Lock",
+            "LogOut",
+            "Mail",
+            "Moon",
+            "RefreshCw",
+            "Shield",
+            "Smartphone",
+            "Trash2",
+            "UploadCloud",
+            "User"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ChangeEvent",
+            "useEffect",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "./ui/Skeleton",
+          "specifiers": [
+            "Skeleton"
+          ]
+        },
+        {
+          "source": "../utils/progressUtils",
+          "specifiers": [
+            "ProgressUtils"
+          ]
+        },
+        {
+          "source": "./settings/EditProfileScreen",
+          "specifiers": [
+            "EditProfileScreen"
+          ]
+        },
+        {
+          "source": "./settings/PrivacySettingsScreen",
+          "specifiers": [
+            "PrivacySettingsScreen"
+          ]
+        },
+        {
+          "source": "./settings/ChangePasswordScreen",
+          "specifiers": [
+            "ChangePasswordScreen"
+          ]
+        },
+        {
+          "source": "./settings/ClearDataScreen",
+          "specifiers": [
+            "ClearDataScreen"
+          ]
+        },
+        {
+          "source": "./settings/HelpCenterScreen",
+          "specifiers": [
+            "HelpCenterScreen"
+          ]
+        },
+        {
+          "source": "./settings/AboutScreen",
+          "specifiers": [
+            "AboutScreen"
+          ]
+        },
+        {
+          "source": "./settings/PhoneConnectScreen",
+          "specifiers": [
+            "PhoneConnectScreen"
+          ]
+        },
+        {
+          "source": "./ui/ImageWithFallback",
+          "specifiers": [
+            "ImageWithFallback"
+          ]
+        },
+        {
+          "source": "./ui/switch",
+          "specifiers": [
+            "Switch"
+          ]
+        },
+        {
+          "source": "sonner",
+          "specifiers": [
+            "toast"
+          ]
+        },
+        {
+          "source": "./ui/dialog",
+          "specifiers": [
+            "Dialog",
+            "DialogContent",
+            "DialogDescription",
+            "DialogFooter",
+            "DialogHeader",
+            "DialogTitle"
+          ]
+        },
+        {
+          "source": "./ui/select",
+          "specifiers": [
+            "Select",
+            "SelectContent",
+            "SelectItem",
+            "SelectTrigger",
+            "SelectValue"
+          ]
+        },
+        {
+          "source": "./ui/tooltip",
+          "specifiers": [
+            "Tooltip",
+            "TooltipContent",
+            "TooltipTrigger"
+          ]
+        }
+      ],
+      "exports": [
+        "SettingsScreen"
+      ],
+      "totalLines": 693,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/SignupScreen.tsx": {
+      "filePath": "src/app/components/SignupScreen.tsx",
+      "contentHash": "a41b829fa7745d491257f2ecd07caf2688fd16d94c580b1b511fdef38cb98b8a",
+      "functions": [
+        {
+          "name": "SignupScreen",
+          "params": [
+            "{\n                                         onClose,\n                                         onLogin,\n                                         onSignUp,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 474
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ArrowLeft",
+            "Eye",
+            "EyeOff",
+            "Lock",
+            "Mail",
+            "Sparkles",
+            "User"
+          ]
+        },
+        {
+          "source": "./ui",
+          "specifiers": [
+            "AppIcon",
+            "StatusBar"
+          ]
+        },
+        {
+          "source": "./auth",
+          "specifiers": [
+            "AuthBackground",
+            "AuthInput",
+            "SocialLogin",
+            "ValidCheckmark"
+          ]
+        }
+      ],
+      "exports": [
+        "SignupScreen"
+      ],
+      "totalLines": 480,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/accordion.tsx": {
+      "filePath": "src/app/components/ui/accordion.tsx",
+      "contentHash": "86dc62ae973fcd813bc5f3f71ac8d832c5e5402edc5574c40a67e27757738e48",
+      "functions": [
+        {
+          "name": "Accordion",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "AccordionItem",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "AccordionTrigger",
+          "params": [
+            "{\n                              className,\n                              children,\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "AccordionContent",
+          "params": [
+            "{\n                              className,\n                              children,\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@base-ui/react/accordion",
+          "specifiers": [
+            "AccordionPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ChevronDownIcon",
+            "ChevronUpIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "Accordion",
+        "AccordionItem",
+        "AccordionTrigger",
+        "AccordionContent"
+      ],
+      "totalLines": 75,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/alert-dialog.tsx": {
+      "filePath": "src/app/components/ui/alert-dialog.tsx",
+      "contentHash": "ea30aa914204bc404b642a21a61a4b107fa4a00e30174ef7ebaa3e6cfd90a561",
+      "functions": [
+        {
+          "name": "AlertDialog",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "AlertDialogTrigger",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "AlertDialogPortal",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "AlertDialogOverlay",
+          "params": [
+            "{\n                                className,\n                                ...props\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogContent",
+          "params": [
+            "{\n                                className,\n                                size = \"default\",\n                                ...props\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "AlertDialogHeader",
+          "params": [
+            "{\n                               className,\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogFooter",
+          "params": [
+            "{\n                               className,\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogMedia",
+          "params": [
+            "{\n                              className,\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogTitle",
+          "params": [
+            "{\n                              className,\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogDescription",
+          "params": [
+            "{\n                                    className,\n                                    ...props\n                                }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "AlertDialogAction",
+          "params": [
+            "{\n                               className,\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "AlertDialogCancel",
+          "params": [
+            "{\n                               className,\n                               variant = \"outline\",\n                               size = \"default\",\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/alert-dialog",
+          "specifiers": [
+            "AlertDialogPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/button",
+          "specifiers": [
+            "Button"
+          ]
+        }
+      ],
+      "exports": [
+        "AlertDialog",
+        "AlertDialogAction",
+        "AlertDialogCancel",
+        "AlertDialogContent",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogHeader",
+        "AlertDialogMedia",
+        "AlertDialogOverlay",
+        "AlertDialogPortal",
+        "AlertDialogTitle",
+        "AlertDialogTrigger"
+      ],
+      "totalLines": 188,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/AppIcon.tsx": {
+      "filePath": "src/app/components/ui/AppIcon.tsx",
+      "contentHash": "2d142aa292f77012f147e672113d102049f29fb5c25d16f0aec0ebc43970c8b7",
+      "functions": [
+        {
+          "name": "AppIcon",
+          "params": [
+            "{\n                            size = 60,\n                            className = \"\",\n                        }"
+          ],
+          "exported": true,
+          "lineCount": 191
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "AppIcon"
+      ],
+      "totalLines": 196,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/button.tsx": {
+      "filePath": "src/app/components/ui/button.tsx",
+      "contentHash": "ab14ae1c6059a2ed57228ffd703afc65f19d5cdf7749bc8f1bc074ccd17e01dd",
+      "functions": [
+        {
+          "name": "Button",
+          "params": [
+            "{\n                    className,\n                    variant = \"default\",\n                    size = \"default\",\n                    ...props\n                }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@base-ui/react/button",
+          "specifiers": [
+            "ButtonPrimitive"
+          ]
+        },
+        {
+          "source": "class-variance-authority",
+          "specifiers": [
+            "cva",
+            "VariantProps"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Button",
+        "buttonVariants"
+      ],
+      "totalLines": 59,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/Checkbox.tsx": {
+      "filePath": "src/app/components/ui/Checkbox.tsx",
+      "contentHash": "6dfcb8889a8fd58a062c80abc40c147cdb33529031da2eca50c2d690b7918d2d",
+      "functions": [
+        {
+          "name": "Checkbox",
+          "params": [
+            "{checked, onChange, label, className}"
+          ],
+          "exported": true,
+          "lineCount": 63
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Checkbox"
+      ],
+      "totalLines": 73,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/command.tsx": {
+      "filePath": "src/app/components/ui/command.tsx",
+      "contentHash": "ad3c59ed1b731c32c29e20ac91890020211ff54cbc286bef1106b43b0d59c54d",
+      "functions": [
+        {
+          "name": "Command",
+          "params": [
+            "{\n                     className,\n                     ...props\n                 }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "CommandDialog",
+          "params": [
+            "{\n                           title = \"Command Palette\",\n                           description = \"Search for a command to run...\",\n                           children,\n                           className,\n                           showCloseButton = false,\n                           ...props\n                       }"
+          ],
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "CommandInput",
+          "params": [
+            "{\n                          className,\n                          ...props\n                      }"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "CommandList",
+          "params": [
+            "{\n                         className,\n                         ...props\n                     }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "CommandEmpty",
+          "params": [
+            "{\n                          className,\n                          ...props\n                      }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "CommandGroup",
+          "params": [
+            "{\n                          className,\n                          ...props\n                      }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "CommandSeparator",
+          "params": [
+            "{\n                              className,\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "CommandItem",
+          "params": [
+            "{\n                         className,\n                         children,\n                         ...props\n                     }"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "CommandShortcut",
+          "params": [
+            "{\n                             className,\n                             ...props\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "cmdk",
+          "specifiers": [
+            "CommandPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/dialog",
+          "specifiers": [
+            "Dialog",
+            "DialogContent",
+            "DialogDescription",
+            "DialogHeader",
+            "DialogTitle"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/input-group",
+          "specifiers": [
+            "InputGroup",
+            "InputGroupAddon"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CheckIcon",
+            "SearchIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "Command",
+        "CommandDialog",
+        "CommandInput",
+        "CommandList",
+        "CommandEmpty",
+        "CommandGroup",
+        "CommandItem",
+        "CommandShortcut",
+        "CommandSeparator"
+      ],
+      "totalLines": 188,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/dialog.tsx": {
+      "filePath": "src/app/components/ui/dialog.tsx",
+      "contentHash": "dbed7e5a3f7757bfe8ce185b3c7aa2b7fb2ec79d4c9f850026019b101c7344ec",
+      "functions": [
+        {
+          "name": "Dialog",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DialogTrigger",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DialogPortal",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DialogClose",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DialogOverlay",
+          "params": [
+            "{\n                           className,\n                           ...props\n                       }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "DialogContent",
+          "params": [
+            "{\n                           className,\n                           children,\n                           showCloseButton = true,\n                           ...props\n                       }"
+          ],
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "DialogHeader",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "DialogFooter",
+          "params": [
+            "{\n                          className,\n                          showCloseButton = false,\n                          children,\n                          ...props\n                      }"
+          ],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "DialogTitle",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "DialogDescription",
+          "params": [
+            "{\n                               className,\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/dialog",
+          "specifiers": [
+            "DialogPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "XIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "Dialog",
+        "DialogClose",
+        "DialogContent",
+        "DialogDescription",
+        "DialogFooter",
+        "DialogHeader",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogTitle",
+        "DialogTrigger"
+      ],
+      "totalLines": 159,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/Divider.tsx": {
+      "filePath": "src/app/components/ui/Divider.tsx",
+      "contentHash": "328ee8c1deff8e952afc187554348732205d6b4acfdb040e27f3f0bcf47ac2cb",
+      "functions": [
+        {
+          "name": "Divider",
+          "params": [
+            "{\n                            text,\n                            className = \"\",\n                        }"
+          ],
+          "exported": true,
+          "lineCount": 28
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "Divider"
+      ],
+      "totalLines": 33,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/dropdown-menu.tsx": {
+      "filePath": "src/app/components/ui/dropdown-menu.tsx",
+      "contentHash": "6da3789e7887375345a13fe3280403beaf49d95fe3edaeee73216ed2d996edfa",
+      "functions": [
+        {
+          "name": "DropdownMenu",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DropdownMenuPortal",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DropdownMenuTrigger",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DropdownMenuContent",
+          "params": [
+            "{\n                                 align = \"start\",\n                                 alignOffset = 0,\n                                 side = \"bottom\",\n                                 sideOffset = 4,\n                                 className,\n                                 ...props\n                             }"
+          ],
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "DropdownMenuGroup",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DropdownMenuLabel",
+          "params": [
+            "{\n                               className,\n                               inset,\n                               ...props\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "DropdownMenuItem",
+          "params": [
+            "{\n                              className,\n                              inset,\n                              variant = \"default\",\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "DropdownMenuSub",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DropdownMenuSubTrigger",
+          "params": [
+            "{\n                                    className,\n                                    inset,\n                                    children,\n                                    ...props\n                                }"
+          ],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "DropdownMenuSubContent",
+          "params": [
+            "{\n                                    align = \"start\",\n                                    alignOffset = -3,\n                                    side = \"right\",\n                                    sideOffset = 0,\n                                    className,\n                                    ...props\n                                }"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "DropdownMenuCheckboxItem",
+          "params": [
+            "{\n                                      className,\n                                      children,\n                                      checked,\n                                      inset,\n                                      ...props\n                                  }"
+          ],
+          "exported": true,
+          "lineCount": 33
+        },
+        {
+          "name": "DropdownMenuRadioGroup",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "DropdownMenuRadioItem",
+          "params": [
+            "{\n                                   className,\n                                   children,\n                                   inset,\n                                   ...props\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "DropdownMenuSeparator",
+          "params": [
+            "{\n                                   className,\n                                   ...props\n                               }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "DropdownMenuShortcut",
+          "params": [
+            "{\n                                  className,\n                                  ...props\n                              }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/menu",
+          "specifiers": [
+            "MenuPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CheckIcon",
+            "ChevronRightIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "DropdownMenu",
+        "DropdownMenuPortal",
+        "DropdownMenuTrigger",
+        "DropdownMenuContent",
+        "DropdownMenuGroup",
+        "DropdownMenuLabel",
+        "DropdownMenuItem",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuRadioGroup",
+        "DropdownMenuRadioItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuShortcut",
+        "DropdownMenuSub",
+        "DropdownMenuSubTrigger",
+        "DropdownMenuSubContent"
+      ],
+      "totalLines": 267,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/EmptyState.tsx": {
+      "filePath": "src/app/components/ui/EmptyState.tsx",
+      "contentHash": "a91dca27992cb00e45860440256818fbbceb8520e9aa8b50171fb48818bb96ae",
+      "functions": [
+        {
+          "name": "EmptyState",
+          "params": [
+            "{\n                               icon,\n                               emoji,\n                               title,\n                               description,\n                               action,\n                               className,\n                           }"
+          ],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "EmptyState"
+      ],
+      "totalLines": 53,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/ImageWithFallback.tsx": {
+      "filePath": "src/app/components/ui/ImageWithFallback.tsx",
+      "contentHash": "76036e9193df40010658a07751f66b5f7e7aa0b4af44816df1b22643ba501468",
+      "functions": [
+        {
+          "name": "ImageWithFallback",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "ImgHTMLAttributes",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "ImageWithFallback"
+      ],
+      "totalLines": 38,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/index.ts": {
+      "filePath": "src/app/components/ui/index.ts",
+      "contentHash": "451b1750c9065b05736a578a9cf0ea2d5edcb644527c8bd47108b11bebf221f5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "AppIcon",
+        "Checkbox",
+        "Divider",
+        "StatusBar",
+        "cn"
+      ],
+      "totalLines": 5,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/input-group.tsx": {
+      "filePath": "src/app/components/ui/input-group.tsx",
+      "contentHash": "101fc76ebe73fa7cd3ae0b6bc798726614f1130aee7c1bd7b7341d086698ff53",
+      "functions": [
+        {
+          "name": "InputGroup",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "InputGroupAddon",
+          "params": [
+            "{\n                             className,\n                             align = \"inline-start\",\n                             ...props\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "InputGroupButton",
+          "params": [
+            "{\n                              className,\n                              type = \"button\",\n                              variant = \"ghost\",\n                              size = \"xs\",\n                              ...props\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "InputGroupText",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "InputGroupInput",
+          "params": [
+            "{\n                             className,\n                             ...props\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "InputGroupTextarea",
+          "params": [
+            "{\n                                className,\n                                ...props\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "class-variance-authority",
+          "specifiers": [
+            "cva",
+            "VariantProps"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/textarea",
+          "specifiers": [
+            "Textarea"
+          ]
+        }
+      ],
+      "exports": [
+        "InputGroup",
+        "InputGroupAddon",
+        "InputGroupButton",
+        "InputGroupText",
+        "InputGroupInput",
+        "InputGroupTextarea"
+      ],
+      "totalLines": 159,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/input.tsx": {
+      "filePath": "src/app/components/ui/input.tsx",
+      "contentHash": "08603750b878c755f6d537d4681709d6a5ec797b4d112c1af42f6e8f021ba1e6",
+      "functions": [
+        {
+          "name": "Input",
+          "params": [
+            "{className, type, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/input",
+          "specifiers": [
+            "InputPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Input"
+      ],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/RiveAnimation.tsx": {
+      "filePath": "src/app/components/ui/RiveAnimation.tsx",
+      "contentHash": "137273e83ee0dd75efdee001aaf046eebbbdc4ccd5780e1ff52f9610b8ac5d9e",
+      "functions": [
+        {
+          "name": "RiveAnimation",
+          "params": [
+            "{\n                                  src,\n                                  stateMachineName,\n                                  triggerInput,\n                                  booleanInput,\n                                  booleanValue,\n                                  className = \"w-full h-full\"\n                              }"
+          ],
+          "exported": true,
+          "lineCount": 40
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@rive-app/react-canvas",
+          "specifiers": [
+            "Alignment",
+            "Fit",
+            "Layout",
+            "useRive",
+            "useStateMachineInput"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect"
+          ]
+        }
+      ],
+      "exports": [
+        "RiveAnimation"
+      ],
+      "totalLines": 53,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/scroll-area.tsx": {
+      "filePath": "src/app/components/ui/scroll-area.tsx",
+      "contentHash": "b4e454de84d83d751e53189b233980e87859ea411c9c43de6e22c9cd2d3c4d69",
+      "functions": [
+        {
+          "name": "ScrollArea",
+          "params": [
+            "{\n                        className,\n                        children,\n                        ...props\n                    }"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "ScrollBar",
+          "params": [
+            "{\n                       className,\n                       orientation = \"vertical\",\n                       ...props\n                   }"
+          ],
+          "exported": true,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/scroll-area",
+          "specifiers": [
+            "ScrollAreaPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "ScrollArea",
+        "ScrollBar"
+      ],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/select.tsx": {
+      "filePath": "src/app/components/ui/select.tsx",
+      "contentHash": "17246343a67f20a6196af0ba3c34190db0cc12b2985a9c6dd58140c60a8d2b19",
+      "functions": [
+        {
+          "name": "SelectGroup",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "SelectValue",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "SelectTrigger",
+          "params": [
+            "{\n                           className,\n                           size = \"default\",\n                           children,\n                           ...props\n                       }"
+          ],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "SelectContent",
+          "params": [
+            "{\n                           className,\n                           children,\n                           side = \"bottom\",\n                           sideOffset = 4,\n                           align = \"center\",\n                           alignOffset = 0,\n                           alignItemWithTrigger = true,\n                           ...props\n                       }"
+          ],
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "SelectLabel",
+          "params": [
+            "{\n                         className,\n                         ...props\n                     }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "SelectItem",
+          "params": [
+            "{\n                        className,\n                        children,\n                        ...props\n                    }"
+          ],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "SelectSeparator",
+          "params": [
+            "{\n                             className,\n                             ...props\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "SelectScrollUpButton",
+          "params": [
+            "{\n                                  className,\n                                  ...props\n                              }"
+          ],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "SelectScrollDownButton",
+          "params": [
+            "{\n                                    className,\n                                    ...props\n                                }"
+          ],
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "@base-ui/react/select",
+          "specifiers": [
+            "SelectPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CheckIcon",
+            "ChevronDownIcon",
+            "ChevronUpIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "Select",
+        "SelectContent",
+        "SelectGroup",
+        "SelectItem",
+        "SelectLabel",
+        "SelectScrollDownButton",
+        "SelectScrollUpButton",
+        "SelectSeparator",
+        "SelectTrigger",
+        "SelectValue"
+      ],
+      "totalLines": 202,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/Skeleton.tsx": {
+      "filePath": "src/app/components/ui/Skeleton.tsx",
+      "contentHash": "82b359a78fdd9e2d9a8cec576bab276aba92b8c3f968583e9772995983876226",
+      "functions": [
+        {
+          "name": "Skeleton",
+          "params": [
+            "{className}"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Skeleton"
+      ],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/SmoothScrollProvider.tsx": {
+      "filePath": "src/app/components/ui/SmoothScrollProvider.tsx",
+      "contentHash": "05101b054242e078f50e521d9fdce8b8dc5dbaf2c7759ed09758d05bbe587e89",
+      "functions": [
+        {
+          "name": "SmoothScrollProvider",
+          "params": [
+            "{children}"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "lenis/react",
+          "specifiers": [
+            "ReactLenis"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode"
+          ]
+        }
+      ],
+      "exports": [
+        "SmoothScrollProvider"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/sonner.tsx": {
+      "filePath": "src/app/components/ui/sonner.tsx",
+      "contentHash": "582e5f4a26851e0976ddb316a785ad9831f4fe94ce42ed476a7a772626d3fa65",
+      "functions": [
+        {
+          "name": "Toaster",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 40
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sonner",
+          "specifiers": [
+            "Sonner",
+            "ToasterProps"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CircleCheckIcon",
+            "InfoIcon",
+            "Loader2Icon",
+            "OctagonXIcon",
+            "TriangleAlertIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "Toaster"
+      ],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/StatusBar.tsx": {
+      "filePath": "src/app/components/ui/StatusBar.tsx",
+      "contentHash": "088ab5bc6b83ce54ad56632306cbdc844a206d0cca6018f840565f853320dbd1",
+      "functions": [
+        {
+          "name": "StatusBar",
+          "params": [
+            "{\n                              theme = \"light\",\n                              textColor,\n                          }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../../imports",
+          "specifiers": [
+            "StatusBarIPhone"
+          ]
+        }
+      ],
+      "exports": [
+        "StatusBar"
+      ],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/switch.tsx": {
+      "filePath": "src/app/components/ui/switch.tsx",
+      "contentHash": "16aeb23008875deebc8ac98f6f6516f1b2f45024b0eee6e501a86b7936f82e81",
+      "functions": [
+        {
+          "name": "Switch",
+          "params": [
+            "{\n                    className,\n                    size = \"default\",\n                    ...props\n                }"
+          ],
+          "exported": true,
+          "lineCount": 24
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@base-ui/react/switch",
+          "specifiers": [
+            "SwitchPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Switch"
+      ],
+      "totalLines": 33,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/tabs.tsx": {
+      "filePath": "src/app/components/ui/tabs.tsx",
+      "contentHash": "ec3f875a40470c049728436662542a2b4eff0bbe53e7afed9be3ac889a7ecbb0",
+      "functions": [
+        {
+          "name": "Tabs",
+          "params": [
+            "{\n                  className,\n                  orientation = \"horizontal\",\n                  ...props\n              }"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "TabsList",
+          "params": [
+            "{\n                      className,\n                      variant = \"default\",\n                      ...props\n                  }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "TabsTrigger",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "TabsContent",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@base-ui/react/tabs",
+          "specifiers": [
+            "TabsPrimitive"
+          ]
+        },
+        {
+          "source": "class-variance-authority",
+          "specifiers": [
+            "cva",
+            "VariantProps"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Tabs",
+        "TabsList",
+        "TabsTrigger",
+        "TabsContent",
+        "tabsListVariants"
+      ],
+      "totalLines": 81,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/textarea.tsx": {
+      "filePath": "src/app/components/ui/textarea.tsx",
+      "contentHash": "faa072462a36204857096d30194c2250eca319f55d69d6cf5214a2d6fc89ec5a",
+      "functions": [
+        {
+          "name": "Textarea",
+          "params": [
+            "{className, ...props}"
+          ],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "* as React"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Textarea"
+      ],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/tooltip.tsx": {
+      "filePath": "src/app/components/ui/tooltip.tsx",
+      "contentHash": "018fdd7a18f2ba5d85a7f7ab5186f3cadb2f48fbb3a4b00c9efb7c025d96d780",
+      "functions": [
+        {
+          "name": "TooltipProvider",
+          "params": [
+            "{\n                             delay = 0,\n                             ...props\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "Tooltip",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "TooltipTrigger",
+          "params": [
+            "{...props}"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "TooltipContent",
+          "params": [
+            "{\n                            className,\n                            side = \"top\",\n                            sideOffset = 4,\n                            align = \"center\",\n                            alignOffset = 0,\n                            children,\n                            ...props\n                        }"
+          ],
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@base-ui/react/tooltip",
+          "specifiers": [
+            "TooltipPrimitive"
+          ]
+        },
+        {
+          "source": "./utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Tooltip",
+        "TooltipTrigger",
+        "TooltipContent",
+        "TooltipProvider"
+      ],
+      "totalLines": 66,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/ui/utils.ts": {
+      "filePath": "src/app/components/ui/utils.ts",
+      "contentHash": "0d1429ea289fb4d1cee4345e1d8fd4a8eb63bf381d268484ebb6ab5e4793dcd9",
+      "functions": [
+        {
+          "name": "cn",
+          "params": [
+            "...inputs"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "clsx",
+          "specifiers": [
+            "ClassValue",
+            "clsx"
+          ]
+        },
+        {
+          "source": "tailwind-merge",
+          "specifiers": [
+            "twMerge"
+          ]
+        }
+      ],
+      "exports": [
+        "cn"
+      ],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/components/WelcomeSuccessScreen.tsx": {
+      "filePath": "src/app/components/WelcomeSuccessScreen.tsx",
+      "contentHash": "dbbfd430525eccf8ce431a05b4b248cd2edd170bb04262d88d54d380c7f26b63",
+      "functions": [
+        {
+          "name": "WelcomeSuccessScreen",
+          "params": [
+            "{\n                                         onComplete,\n                                     }"
+          ],
+          "exported": true,
+          "lineCount": 438
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "motion"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Crown",
+            "Sparkles",
+            "Star",
+            "Trophy"
+          ]
+        },
+        {
+          "source": "./ui",
+          "specifiers": [
+            "AppIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "WelcomeSuccessScreen"
+      ],
+      "totalLines": 447,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/hooks/useLocalStorage.ts": {
+      "filePath": "src/app/hooks/useLocalStorage.ts",
+      "contentHash": "b5de5cc6c118dc3e42f004846f1696ab07e0ab4323c830c90f2b68abb6a97b7d",
+      "functions": [
+        {
+          "name": "useLocalStorage",
+          "params": [
+            "key",
+            "initialValue"
+          ],
+          "returnType": "[T, (value: T | ((val: T) => T)) => void]",
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "useLocalStorage"
+      ],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/hooks/useNotifications.ts": {
+      "filePath": "src/app/hooks/useNotifications.ts",
+      "contentHash": "2f30a1f9ed2f795c810488d8dd45a2fc3bd8712f54f25b9858f9c5a2b9da859f",
+      "functions": [
+        {
+          "name": "useNotifications",
+          "params": [],
+          "exported": true,
+          "lineCount": 83
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useCallback",
+            "useEffect",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "../components/notifications/ProgressNotification",
+          "specifiers": [
+            "ProgressNotificationData"
+          ]
+        }
+      ],
+      "exports": [
+        "useNotifications"
+      ],
+      "totalLines": 95,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/hooks/useProgressState.ts": {
+      "filePath": "src/app/hooks/useProgressState.ts",
+      "contentHash": "acc2fe488e01af15308883cc031e3152615ade8ec34222a9cd5cc6cca0771c33",
+      "functions": [
+        {
+          "name": "useProgressState",
+          "params": [
+            "onEvent"
+          ],
+          "exported": true,
+          "lineCount": 358
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./useLocalStorage",
+          "specifiers": [
+            "useLocalStorage"
+          ]
+        },
+        {
+          "source": "./useSaveStatus",
+          "specifiers": [
+            "calculateLevel"
+          ]
+        }
+      ],
+      "exports": [
+        "useProgressState"
+      ],
+      "totalLines": 520,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/hooks/useSaveStatus.ts": {
+      "filePath": "src/app/hooks/useSaveStatus.ts",
+      "contentHash": "639279b8390c9f0089bb27454d75b546f828c08a237f2b7401756ec5c9077aa0",
+      "functions": [
+        {
+          "name": "useSaveStatus",
+          "params": [],
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "calculateLevel",
+          "params": [
+            "xp"
+          ],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useRef",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "useSaveStatus",
+        "calculateLevel"
+      ],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/icons/index.ts": {
+      "filePath": "src/app/icons/index.ts",
+      "contentHash": "8d8949085b6bc15d287390ca6346648e4a1073db9681caa6fe17ce69a77159bc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/icons/NavIcons.tsx": {
+      "filePath": "src/app/icons/NavIcons.tsx",
+      "contentHash": "7e0cae4252e810f8592bbdce5a8d70d9dbdcf9931695efa6190c578f8f5621d1",
+      "functions": [
+        {
+          "name": "HomeFilledIcon",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "HomeOutlineIcon",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "AiNavIcon",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "ProfileNavIcon",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "PalaceNavIcon",
+          "params": [
+            "props"
+          ],
+          "exported": true,
+          "lineCount": 28
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "SVGProps"
+          ]
+        }
+      ],
+      "exports": [
+        "HomeFilledIcon",
+        "HomeOutlineIcon",
+        "AiNavIcon",
+        "ProfileNavIcon",
+        "PalaceNavIcon"
+      ],
+      "totalLines": 161,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/icons/StatusBarIcons.tsx": {
+      "filePath": "src/app/icons/StatusBarIcons.tsx",
+      "contentHash": "998827400870c67f914f87efb9176b06c9b390a3e759194852ceac1a2735195f",
+      "functions": [
+        {
+          "name": "BatteryIcon",
+          "params": [
+            "{\n                                color = \"black\",\n                            }"
+          ],
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "CellularIcon",
+          "params": [
+            "{\n                                 color = \"black\",\n                             }"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "WifiIcon",
+          "params": [
+            "{\n                             color = \"black\",\n                         }"
+          ],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "BatteryIcon",
+        "CellularIcon",
+        "WifiIcon"
+      ],
+      "totalLines": 79,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/imports/index.ts": {
+      "filePath": "src/app/imports/index.ts",
+      "contentHash": "0342b336f564f71a173459d62fac3b1d06ed55f3196633ea32d68b1c6087f3bb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "ProgressIllustration",
+        "StatusBarIPhone"
+      ],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/imports/ProgressIllustration.tsx": {
+      "filePath": "src/app/imports/ProgressIllustration.tsx",
+      "contentHash": "8a71b00a41a5b76be69547e9c1fed0022c01a25aae0694886ecaf7fd2763215f",
+      "functions": [
+        {
+          "name": "ProgressIllustration",
+          "params": [],
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "ProgressIllustration"
+      ],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/imports/StatusBarIPhone.tsx": {
+      "filePath": "src/app/imports/StatusBarIPhone.tsx",
+      "contentHash": "5473632166544b28245a727f0fa272dde9169550a9c7463d13b7ccd1ab0c3b5f",
+      "functions": [
+        {
+          "name": "Time",
+          "params": [
+            "{\n                  textColor,\n              }"
+          ],
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "Levels",
+          "params": [
+            "{color}"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "StatusBarIPhone",
+          "params": [
+            "{\n                                            textColor,\n                                        }"
+          ],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../icons",
+          "specifiers": [
+            "BatteryIcon",
+            "CellularIcon",
+            "WifiIcon"
+          ]
+        }
+      ],
+      "exports": [
+        "StatusBarIPhone"
+      ],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/utils/progressUtils.ts": {
+      "filePath": "src/app/utils/progressUtils.ts",
+      "contentHash": "64c728fa08c2aa10fc5ccf4248da9ea32b4b3858a00f15abc9e5918f54b26bbe",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "ProgressUtils"
+      ],
+      "totalLines": 100,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/utils/utils.ts": {
+      "filePath": "src/app/utils/utils.ts",
+      "contentHash": "1f411ba7ec9d176b5de54ca9177fcae54d68a5714be3f1091984bd0bb0fd457d",
+      "functions": [
+        {
+          "name": "cn",
+          "params": [
+            "...inputs"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "clsx",
+          "specifiers": [
+            "ClassValue",
+            "clsx"
+          ]
+        },
+        {
+          "source": "tailwind-merge",
+          "specifiers": [
+            "twMerge"
+          ]
+        }
+      ],
+      "exports": [
+        "cn"
+      ],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    "src/main.tsx": {
+      "filePath": "src/main.tsx",
+      "contentHash": "3dd4d7f560dd999c5507368fadd3dcb1f42afc3714c59ffa95446d2e53d512fc",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-dom/client",
+          "specifiers": [
+            "createRoot"
+          ]
+        },
+        {
+          "source": "motion/react",
+          "specifiers": [
+            "MotionConfig"
+          ]
+        },
+        {
+          "source": "./app/App.tsx",
+          "specifiers": [
+            "App"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/tooltip",
+          "specifiers": [
+            "TooltipProvider"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/sonner",
+          "specifiers": [
+            "Toaster"
+          ]
+        },
+        {
+          "source": "@/app/components/ui/SmoothScrollProvider",
+          "specifiers": [
+            "SmoothScrollProvider"
+          ]
+        },
+        {
+          "source": "./styles/index.css",
+          "specifiers": []
+        }
+      ],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "src/styles/fonts.css": {
+      "filePath": "src/styles/fonts.css",
+      "contentHash": "13c234187aa775d4659bb2bc52f6237a73af43661baaf77c7a81b0f25890d38d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": false
+    },
+    "src/styles/index.css": {
+      "filePath": "src/styles/index.css",
+      "contentHash": "b2070004115e076ee1aeaa4f823b6ae67b80486d2d2b23b674c19a33b8a35b1f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": false
+    },
+    "src/styles/tailwind.css": {
+      "filePath": "src/styles/tailwind.css",
+      "contentHash": "9fa6e2fc2c2c5248027e67a1067b9f35c97c4031c023f94d086821f66f0eb754",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 134,
+      "hasStructuralAnalysis": false
+    },
+    "src/styles/theme.css": {
+      "filePath": "src/styles/theme.css",
+      "contentHash": "484a39b66d3535d88279dabb54f5abf1659854ca13561f0b7a944b3dc299cb96",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 352,
+      "hasStructuralAnalysis": false
+    },
+    "src/vite-env.d.ts": {
+      "filePath": "src/vite-env.d.ts",
+      "contentHash": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "tsconfig.json": {
+      "filePath": "tsconfig.json",
+      "contentHash": "00665cd64cabd747ea69793edab3887e9342a8dd4d9fd79d291b4a870742f6dc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 38,
+      "hasStructuralAnalysis": true
+    },
+    "tsconfig.node.json": {
+      "filePath": "tsconfig.node.json",
+      "contentHash": "1758421bce9b8d575ca3d36bc5128d8f7c6e6487f31af7ea6585510f6d5853bb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": true
+    },
+    "vite.config.ts": {
+      "filePath": "vite.config.ts",
+      "contentHash": "b65a425d3f82755604251872f5be65510e057d8e8c9955c217f0c14f2a993781",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vite",
+          "specifiers": [
+            "defineConfig"
+          ]
+        },
+        {
+          "source": "path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "@tailwindcss/vite",
+          "specifiers": [
+            "tailwindcss"
+          ]
+        },
+        {
+          "source": "@vitejs/plugin-react",
+          "specifiers": [
+            "react"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 14,
+      "hasStructuralAnalysis": true
+    }
+  }
+}
