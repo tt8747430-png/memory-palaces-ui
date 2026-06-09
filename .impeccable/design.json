@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-09T00:00:00.000Z",
+  "title": "Design System: Mindscape",
+  "extensions": {
+    "colorMeta": {
+      "navy": {
+        "role": "primary",
+        "displayName": "Atrium Navy",
+        "canonical": "#091A7A",
+        "tonalRamp": ["#040B33", "#061049", "#08155F", "#091A7A", "#2336A0", "#5167C4", "#8E9DDD", "#C9D2F0"]
+      },
+      "light-blue": {
+        "role": "secondary",
+        "displayName": "Sky Blue",
+        "canonical": "#ADC8FF",
+        "tonalRamp": ["#1B3A7A", "#2C53A8", "#3E6FD1", "#6593EC", "#8FB0F6", "#ADC8FF", "#CCDCFF", "#E8F0FF"]
+      },
+      "action-blue": {
+        "role": "secondary",
+        "displayName": "Action Blue",
+        "canonical": "#4F8EFF",
+        "tonalRamp": ["#11296B", "#1B3D96", "#2A57C4", "#3B72E8", "#4F8EFF", "#7CABFF", "#A8C8FF", "#D6E5FF"]
+      },
+      "bright-blue": {
+        "role": "secondary",
+        "displayName": "Bright Blue",
+        "canonical": "#3D8FEF",
+        "tonalRamp": ["#0C2A55", "#123C7C", "#1B54AB", "#2A6FD6", "#3D8FEF", "#6FACF4", "#A0C9F8", "#D2E6FC"]
+      },
+      "gold": {
+        "role": "tertiary",
+        "displayName": "Reward Gold",
+        "canonical": "#FFC71E",
+        "tonalRamp": ["#4A3800", "#6E5400", "#937100", "#C29700", "#EAB800", "#FFC71E", "#FFD965", "#FFEDB0"]
+      },
+      "coral": {
+        "role": "tertiary",
+        "displayName": "Heart Coral",
+        "canonical": "#FF4C4C",
+        "tonalRamp": ["#5E0E0E", "#871717", "#B22020", "#DD2E2E", "#FF4C4C", "#FF7C7C", "#FFADAD", "#FFDADA"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#2C2C2C",
+        "tonalRamp": ["#0D0D0D", "#1A1A1A", "#2C2C2C", "#4A4A4A", "#6B6B6B", "#8C8C8C", "#AEAEAE", "#D6D6D6"]
+      },
+      "chip-blue": {
+        "role": "neutral",
+        "displayName": "Chip Blue",
+        "canonical": "#EAF4FF",
+        "tonalRamp": ["#1B3A7A", "#3E6FD1", "#6593EC", "#8FB0F6", "#ADC8FF", "#CCDCFF", "#EAF4FF", "#F5FAFF"]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#C7CCD6", "#D6DAE2", "#E3E7EE", "#EFF2F7", "#F6F8FB", "#FAFBFD", "#FDFDFE", "#FFFFFF"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Screen titles and featured card names. The type ceiling; no oversized display." },
+      "title": { "displayName": "Title", "purpose": "Section headers within a screen." },
+      "subheading": { "displayName": "Subheading", "purpose": "Card titles and emphasized labels." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and reading copy. Cap at 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Form labels, chip text, secondary meta." },
+      "tiny": { "displayName": "Tiny", "purpose": "Nav labels and smallest meta. Never load-bearing reading." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0px 6px 16px rgba(19,44,74,0.06)", "purpose": "Default lift for white cards on the blue gradient. Barely-there, calm." },
+      { "name": "card-featured", "value": "0px 10px 28px rgba(19,44,74,0.08)", "purpose": "Slightly more lift for hero/featured cards." },
+      { "name": "interactive", "value": "0 8px 25px rgba(9,26,122,0.20)", "purpose": "Pressed/active or floating interactive surfaces." },
+      { "name": "elevated", "value": "0 20px 40px rgba(9,26,122,0.25)", "purpose": "Modals, sheets, and the glass nav's ambient field." }
+    ],
+    "motion": [
+      { "name": "tap-press-button", "value": "scale 0.95", "purpose": "whileTap feedback on buttons (mobile-first touch press)." },
+      { "name": "tap-press-card", "value": "scale 0.98", "purpose": "whileTap feedback on cards and large tap surfaces." },
+      { "name": "tap-press-nav", "value": "scale 0.92", "purpose": "whileTap feedback on bottom-nav items." },
+      { "name": "nav-indicator-spring", "value": "spring(stiffness 500, damping 40, mass 0.6)", "purpose": "Sliding white pill on the liquid-glass bottom nav." },
+      { "name": "ease-touch", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default 0.2s easing for state transitions and .animate-touch." },
+      { "name": "progress-fill", "value": "ease-out, 0.8s width", "purpose": "Progress-bar fill animation inside cards." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "<=430px", "purpose": "Primary target; iPhone-first single-column app." },
+      { "name": "tablet", "value": "768px", "purpose": "Wider layouts; cards may go multi-column." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action per screen. Deep navy, white label, tactile press.",
+      "html": "<button class=\"ds-btn-primary\">Start training</button>",
+      "css": ".ds-btn-primary { background: #091A7A; color: #FFFFFF; font-family: Lexend, sans-serif; font-weight: 500; font-size: 14px; line-height: 1.4; padding: 12px 20px; min-height: 44px; border: none; border-radius: 12px; transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), background 0.18s; } .ds-btn-primary:hover { background: #0B1F92; } .ds-btn-primary:active { transform: scale(0.95); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(9,26,122,0.5); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting action. Sky blue fill, navy label.",
+      "html": "<button class=\"ds-btn-secondary\">Maybe later</button>",
+      "css": ".ds-btn-secondary { background: #ADC8FF; color: #091A7A; font-family: Lexend, sans-serif; font-weight: 500; font-size: 14px; line-height: 1.4; padding: 12px 20px; min-height: 44px; border: none; border-radius: 12px; transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), background 0.18s; } .ds-btn-secondary:hover { background: #9CBBFA; } .ds-btn-secondary:active { transform: scale(0.95); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(9,26,122,0.4); }"
+    },
+    {
+      "name": "Info Chip",
+      "kind": "chip",
+      "refersTo": "chip-info",
+      "description": "Pale-blue meta chip for time, room counts, and stats.",
+      "html": "<span class=\"ds-chip-info\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/></svg>12 min</span>",
+      "css": ".ds-chip-info { display: inline-flex; align-items: center; gap: 6px; background: #EAF4FF; color: #3D8FEF; font-family: Lexend, sans-serif; font-weight: 500; font-size: 12px; line-height: 1; padding: 6px 10px; border-radius: 12px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Comfortable, touch-friendly field with a soft navy focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Name your palace\" />",
+      "css": ".ds-input { width: 100%; box-sizing: border-box; background: #FFFFFF; color: #2C2C2C; font-family: Lexend, sans-serif; font-size: 14px; line-height: 1.4; padding: 12px 14px; min-height: 44px; border: 1px solid #E2E8F4; border-radius: 12px; transition: border-color 0.18s, box-shadow 0.18s; } .ds-input::placeholder { color: #6B7280; } .ds-input:focus-visible { outline: none; border-color: #091A7A; box-shadow: 0 0 0 3px rgba(9,26,122,0.18); }"
+    },
+    {
+      "name": "Palace Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard content card: white surface, sky-gradient media zone, soft navy shadow, progress bar.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-media\"><span>🏛️</span></div><div class=\"ds-card-body\"><h3 class=\"ds-card-title\">Roman Forum</h3><p class=\"ds-card-sub\"><b>Beginner</b> (8 rooms)</p><div class=\"ds-card-meta\"><span class=\"ds-chip-info\">12 min</span></div><div class=\"ds-card-progress\"><div class=\"ds-card-progress-row\"><span>Progress</span><span class=\"ds-card-pct\">60%</span></div><div class=\"ds-card-track\"><div class=\"ds-card-fill\"></div></div></div></div></div>",
+      "css": ".ds-card { background: #FFFFFF; border-radius: 16px; box-shadow: 0px 6px 16px rgba(19,44,74,0.06); overflow: hidden; font-family: Lexend, sans-serif; } .ds-card-media { height: 130px; background: linear-gradient(135deg, #ADC8FF 0%, #E8F2FF 100%); display: flex; align-items: center; justify-content: center; font-size: 56px; } .ds-card-body { padding: 16px; } .ds-card-title { margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #2C2C2C; } .ds-card-sub { margin: 0 0 12px; font-size: 14px; color: #2C2C2C; } .ds-card-sub b { font-weight: 500; } .ds-card-meta { margin-bottom: 12px; } .ds-chip-info { display: inline-flex; align-items: center; gap: 6px; background: #EAF4FF; color: #3D8FEF; font-size: 12px; font-weight: 500; padding: 6px 10px; border-radius: 12px; } .ds-card-progress { padding-top: 12px; border-top: 1px solid #F2F2F2; } .ds-card-progress-row { display: flex; justify-content: space-between; font-size: 12px; color: #8C8C8C; margin-bottom: 6px; } .ds-card-pct { font-weight: 600; color: #091A7A; } .ds-card-track { height: 6px; background: #F2F2F2; border-radius: 9999px; overflow: hidden; } .ds-card-fill { height: 100%; width: 60%; border-radius: 9999px; background: linear-gradient(90deg, #091A7A 0%, #4F8EFF 100%); }"
+    },
+    {
+      "name": "Liquid Glass Bottom Nav",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Signature floating glass tab bar; active tab marked by a white pill plus a navy dot (never color alone).",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item is-active\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z\"/></svg><span>Home</span></button><button class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5\"/></svg><span>Palaces</span></button><button class=\"ds-nav-item\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 4-6 8-6s8 2 8 6\"/></svg><span>Profile</span></button></nav>",
+      "css": ".ds-nav { position: relative; display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; width: 320px; height: 72px; padding: 0 16px; border-radius: 40px; background: linear-gradient(135deg, rgba(9,26,122,0.60), rgba(26,43,138,0.50), rgba(9,26,122,0.60)); backdrop-filter: blur(24px); box-shadow: 0 20px 40px rgba(9,26,122,0.25); } .ds-nav-item { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 72px; min-height: 56px; border: none; background: transparent; color: rgba(255,255,255,0.7); font-family: Lexend, sans-serif; font-size: 10px; font-weight: 500; transition: transform 0.18s; } .ds-nav-item span { transition: color 0.25s, opacity 0.25s; } .ds-nav-item:active { transform: scale(0.92); } .ds-nav-item.is-active { color: #091A7A; background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88)); border-radius: 24px; font-weight: 600; } .ds-nav-item.is-active::after { content: \"\"; position: absolute; bottom: -4px; width: 4px; height: 4px; border-radius: 9999px; background: #091A7A; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lucid Atrium",
+    "overview": "Mindscape feels like a calm, daylit architectural interior: an airy room where blue sky meets glass, with clear depth and nothing crowding the view. The method of loci is about moving through remembered space, so the interface itself reads as space. White surfaces float on a soft blue-to-white gradient, glass elements catch light, and a single deep navy anchors every important action. It is unhurried and premium first, motivating second, credible underneath. Density is deliberately low: phone-first, one ritual per screen, color doing the work of hierarchy. Reward and delight are real but rationed, reserved for genuine milestones so they keep their meaning.",
+    "keyCharacteristics": [
+      "Daylit, spatial, glass-and-sky atmosphere over a blue->white gradient ground.",
+      "One deep navy carries identity; everything else is light blue, glass, and breathing room.",
+      "One ritual per screen; calm comes from subtraction.",
+      "Soft, navy-tinted ambient depth, never hard or heavy.",
+      "Phone-first touch craft: 44px+ targets, whileTap press feedback, 60fps transform motion."
+    ],
+    "rules": [
+      { "name": "The One Navy Rule", "body": "Atrium Navy is the only saturated dark in the system and appears on a minority of any screen: the primary action, the active state, the numbers that matter. Its rarity against all the light blue is the point. Never tint large surfaces navy in light mode; navy is ink and action, not background.", "section": "colors" },
+      { "name": "The Daylight Rule", "body": "Backgrounds run light blue at the top to white below, like a lit room. The ground is never flat gray and never a warm cream/sand neutral. Atmosphere is carried by blue light, not by tinting neutrals warm.", "section": "colors" },
+      { "name": "The One Family Rule", "body": "Lexend does every job. Weight and size create hierarchy; a second typeface does not. If a screen needs more emphasis, go heavier or larger in Lexend, never reach for another font.", "section": "typography" },
+      { "name": "The Navy-Tint Rule", "body": "Every shadow is tinted navy (rgba around 9,26,122 / 19,44,74), never neutral black. If a card looks stamped-out rather than lit, the shadow lost its tint or its blur got too small.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do anchor every screen with one Atrium Navy (#091A7A) primary action and keep navy a minority of the surface.",
+      "Do ground screens in the blue->white daylight gradient; carry warmth and energy through accent and motion, never through a tinted neutral background.",
+      "Do tint every shadow navy and keep it low and wide.",
+      "Do use one family, Lexend, across all roles; build hierarchy with weight and size.",
+      "Do ration delight: animate genuine milestones, not every tap.",
+      "Do keep cards in the 12-24px radius band, white surface, soft navy shadow, 16px padding.",
+      "Do give every interactive element a real touch state (whileTap press, 44x44px min target) and a visible focus ring.",
+      "Do convey status with icon/shape plus color, never color alone."
+    ],
+    "donts": [
+      "Don't build a corporate SaaS dashboard: no dense data tables, gray enterprise chrome, or spreadsheet-density progress.",
+      "Don't ship a cluttered/busy UI: no competing CTAs, no information overload, no cramped layouts. One ritual per screen.",
+      "Don't let anything read cheap or templated: no stock filler gradients, no default-component look.",
+      "Don't fall into childish gamification: no cartoon mascots, no constant confetti, no loud reward spam.",
+      "Don't use a black (untinted) drop shadow on the blue ground; it reads as a dated app.",
+      "Don't tint large light-mode surfaces navy; navy is ink and action, not background.",
+      "Don't use Muted (#8C8C8C) or Faint (#AEAEAE) for small body text or placeholders on white; bump toward Ink to clear 4.5:1.",
+      "Don't introduce a second typeface. The leftover Geist Variable in tailwind.css conflicts with the live Lexend body font; resolve to one family.",
+      "Don't over-round: cards top out near 24px. Reserve 40/50px radii for the glass nav and pills."
+    ]
+  }
+}
