@@ -18,7 +18,8 @@ import {
   UploadCloud,
   User,
 } from "lucide-react";
-import {type ChangeEvent, useRef, useState} from "react";
+import {type ChangeEvent, useEffect, useRef, useState} from "react";
+import {Skeleton} from "./ui/Skeleton";
 import {ProgressUtils} from "../utils/progressUtils";
 import {EditProfileScreen} from "./settings/EditProfileScreen";
 import {PrivacySettingsScreen} from "./settings/PrivacySettingsScreen";
@@ -70,12 +71,25 @@ type NavigationScreen =
     | "help"
     | "about";
 
+// Session-scoped so the first-open skeleton plays once, not on every reopen.
+let settingsHydrated = false;
+
 export function SettingsScreen({
                                    open = true,
                                    onOpenChange,
                                    onBack,
                                }: SettingsScreenProps) {
     const [currentScreen, setCurrentScreen] = useState<NavigationScreen>("main");
+    const [loading, setLoading] = useState(!settingsHydrated);
+
+    useEffect(() => {
+        if (settingsHydrated) return;
+        const timer = setTimeout(() => {
+            settingsHydrated = true;
+            setLoading(false);
+        }, 550);
+        return () => clearTimeout(timer);
+    }, []);
     const [darkMode, setDarkMode] = useState(false);
     const [notifications, setNotifications] = useState(true);
     const [language, setLanguage] = useState("en");
@@ -421,7 +435,25 @@ export function SettingsScreen({
 
             {/* Content Area */}
             <div className="px-6 relative z-10 space-y-6">
-                {sections.map((section, sectionIndex) => (
+                {loading &&
+                    Array.from({length: 4}).map((_, s) => (
+                        <div key={`settings-skeleton-${s}`}>
+                            <Skeleton className="mb-2 ml-1 h-3 w-24 bg-black/5"/>
+                            <div
+                                className="rounded-[24px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+                                {Array.from({length: 3}).map((_, r) => (
+                                    <div
+                                        key={r}
+                                        className="flex items-center gap-3.5 px-4 py-3.5"
+                                    >
+                                        <Skeleton className="h-9 w-9 rounded-[12px] bg-black/5"/>
+                                        <Skeleton className="h-4 w-40 max-w-[60%] bg-black/5"/>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                {!loading && sections.map((section, sectionIndex) => (
                     <motion.div
                         key={sectionIndex}
                         initial={{opacity: 0, y: 15}}
@@ -526,6 +558,7 @@ export function SettingsScreen({
                 ))}
 
                 {/* App Info */}
+                {!loading && (
                 <motion.div
                     initial={{opacity: 0}}
                     animate={{opacity: 1}}
@@ -543,6 +576,7 @@ export function SettingsScreen({
                         Version 1.0.0
                     </p>
                 </motion.div>
+                )}
             </div>
 
             <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

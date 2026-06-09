@@ -84,7 +84,7 @@ export function TrainingCalendar() {
         }
 
         return days;
-    }, [currentDate, trainingDatesSet, today]);
+    }, [currentDate, trainingDatesSet]);
 
     const navigateMonth = (direction: "prev" | "next") => {
         setCurrentDate((prev) => {
@@ -133,7 +133,7 @@ export function TrainingCalendar() {
                 {daysInWeek.map((day, i) => (
                     <div
                         key={`header-${i}`}
-                        className="text-center text-tiny text-[#6B7280] font-semibold py-2"
+                        className="text-center text-[10px] text-[#475569] font-semibold py-2"
                     >
                         {day}
                     </div>
@@ -186,11 +186,11 @@ export function TrainingCalendar() {
             <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-white/20">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#091A7A] to-[#1A2FB8]"/>
-                    <span className="text-xs text-[#6B7280]">Today</span>
+                    <span className="text-xs text-[#475569]">Today</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full border-2 border-[#10B981]"/>
-                    <span className="text-xs text-[#6B7280]">Training Day</span>
+                    <span className="text-xs text-[#475569]">Training Day</span>
                 </div>
             </div>
         </motion.div>

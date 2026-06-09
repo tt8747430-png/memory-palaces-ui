@@ -17,7 +17,9 @@ import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {Palace} from "../hooks/useProgressState";
 import {PalaceCard} from "./cards/PalaceCard";
+import {PalaceCardSkeleton} from "./cards/PalaceCardSkeleton";
 import {FeaturedPalaceBanner} from "./cards/FeaturedPalaceBanner";
+import {EmptyState} from "./ui/EmptyState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +40,8 @@ interface PalacesPageProps {
     onCreatePalace: () => void;
     onEditPalace: (palaceId: string) => void;
     onDeletePalace: (palaceId: string) => void;
+    /** Render skeletons instead of content while palaces resolve. */
+    loading?: boolean;
 }
 
 export function PalacesPage({
@@ -47,6 +51,7 @@ export function PalacesPage({
                                 onCreatePalace,
                                 onEditPalace,
                                 onDeletePalace,
+                                loading = false,
                             }: PalacesPageProps) {
     const [viewMode, setViewMode] = useState<"grid" | "list">(
         "grid",
@@ -271,7 +276,13 @@ export function PalacesPage({
 
                             {/* Palace Cards Grid */}
                             <div className="grid grid-cols-2 gap-4">
-                                {sortedPalaces.map((palace, index) => (
+                                {loading &&
+                                    Array.from({length: 4}).map((_, i) => (
+                                        <PalaceCardSkeleton
+                                            key={`palace-skeleton-${i}`}
+                                        />
+                                    ))}
+                                {!loading && sortedPalaces.map((palace, index) => (
                                     <motion.div
                                         key={palace.id}
                                         initial={{opacity: 0, scale: 0.9, y: 20}}
@@ -374,29 +385,40 @@ export function PalacesPage({
                             </div>
 
                             {/* Empty State */}
-                            {sortedPalaces.length === 0 && (
-                                <motion.div
-                                    initial={{opacity: 0, scale: 0.9}}
-                                    animate={{opacity: 1, scale: 1}}
-                                    className="flex flex-col items-center justify-center py-20 px-6"
-                                >
-                                    <div className="text-6xl mb-4">🏛️</div>
-                                    <h3 className="text-xl font-bold text-[#000000] mb-2">
-                                        No palaces found
-                                    </h3>
-                                    <p className="text-[15px] text-[#86868B] text-center mb-6">
-                                        No palaces match the selected filters
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setSelectedCategory("All");
-                                            setSortBy("Recent");
-                                        }}
-                                        className="px-6 py-3 bg-[#007AFF] text-white rounded-full font-semibold shadow-lg"
-                                    >
-                                        Clear Filters
-                                    </button>
-                                </motion.div>
+                            {!loading && sortedPalaces.length === 0 && (
+                                palaces.length === 0 ? (
+                                    <EmptyState
+                                        emoji="🏛️"
+                                        title="Build your first palace"
+                                        description="A memory palace is a familiar place you fill with what you want to remember. Create one to start training."
+                                        action={
+                                            <button
+                                                onClick={onCreatePalace}
+                                                className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                                            >
+                                                <Plus className="h-4 w-4"/>
+                                                Create palace
+                                            </button>
+                                        }
+                                    />
+                                ) : (
+                                    <EmptyState
+                                        emoji="🔍"
+                                        title="No palaces match"
+                                        description="Nothing fits the selected filters. Try another category or clear your filters."
+                                        action={
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedCategory("All");
+                                                    setSortBy("Recent");
+                                                }}
+                                                className="rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                                            >
+                                                Clear filters
+                                            </button>
+                                        }
+                                    />
+                                )
                             )}
                         </motion.div>
                     )}
@@ -550,29 +572,38 @@ export function PalacesPage({
                                         </div>
                                     </motion.div>
                                 ))
+                            ) : palaces.length === 0 ? (
+                                <EmptyState
+                                    emoji="🏛️"
+                                    title="Build your first palace"
+                                    description="A memory palace is a familiar place you fill with what you want to remember. Create one to start training."
+                                    action={
+                                        <button
+                                            onClick={onCreatePalace}
+                                            className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                                        >
+                                            <Plus className="h-4 w-4"/>
+                                            Create palace
+                                        </button>
+                                    }
+                                />
                             ) : (
-                                <motion.div
-                                    initial={{opacity: 0, scale: 0.9}}
-                                    animate={{opacity: 1, scale: 1}}
-                                    className="flex flex-col items-center justify-center py-20 px-6"
-                                >
-                                    <div className="text-6xl mb-4">🏛️</div>
-                                    <h3 className="text-xl font-bold text-[#000000] mb-2">
-                                        No palaces found
-                                    </h3>
-                                    <p className="text-[15px] text-[#86868B] text-center mb-6">
-                                        No palaces match the selected filters
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setSelectedCategory("All");
-                                            setSortBy("Recent");
-                                        }}
-                                        className="px-6 py-3 bg-[#007AFF] text-white rounded-full font-semibold shadow-lg"
-                                    >
-                                        Clear Filters
-                                    </button>
-                                </motion.div>
+                                <EmptyState
+                                    emoji="🔍"
+                                    title="No palaces match"
+                                    description="Nothing fits the selected filters. Try another category or clear your filters."
+                                    action={
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCategory("All");
+                                                setSortBy("Recent");
+                                            }}
+                                            className="rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                                        >
+                                            Clear filters
+                                        </button>
+                                    }
+                                />
                             )}
                         </motion.div>
                     )}

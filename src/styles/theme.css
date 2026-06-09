@@ -9,9 +9,9 @@
     --color-success: #10b981;
     --color-warning: #f59e0b;
     --color-error: #ef4444;
-    --color-neutral: #6b7280;
+    --color-neutral: #4b5563;
     --color-light-gray: #f3f4f6;
-    --color-dark-gray: #9ca3af;
+    --color-dark-gray: #4b5563;
 
     /* Background System */
     --bg-main: linear-gradient(180deg, #adc8ff 0%, #ffffff 100%);
@@ -244,6 +244,20 @@
     }
 }
 
+/* Respect the OS "Reduce motion" setting for CSS-driven animation and
+   transitions (tw-animate-css, .animate-touch, utility keyframes). Motion's
+   JS animations are handled separately via <MotionConfig reducedMotion="user">. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* Scrollbar utilities */
 .scrollbar-hide {
     -ms-overflow-style: none;
@@ -280,21 +294,21 @@
     .text-body {
         font-size: var(--text-body);
         font-weight: 400;
-        color: #6b7280;
+        color: #4b5563;
         font-family: "Lexend", sans-serif;
     }
 
     .text-small {
         font-size: var(--text-small);
         font-weight: 400;
-        color: #6b7280;
+        color: #4b5563;
         font-family: "Lexend", sans-serif;
     }
 
     .text-tiny {
         font-size: var(--text-tiny);
         font-weight: 400;
-        color: #9ca3af;
+        color: #4b5563;
         font-family: "Lexend", sans-serif;
     }
 

@@ -6,8 +6,7 @@ export function AmbientParticles() {
         x: Math.random() * 100,
         y: Math.random() * 100,
         size: 2 + Math.random() * 4,
-        duration: 8 + Math.random() * 6,
-        delay: Math.random() * 4,
+        delay: Math.random() * 0.6,
     }));
 
     return (
@@ -16,23 +15,16 @@ export function AmbientParticles() {
                 <motion.div
                     key={particle.id}
                     className="absolute rounded-full"
-                    initial={{
-                        x: `${particle.x}%`,
-                        y: `${particle.y}%`,
-                        opacity: 0,
-                    }}
-                    animate={{
-                        x: `${particle.x + (Math.random() - 0.5) * 30}%`,
-                        y: `${particle.y + (Math.random() - 0.5) * 30}%`,
-                        opacity: [0, 0.6, 0],
-                    }}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 0.4}}
                     transition={{
-                        duration: particle.duration,
-                        repeat: Infinity,
+                        duration: 0.8,
                         delay: particle.delay,
-                        ease: "easeInOut",
+                        ease: [0.16, 1, 0.3, 1],
                     }}
                     style={{
+                        left: `${particle.x}%`,
+                        top: `${particle.y}%`,
                         width: `${particle.size}px`,
                         height: `${particle.size}px`,
                         background:

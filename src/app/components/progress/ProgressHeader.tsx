@@ -89,6 +89,7 @@ export function ProgressHeader({
                     <div className="relative flex-shrink-0">
                         <motion.button
                             onClick={onProfileClick}
+                            aria-label="Open profile"
                             whileHover={{scale: 1.05}}
                             whileTap={{scale: 0.98}}
                             className="relative cursor-pointer"
@@ -138,16 +139,14 @@ export function ProgressHeader({
                             className="flex items-center gap-1.5 relative"
                         >
                             <motion.div
-                                animate={{
-                                    rotate: showXPAnimation
-                                        ? [0, 360]
-                                        : [0, 12, -12, 0],
-                                    scale: showXPAnimation ? [1, 1.2, 1] : 1,
-                                }}
+                                animate={
+                                    showXPAnimation
+                                        ? {rotate: [0, 360], scale: [1, 1.2, 1]}
+                                        : {rotate: 0, scale: 1}
+                                }
                                 transition={{
-                                    duration: showXPAnimation ? 1 : 2.5,
-                                    repeat: showXPAnimation ? 1 : Infinity,
-                                    repeatDelay: showXPAnimation ? 0 : 4,
+                                    duration: showXPAnimation ? 1 : 0.3,
+                                    repeat: showXPAnimation ? 1 : 0,
                                 }}
                             >
                                 <Zap
@@ -193,14 +192,13 @@ export function ProgressHeader({
 
                 <motion.button
                     onClick={onNotificationClick}
+                    aria-label="Notifications"
                     whileTap={{scale: 0.95}}
                     className="relative w-12 h-12 bg-card-glass backdrop-blur-lg rounded-full flex items-center justify-center shadow-card border border-white/20 flex-shrink-0"
                 >
                     <BellRing className="w-5 h-5 text-[#091A7A] stroke-[1.5]"/>
                     {hasNotifications && (
-                        <motion.div
-                            animate={{scale: [1, 1.2, 1]}}
-                            transition={{duration: 2, repeat: Infinity}}
+                        <div
                             className="absolute -top-1 -right-1 w-3 h-3 bg-[#EF4444] rounded-full border-2 border-white shadow-sm"
                         />
                     )}

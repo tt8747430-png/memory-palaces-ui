@@ -31,11 +31,7 @@ export function TrainingStreak({
         >
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <motion.div
-                        animate={{scale: [1, 1.08, 1]}}
-                        transition={{duration: 2.5, repeat: Infinity}}
-                        className="relative"
-                    >
+                    <div className="relative">
                         <Flame
                             className="w-6 h-6 text-[#F59E0B] drop-shadow-lg"
                             fill="currentColor"
@@ -44,14 +40,14 @@ export function TrainingStreak({
                                     "drop-shadow(0 0 8px rgba(245, 158, 11, 0.4))",
                             }}
                         />
-                    </motion.div>
+                    </div>
                     <span className="text-section-header text-[#091A7A]">
             Training Streak
           </span>
                 </div>
                 <div
                     className="px-3 py-1.5 bg-gradient-to-r from-[#F59E0B]/20 to-[#F59E0B]/10 rounded-[50px] border border-[#F59E0B]/20">
-          <span className="text-small font-medium text-[#F59E0B]">
+          <span className="text-xs font-medium text-[#8A5A00]">
             {streakCount} days
           </span>
                 </div>
@@ -63,7 +59,7 @@ export function TrainingStreak({
                         key={day}
                         className="flex flex-col items-center gap-3"
                     >
-            <span className="text-tiny text-[#6B7280] font-medium">
+            <span className="text-[10px] text-[#475569] font-medium">
               {day}
             </span>
                         <motion.div
@@ -81,19 +77,10 @@ export function TrainingStreak({
                             }`}
                         >
                             {completedDays[index] ? (
-                                <motion.div
-                                    animate={{rotate: [0, 8, -8, 0]}}
-                                    transition={{
-                                        duration: 2.5,
-                                        repeat: Infinity,
-                                        delay: index * 0.4,
-                                    }}
-                                >
-                                    <Flame
-                                        className="w-4 h-4 text-white drop-shadow-sm"
-                                        fill="currentColor"
-                                    />
-                                </motion.div>
+                                <Flame
+                                    className="w-4 h-4 text-white drop-shadow-sm"
+                                    fill="currentColor"
+                                />
                             ) : (
                                 <div className="w-2.5 h-2.5 bg-[#9CA3AF] rounded-full"/>
                             )}

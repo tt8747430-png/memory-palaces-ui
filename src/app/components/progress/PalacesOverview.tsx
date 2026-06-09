@@ -1,16 +1,24 @@
 import {motion} from "motion/react";
-import {ChevronRight, Star} from "lucide-react";
+import {ChevronRight, Plus, Star} from "lucide-react";
 import {useProgressState,} from "../../hooks/useProgressState";
 import {PalaceCard} from "../cards/PalaceCard";
+import {Skeleton} from "../ui/Skeleton";
+import {EmptyState} from "../ui/EmptyState";
 
 interface PalacesOverviewProps {
     onPalaceClick: (palaceId: string) => void;
     variant?: "circular" | "cards";
+    /** Render skeletons instead of content while palaces resolve. */
+    loading?: boolean;
+    /** Wires the first-run empty state's "Create palace" action. */
+    onCreatePalace?: () => void;
 }
 
 export function PalacesOverview({
                                     onPalaceClick,
                                     variant = "circular",
+                                    loading = false,
+                                    onCreatePalace,
                                 }: PalacesOverviewProps) {
     const {state} = useProgressState();
     const palaces = state.palaces;
@@ -134,12 +142,44 @@ export function PalacesOverview({
                     animate={{opacity: 1, x: 0}}
                     transition={{delay: 0.6}}
                     whileTap={{scale: 0.98}}
-                    className="text-small text-[#6B7280] px-3 py-1 rounded-[50px] transition-all duration-200 hover:bg-white/20"
+                    className="text-xs font-medium text-[#091A7A] px-3 py-1 rounded-[50px] transition-all duration-200 hover:bg-white/20"
                 >
                     View all
                 </motion.button>
             </div>
 
+            {loading && (
+                <div className="grid grid-cols-2 gap-5">
+                    {Array.from({length: 2}).map((_, i) => (
+                        <Skeleton
+                            key={`overview-skeleton-${i}`}
+                            className="h-[155px] w-full rounded-[40px]"
+                        />
+                    ))}
+                </div>
+            )}
+
+            {!loading && palaces.length === 0 && (
+                <EmptyState
+                    emoji="🏛️"
+                    title="No palaces yet"
+                    description="Build a memory palace to start training your recall."
+                    action={
+                        onCreatePalace ? (
+                            <button
+                                onClick={onCreatePalace}
+                                className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                            >
+                                <Plus className="h-4 w-4"/>
+                                Create palace
+                            </button>
+                        ) : undefined
+                    }
+                    className="py-10"
+                />
+            )}
+
+            {!loading && palaces.length > 0 && (
             <div className="grid grid-cols-2 gap-5">
                 {palaces.map((palace, index) => (
                     <motion.div
@@ -351,7 +391,7 @@ export function PalacesOverview({
                                     <h4 className="text-subheading text-[#091A7A]">
                                         {palace.name}
                                     </h4>
-                                    <p className="text-tiny text-[#525252]">
+                                    <p className="text-[10px] text-[#525252]">
                                         {palace.roomsCompleted}/{palace.totalRooms}{" "}
                                         rooms
                                     </p>
@@ -364,6 +404,7 @@ export function PalacesOverview({
                     </motion.div>
                 ))}
             </div>
+            )}
         </div>
     );
 }

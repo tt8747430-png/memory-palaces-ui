@@ -88,7 +88,9 @@ export default function HomePage() {
     const [activeTab, setActiveTab] = useState("home");
     const [showXPAnimation, setShowXPAnimation] = useState(false);
     const [recentXPGain, setRecentXPGain] = useState(0);
-    const [showDebug] = useState(true);
+    // Dev-only: the debug panel exposes a destructive "Reset All" and fake-XP
+    // controls. Gate on import.meta.env.DEV so it never ships in a production build.
+    const showDebug = import.meta.env.DEV;
     const [selectedPalaceId, setSelectedPalaceId] = useState<
         string | null
     >(null);
@@ -284,6 +286,8 @@ export default function HomePage() {
                                         totalRoomsCompleted={
                                             state.totalRoomsCompleted
                                         }
+                                        hasPalaces={state.palaces.length > 0}
+                                        onCreatePalace={() => setShowCreatePalace(true)}
                                     />
                                     <TrainingStreak
                                         streakCount={state.streakCount}
@@ -291,6 +295,7 @@ export default function HomePage() {
                                     <TrainingCalendar/>
                                     <PalacesOverview
                                         onPalaceClick={handlePalaceClick}
+                                        onCreatePalace={() => setShowCreatePalace(true)}
                                     />
                                     {showDebug && <ProgressDebugPanel/>}
                                 </div>
