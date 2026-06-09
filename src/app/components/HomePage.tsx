@@ -278,7 +278,7 @@ export default function HomePage() {
                                 hasNotifications={state.hasNotifications}
                             />
 
-                            <div className="flex-1 overflow-y-auto pb-[100px] scrollbar-hide">
+                            <div className="flex-1 overflow-y-auto pb-[128px] scrollbar-hide">
                                 <div className="space-y-6 px-6 pt-4">
                                     <PalaceProgressCard
                                         onStartTraining={handleStartTraining}

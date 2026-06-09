@@ -18,7 +18,6 @@ import {AmbientParticles} from "./AmbientParticles";
 import {Palace} from "../hooks/useProgressState";
 import {PalaceCard} from "./cards/PalaceCard";
 import {PalaceCardSkeleton} from "./cards/PalaceCardSkeleton";
-import {FeaturedPalaceBanner} from "./cards/FeaturedPalaceBanner";
 import {EmptyState} from "./ui/EmptyState";
 import {
   AlertDialog,
@@ -32,6 +31,53 @@ import {
 } from "./ui/alert-dialog";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "./ui/dropdown-menu";
 import {Tabs, TabsList, TabsTrigger} from "./ui/tabs";
+
+/**
+ * Per-palace edit/delete menu. Shared by the grid and list views so the two
+ * never drift; only the trigger's position/elevation differs per view.
+ */
+function PalaceActionsMenu({
+                               triggerClassName,
+                               onEdit,
+                               onDelete,
+                           }: {
+    triggerClassName: string;
+    onEdit: () => void;
+    onDelete: () => void;
+}) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <motion.button
+                        whileTap={{scale: 0.9}}
+                        aria-label="Palace options"
+                        onClick={(e) => e.stopPropagation()}
+                        className={`${triggerClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40`}
+                    >
+                        <MoreVertical size={16} className="text-[#2C2C2C]"/>
+                    </motion.button>
+                }
+            />
+            <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
+                <DropdownMenuItem
+                    onClick={onEdit}
+                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                >
+                    <Edit2 size={16} className="text-[#091A7A]"/>
+                    <span className="text-[14px] font-medium text-[#2C2C2C]">Edit</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={onDelete}
+                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                >
+                    <Trash2 size={16} className="text-red-600"/>
+                    <span className="text-[14px] font-medium text-red-600">Delete</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
 
 interface PalacesPageProps {
     palaces: Palace[];
@@ -93,6 +139,8 @@ export function PalacesPage({
         }
     });
 
+    const palaceToDelete = palaces.find((p) => p.id === showDeleteConfirm);
+
     return (
         <div className="size-full flex flex-col relative">
             {/* Dynamic Background */}
@@ -118,23 +166,25 @@ export function PalacesPage({
                     <div className="px-[20px] pt-[12px] pb-[20px] relative z-10">
                         <div className="flex items-center justify-between mb-[16px]">
                             <h1 className="text-[32px] font-bold text-white">
-                                All Palaces
+                                Palaces
                             </h1>
                             <div className="flex items-center gap-3">
-                                <button
+                                <motion.button
+                                    whileTap={{scale: 0.92}}
                                     onClick={onSearch}
                                     aria-label="Search palaces"
-                                    className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                                    className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                                 >
                                     <Search size={20} strokeWidth={2.5}/>
-                                </button>
-                                <button
+                                </motion.button>
+                                <motion.button
+                                    whileTap={{scale: 0.92}}
                                     onClick={onCreatePalace}
                                     aria-label="Create palace"
-                                    className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                                    className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                                 >
                                     <Plus size={20} strokeWidth={2.5}/>
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
 
@@ -144,15 +194,15 @@ export function PalacesPage({
                                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")}
                                       className="w-full">
                                     <TabsList
-                                        className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[16px] h-auto p-1">
+                                        className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[16px] p-1 h-11 group-data-horizontal/tabs:h-11">
                                         <TabsTrigger value="grid"
-                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#091A7A] text-white/80">
-                                            <Grid size={18} strokeWidth={2.5} className="mr-2"/>
+                                                     className="rounded-[12px] text-[14px] font-medium text-white/80 hover:text-white data-active:bg-white/90 data-active:text-[#091A7A]">
+                                            <Grid size={18} strokeWidth={2.5}/>
                                             Grid
                                         </TabsTrigger>
                                         <TabsTrigger value="list"
-                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#091A7A] text-white/80">
-                                            <List size={18} strokeWidth={2.5} className="mr-2"/>
+                                                     className="rounded-[12px] text-[14px] font-medium text-white/80 hover:text-white data-active:bg-white/90 data-active:text-[#091A7A]">
+                                            <List size={18} strokeWidth={2.5}/>
                                             List
                                         </TabsTrigger>
                                     </TabsList>
@@ -162,11 +212,12 @@ export function PalacesPage({
                             <DropdownMenu>
                                 <DropdownMenuTrigger
                                     render={
-                                        <button
+                                        <motion.button
+                                            whileTap={{scale: 0.92}}
                                             aria-label="Sort palaces"
-                                            className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none">
+                                            className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/70">
                                             <SlidersHorizontal size={20} strokeWidth={2.5}/>
-                                        </button>
+                                        </motion.button>
                                     }
                                 />
                                 <DropdownMenuContent align="end" className="w-[180px] rounded-[20px] p-2">
@@ -213,7 +264,7 @@ export function PalacesPage({
                                         animate={{opacity: 1, y: 0}}
                                         transition={{delay: index * 0.05}}
                                         whileTap={{scale: 0.96}}
-                                        className={`flex-shrink-0 px-[18px] py-[10px] rounded-full transition-all shadow-sm ${
+                                        className={`flex-shrink-0 px-[18px] py-[10px] rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
                                             selectedCategory === category
                                                 ? "bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white shadow-md"
                                                 : "bg-white text-[#4b5563] border-2 border-[#E5E5EA]"
@@ -237,9 +288,9 @@ export function PalacesPage({
                         </div>
                     </div>
 
-                    {/* Palaces Count & Sort Info */}
-                    <div className="px-[20px] py-[12px] flex items-center justify-between">
-                        <p className="text-[15px] font-medium text-[#000000]">
+                    {/* Result count + active sort */}
+                    <div className="px-[20px] pt-[16px] pb-[10px] flex items-baseline justify-between">
+                        <p className="text-[15px] font-medium text-[#2C2C2C]">
                             {sortedPalaces.length}{" "}
                             {sortedPalaces.length === 1 ? "Palace" : "Palaces"}
                         </p>
@@ -256,29 +307,8 @@ export function PalacesPage({
                             initial={{opacity: 0}}
                             animate={{opacity: 1}}
                             exit={{opacity: 0}}
-                            className="px-[20px] pb-[100px] space-y-6"
+                            className="px-[20px] pb-[128px]"
                         >
-                            {/* Featured Banner - shown only on first load */}
-                            {selectedCategory === "All" && sortBy === "Recent" && (
-                                <motion.div
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{delay: 0.1}}
-                                >
-                                    <FeaturedPalaceBanner
-                                        title={
-                                            sortedPalaces.length === 1
-                                                ? "palace ready to train"
-                                                : "palaces ready to train"
-                                        }
-                                        subtitle="Your collection"
-                                        count={`${sortedPalaces.length}`}
-                                        icon="🏛️"
-                                        onExplore={onSearch}
-                                    />
-                                </motion.div>
-                            )}
-
                             {/* Palace Cards Grid */}
                             <div className="grid grid-cols-2 gap-4">
                                 {loading &&
@@ -325,36 +355,11 @@ export function PalacesPage({
                                         </div>
 
                                         {/* Menu (portaled so it can't clip in the scroll area) */}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger
-                                                render={
-                                                    <motion.button
-                                                        whileTap={{scale: 0.9}}
-                                                        aria-label="Palace options"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg z-10 outline-none"
-                                                    >
-                                                        <MoreVertical size={16} className="text-[#000000]"/>
-                                                    </motion.button>
-                                                }
-                                            />
-                                            <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
-                                                <DropdownMenuItem
-                                                    onClick={() => onEditPalace(palace.id)}
-                                                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
-                                                >
-                                                    <Edit2 size={16} className="text-[#091A7A]"/>
-                                                    <span className="text-[14px] font-medium text-[#000000]">Edit</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => setShowDeleteConfirm(palace.id)}
-                                                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
-                                                >
-                                                    <Trash2 size={16} className="text-red-600"/>
-                                                    <span className="text-[14px] font-medium text-red-600">Delete</span>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <PalaceActionsMenu
+                                            triggerClassName="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg z-10 outline-none"
+                                            onEdit={() => onEditPalace(palace.id)}
+                                            onDelete={() => setShowDeleteConfirm(palace.id)}
+                                        />
                                     </motion.div>
                                 ))}
                             </div>
@@ -404,7 +409,7 @@ export function PalacesPage({
                             initial={{opacity: 0}}
                             animate={{opacity: 1}}
                             exit={{opacity: 0}}
-                            className="pb-[100px]"
+                            className="pb-[128px]"
                         >
                             {sortedPalaces.length > 0 ? (
                                 sortedPalaces.map((palace, index) => (
@@ -428,41 +433,16 @@ export function PalacesPage({
                                             </div>
 
                                             {/* Menu - List View (portaled so it can't clip in the scroll area) */}
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger
-                                                    render={
-                                                        <motion.button
-                                                            whileTap={{scale: 0.9}}
-                                                            aria-label="Palace options"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md outline-none"
-                                                        >
-                                                            <MoreVertical size={16} className="text-[#000000]"/>
-                                                        </motion.button>
-                                                    }
-                                                />
-                                                <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
-                                                    <DropdownMenuItem
-                                                        onClick={() => onEditPalace(palace.id)}
-                                                        className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
-                                                    >
-                                                        <Edit2 size={16} className="text-[#091A7A]"/>
-                                                        <span className="text-[14px] font-medium text-[#000000]">Edit</span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => setShowDeleteConfirm(palace.id)}
-                                                        className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
-                                                    >
-                                                        <Trash2 size={16} className="text-red-600"/>
-                                                        <span className="text-[14px] font-medium text-red-600">Delete</span>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <PalaceActionsMenu
+                                                triggerClassName="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md outline-none"
+                                                onEdit={() => onEditPalace(palace.id)}
+                                                onDelete={() => setShowDeleteConfirm(palace.id)}
+                                            />
 
                                             {/* Content */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-[8px] mb-[4px]">
-                                                    <h3 className="text-[17px] font-semibold text-[#000000] line-clamp-1">
+                                                    <h3 className="text-[17px] font-semibold text-[#2C2C2C] line-clamp-1">
                                                         {palace.name}
                                                     </h3>
                                                     {palace.progress === 100 && (
@@ -560,18 +540,22 @@ export function PalacesPage({
                         <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} className="text-red-600"/>
                         </div>
-                        <AlertDialogTitle className="text-center text-[#000000] text-xl">Delete
-                            Palace?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-center text-[#2C2C2C] text-xl">
+                            {palaceToDelete
+                                ? `Delete “${palaceToDelete.name}”?`
+                                : "Delete palace?"}
+                        </AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-[#4b5563]">
-                            This action cannot be undone. All floors, rooms, and progress will be permanently deleted.
+                            This can’t be undone. Every floor, room, and your training progress in this palace are
+                            deleted for good.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">
                         <AlertDialogCancel
                             onClick={() => setShowDeleteConfirm(null)}
-                            className="flex-1 py-4 h-auto border-none bg-[#F5F5F7] hover:bg-gray-200 text-[#000000] font-semibold rounded-2xl"
+                            className="flex-1 py-4 h-auto border-none bg-[#F5F5F7] hover:bg-gray-200 text-[#2C2C2C] font-semibold rounded-2xl"
                         >
-                            Cancel
+                            Keep palace
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => {
@@ -583,7 +567,7 @@ export function PalacesPage({
                             }}
                             className="flex-1 py-4 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
                         >
-                            Delete
+                            Delete palace
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
