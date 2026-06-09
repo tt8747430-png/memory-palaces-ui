@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {AnimatePresence, motion} from "motion/react";
+import {motion} from "motion/react";
 import {
   ChevronRight,
   Edit2,
@@ -59,7 +59,6 @@ export function PalacesPage({
     const [selectedCategory, setSelectedCategory] =
         useState("All");
     const [sortBy, setSortBy] = useState("Recent");
-    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
     const categories = [
@@ -124,12 +123,14 @@ export function PalacesPage({
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={onSearch}
+                                    aria-label="Search palaces"
                                     className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
                                 >
                                     <Search size={20} strokeWidth={2.5}/>
                                 </button>
                                 <button
                                     onClick={onCreatePalace}
+                                    aria-label="Create palace"
                                     className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
                                 >
                                     <Plus size={20} strokeWidth={2.5}/>
@@ -145,12 +146,12 @@ export function PalacesPage({
                                     <TabsList
                                         className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[16px] h-auto p-1">
                                         <TabsTrigger value="grid"
-                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#007AFF] text-white/80">
+                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#091A7A] text-white/80">
                                             <Grid size={18} strokeWidth={2.5} className="mr-2"/>
                                             Grid
                                         </TabsTrigger>
                                         <TabsTrigger value="list"
-                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#007AFF] text-white/80">
+                                                     className="rounded-[12px] py-2 data-[state=active]:bg-white/90 data-[state=active]:text-[#091A7A] text-white/80">
                                             <List size={18} strokeWidth={2.5} className="mr-2"/>
                                             List
                                         </TabsTrigger>
@@ -162,13 +163,14 @@ export function PalacesPage({
                                 <DropdownMenuTrigger
                                     render={
                                         <button
+                                            aria-label="Sort palaces"
                                             className="w-[44px] h-[44px] rounded-[16px] bg-white/15 backdrop-blur-md flex items-center justify-center text-white outline-none">
                                             <SlidersHorizontal size={20} strokeWidth={2.5}/>
                                         </button>
                                     }
                                 />
                                 <DropdownMenuContent align="end" className="w-[180px] rounded-[20px] p-2">
-                                    <p className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider px-2 py-2">
+                                    <p className="text-[11px] font-semibold text-[#4b5563] uppercase tracking-wider px-2 py-2">
                                         Sort By
                                     </p>
                                     {sortOptions.map((option) => (
@@ -176,12 +178,12 @@ export function PalacesPage({
                                             key={option}
                                             onClick={() => setSortBy(option)}
                                             className={`rounded-[12px] px-3 py-2 cursor-pointer transition-all ${
-                                                sortBy === option ? "bg-[#007AFF]/10 text-[#007AFF]" : ""
+                                                sortBy === option ? "bg-[#091A7A]/10 text-[#091A7A]" : ""
                                             }`}
                                         >
                                             <span className="flex-1 font-medium">{option}</span>
                                             {sortBy === option && (
-                                                <div className="w-2 h-2 rounded-full bg-[#007AFF]"/>
+                                                <div className="w-2 h-2 rounded-full bg-[#091A7A]"/>
                                             )}
                                         </DropdownMenuItem>
                                     ))}
@@ -213,8 +215,8 @@ export function PalacesPage({
                                         whileTap={{scale: 0.96}}
                                         className={`flex-shrink-0 px-[18px] py-[10px] rounded-full transition-all shadow-sm ${
                                             selectedCategory === category
-                                                ? "bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white shadow-md"
-                                                : "bg-white text-[#86868B] border-2 border-[#E5E5EA]"
+                                                ? "bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white shadow-md"
+                                                : "bg-white text-[#4b5563] border-2 border-[#E5E5EA]"
                                         }`}
                                     >
                                         <div className="flex items-center gap-2">
@@ -224,7 +226,7 @@ export function PalacesPage({
                                             <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
                                                 selectedCategory === category
                                                     ? "bg-white/25 text-white"
-                                                    : "bg-[#F5F5F7] text-[#86868B]"
+                                                    : "bg-[#F5F5F7] text-[#4b5563]"
                                             }`}>
                         {count}
                       </span>
@@ -242,7 +244,7 @@ export function PalacesPage({
                             {sortedPalaces.length === 1 ? "Palace" : "Palaces"}
                         </p>
                         {sortBy !== "Recent" && (
-                            <p className="text-[13px] text-[#86868B]">
+                            <p className="text-[13px] text-[#4b5563]">
                                 Sorted by {sortBy}
                             </p>
                         )}
@@ -264,12 +266,15 @@ export function PalacesPage({
                                     transition={{delay: 0.1}}
                                 >
                                     <FeaturedPalaceBanner
-                                        title="palaces"
-                                        subtitle="Discover Available"
-                                        count={`${sortedPalaces.length}+`}
+                                        title={
+                                            sortedPalaces.length === 1
+                                                ? "palace ready to train"
+                                                : "palaces ready to train"
+                                        }
+                                        subtitle="Your collection"
+                                        count={`${sortedPalaces.length}`}
                                         icon="🏛️"
-                                        onExplore={() => {
-                                        }}
+                                        onExplore={onSearch}
                                     />
                                 </motion.div>
                             )}
@@ -319,67 +324,37 @@ export function PalacesPage({
                                             />
                                         </div>
 
-                                        {/* Menu Button */}
-                                        <motion.button
-                                            whileTap={{scale: 0.9}}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setActiveMenuId(activeMenuId === palace.id ? null : palace.id);
-                                            }}
-                                            className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg z-10"
-                                        >
-                                            <MoreVertical size={16} className="text-[#000000]"/>
-                                        </motion.button>
-
-                                        {/* Menu Popup */}
-                                        <AnimatePresence>
-                                            {activeMenuId === palace.id && (
-                                                <>
-                                                    <motion.div
-                                                        initial={{opacity: 0}}
-                                                        animate={{opacity: 1}}
-                                                        exit={{opacity: 0}}
-                                                        className="fixed inset-0 z-20"
-                                                        onClick={() => setActiveMenuId(null)}
-                                                    />
-                                                    <motion.div
-                                                        initial={{opacity: 0, scale: 0.9, y: -10}}
-                                                        animate={{opacity: 1, scale: 1, y: 0}}
-                                                        exit={{opacity: 0, scale: 0.9, y: -10}}
-                                                        className="absolute top-12 right-3 bg-white rounded-2xl shadow-2xl border border-[#E5E5EA] z-30 overflow-hidden min-w-[140px]"
+                                        {/* Menu (portaled so it can't clip in the scroll area) */}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger
+                                                render={
+                                                    <motion.button
+                                                        whileTap={{scale: 0.9}}
+                                                        aria-label="Palace options"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg z-10 outline-none"
                                                     >
-                                                        <motion.button
-                                                            whileTap={{scale: 0.98}}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setActiveMenuId(null);
-                                                                onEditPalace(palace.id);
-                                                            }}
-                                                            className="w-full px-4 py-3 text-left hover:bg-[#F5F5F7] transition-colors flex items-center gap-3"
-                                                        >
-                                                            <Edit2 size={16} className="text-[#007AFF]"/>
-                                                            <span className="text-[14px] font-medium text-[#000000]">
-                                Edit
-                              </span>
-                                                        </motion.button>
-                                                        <motion.button
-                                                            whileTap={{scale: 0.98}}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setActiveMenuId(null);
-                                                                setShowDeleteConfirm(palace.id);
-                                                            }}
-                                                            className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
-                                                        >
-                                                            <Trash2 size={16} className="text-red-600"/>
-                                                            <span className="text-[14px] font-medium text-red-600">
-                                Delete
-                              </span>
-                                                        </motion.button>
-                                                    </motion.div>
-                                                </>
-                                            )}
-                                        </AnimatePresence>
+                                                        <MoreVertical size={16} className="text-[#000000]"/>
+                                                    </motion.button>
+                                                }
+                                            />
+                                            <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
+                                                <DropdownMenuItem
+                                                    onClick={() => onEditPalace(palace.id)}
+                                                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                                                >
+                                                    <Edit2 size={16} className="text-[#091A7A]"/>
+                                                    <span className="text-[14px] font-medium text-[#000000]">Edit</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => setShowDeleteConfirm(palace.id)}
+                                                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                                                >
+                                                    <Trash2 size={16} className="text-red-600"/>
+                                                    <span className="text-[14px] font-medium text-red-600">Delete</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </motion.div>
                                 ))}
                             </div>
@@ -452,68 +427,37 @@ export function PalacesPage({
                       </span>
                                             </div>
 
-                                            {/* Menu Button - List View */}
-                                            <motion.button
-                                                whileTap={{scale: 0.9}}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveMenuId(activeMenuId === palace.id ? null : palace.id);
-                                                }}
-                                                className="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md"
-                                            >
-                                                <MoreVertical size={16} className="text-[#000000]"/>
-                                            </motion.button>
-
-                                            {/* Menu Popup - List View */}
-                                            <AnimatePresence>
-                                                {activeMenuId === palace.id && (
-                                                    <>
-                                                        <motion.div
-                                                            initial={{opacity: 0}}
-                                                            animate={{opacity: 1}}
-                                                            exit={{opacity: 0}}
-                                                            className="fixed inset-0 z-20"
-                                                            onClick={() => setActiveMenuId(null)}
-                                                        />
-                                                        <motion.div
-                                                            initial={{opacity: 0, scale: 0.9, y: -10}}
-                                                            animate={{opacity: 1, scale: 1, y: 0}}
-                                                            exit={{opacity: 0, scale: 0.9, y: -10}}
-                                                            className="absolute top-10 right-0 bg-white rounded-2xl shadow-2xl border border-[#E5E5EA] z-30 overflow-hidden min-w-[140px]"
+                                            {/* Menu - List View (portaled so it can't clip in the scroll area) */}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger
+                                                    render={
+                                                        <motion.button
+                                                            whileTap={{scale: 0.9}}
+                                                            aria-label="Palace options"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md outline-none"
                                                         >
-                                                            <motion.button
-                                                                whileTap={{scale: 0.98}}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setActiveMenuId(null);
-                                                                    onEditPalace(palace.id);
-                                                                }}
-                                                                className="w-full px-4 py-3 text-left hover:bg-[#F5F5F7] transition-colors flex items-center gap-3"
-                                                            >
-                                                                <Edit2 size={16} className="text-[#007AFF]"/>
-                                                                <span
-                                                                    className="text-[14px] font-medium text-[#000000]">
-                                Edit
-                              </span>
-                                                            </motion.button>
-                                                            <motion.button
-                                                                whileTap={{scale: 0.98}}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setActiveMenuId(null);
-                                                                    setShowDeleteConfirm(palace.id);
-                                                                }}
-                                                                className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3"
-                                                            >
-                                                                <Trash2 size={16} className="text-red-600"/>
-                                                                <span className="text-[14px] font-medium text-red-600">
-                                Delete
-                              </span>
-                                                            </motion.button>
-                                                        </motion.div>
-                                                    </>
-                                                )}
-                                            </AnimatePresence>
+                                                            <MoreVertical size={16} className="text-[#000000]"/>
+                                                        </motion.button>
+                                                    }
+                                                />
+                                                <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
+                                                    <DropdownMenuItem
+                                                        onClick={() => onEditPalace(palace.id)}
+                                                        className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                                                    >
+                                                        <Edit2 size={16} className="text-[#091A7A]"/>
+                                                        <span className="text-[14px] font-medium text-[#000000]">Edit</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => setShowDeleteConfirm(palace.id)}
+                                                        className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                                                    >
+                                                        <Trash2 size={16} className="text-red-600"/>
+                                                        <span className="text-[14px] font-medium text-red-600">Delete</span>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
 
                                             {/* Content */}
                                             <div className="flex-1 min-w-0">
@@ -524,24 +468,24 @@ export function PalacesPage({
                                                     {palace.progress === 100 && (
                                                         <Star
                                                             size={16}
-                                                            className="text-yellow-400 fill-yellow-400 flex-shrink-0"
+                                                            className="text-[#FFC71E] fill-[#FFC71E] flex-shrink-0"
                                                         />
                                                     )}
                                                 </div>
 
-                                                <p className="text-[14px] text-[#86868B] mb-[8px] line-clamp-1">
+                                                <p className="text-[14px] text-[#4b5563] mb-[8px] line-clamp-1">
                                                     {palace.description}
                                                 </p>
 
                                                 <div className="flex items-center gap-[12px] mb-[8px]">
-                        <span className="text-[13px] text-[#86868B]">
+                        <span className="text-[13px] text-[#4b5563]">
                           {palace.totalRooms} rooms
                         </span>
-                                                    <span className="text-[13px] text-[#86868B]">
+                                                    <span className="text-[13px] text-[#4b5563]">
                           •
                         </span>
                                                     <span
-                                                        className="inline-block px-[8px] py-[2px] bg-[#F5F5F7] rounded-full text-[11px] text-[#86868B] font-medium">
+                                                        className="inline-block px-[8px] py-[2px] bg-[#F5F5F7] rounded-full text-[11px] text-[#4b5563] font-medium">
                           {palace.category}
                         </span>
                                                 </div>
@@ -551,14 +495,14 @@ export function PalacesPage({
                                                     <div
                                                         className="flex-1 h-[4px] bg-[#F5F5F7] rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-[#007AFF] rounded-full"
+                                                            className="h-full bg-[#091A7A] rounded-full"
                                                             style={{
                                                                 width: `${palace.progress}%`,
                                                             }}
                                                         />
                                                     </div>
                                                     <span
-                                                        className="text-[13px] font-medium text-[#007AFF] min-w-[40px] text-right">
+                                                        className="text-[13px] font-medium text-[#091A7A] min-w-[40px] text-right">
                           {palace.progress}%
                         </span>
                                                 </div>
@@ -618,7 +562,7 @@ export function PalacesPage({
                         </div>
                         <AlertDialogTitle className="text-center text-[#000000] text-xl">Delete
                             Palace?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[#86868B]">
+                        <AlertDialogDescription className="text-center text-[#4b5563]">
                             This action cannot be undone. All floors, rooms, and progress will be permanently deleted.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

@@ -48,7 +48,6 @@ export function PalaceCard({
     if (variant === "compact") {
         return (
             <motion.div
-                whileHover={{y: -4, scale: 1.02}}
                 whileTap={{scale: 0.98}}
                 onClick={onClick}
                 className="bg-white rounded-2xl shadow-[0px_6px_16px_0px_rgba(19,44,74,0.06)] overflow-hidden cursor-pointer relative"
@@ -104,7 +103,6 @@ export function PalaceCard({
                         </div>
 
                         <motion.button
-                            whileHover={{scale: 1.1}}
                             whileTap={{scale: 0.9}}
                             onClick={handleFavoriteClick}
                             className="w-8 h-8 bg-[#fafafa] rounded-full flex items-center justify-center"
@@ -126,7 +124,6 @@ export function PalaceCard({
     if (variant === "featured") {
         return (
             <motion.div
-                whileHover={{y: -6}}
                 whileTap={{scale: 0.98}}
                 onClick={onClick}
                 className="bg-white rounded-3xl shadow-[0px_10px_28px_0px_rgba(19,44,74,0.08)] overflow-hidden cursor-pointer relative"
@@ -138,7 +135,6 @@ export function PalaceCard({
 
                     {/* Favorite Button */}
                     <motion.button
-                        whileHover={{scale: 1.1}}
                         whileTap={{scale: 0.9}}
                         onClick={handleFavoriteClick}
                         className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg"
@@ -217,7 +213,6 @@ export function PalaceCard({
     // Default variant
     return (
         <motion.div
-            whileHover={{y: -4, scale: 1.01}}
             whileTap={{scale: 0.98}}
             onClick={onClick}
             className="bg-white rounded-2xl shadow-[0px_6px_16px_0px_rgba(19,44,74,0.06)] overflow-hidden cursor-pointer relative group"
@@ -239,7 +234,6 @@ export function PalaceCard({
 
                 {!isLocked && (
                     <motion.button
-                        whileHover={{scale: 1.1}}
                         whileTap={{scale: 0.9}}
                         onClick={handleFavoriteClick}
                         className="absolute top-3 right-3 w-9 h-9 bg-[#fafafa] rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"

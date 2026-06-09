@@ -153,7 +153,7 @@ export function PalacesOverview({
                     {Array.from({length: 2}).map((_, i) => (
                         <Skeleton
                             key={`overview-skeleton-${i}`}
-                            className="h-[155px] w-full rounded-[40px]"
+                            className="h-[155px] w-full rounded-[24px]"
                         />
                     ))}
                 </div>
@@ -197,41 +197,15 @@ export function PalacesOverview({
                         <motion.div
                             className="absolute -top-4 right-2 opacity-90 z-50 pointer-events-none text-5xl"
                             initial={{opacity: 0, scale: 0.8, y: 20}}
-                            animate={{
-                                opacity: 0.9,
-                                scale: 1,
-                                y: [0, -8, 0],
-                                x: [0, 3, 0],
-                                rotate: [0, 2, -1, 0],
-                            }}
+                            animate={{opacity: 0.9, scale: 1, y: 0}}
                             transition={{
-                                opacity: {
-                                    delay: 0.8 + index * 0.2,
-                                    duration: 0.8,
-                                },
+                                delay: 0.8 + index * 0.2,
+                                duration: 0.8,
                                 scale: {
                                     delay: 0.8 + index * 0.2,
                                     duration: 0.8,
                                     type: "spring",
                                     stiffness: 200,
-                                },
-                                y: {
-                                    duration: 6 + index * 0.5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    delay: 1 + index * 0.3,
-                                },
-                                x: {
-                                    duration: 8 + index * 0.3,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    delay: 0.5 + index * 0.4,
-                                },
-                                rotate: {
-                                    duration: 10 + index * 0.2,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    delay: index * 0.6,
                                 },
                             }}
                             style={{
@@ -240,43 +214,10 @@ export function PalacesOverview({
                             }}
                         >
                             {palace.icon}
-
-                            {[
-                                {
-                                    className: "w-1.5 h-1.5 bg-yellow-400/60",
-                                    pos: "-top-2 -left-2",
-                                },
-                                {
-                                    className: "w-1 h-1 bg-cyan-400/70",
-                                    pos: "-bottom-1 -right-2",
-                                },
-                                {
-                                    className: "w-0.5 h-0.5 bg-purple-400/50",
-                                    pos: "top-1 right-1",
-                                },
-                            ].map((sparkle, i) => (
-                                <motion.div
-                                    key={i}
-                                    className={`absolute ${sparkle.pos} ${sparkle.className} rounded-full`}
-                                    animate={{
-                                        scale: [0, [1, 1.2, 0.8][i], 0],
-                                        opacity: [0, [0.8, 0.9, 0.6][i], 0],
-                                        rotate: i === 0 ? [0, 180, 360] : undefined,
-                                        x: [0, [4, -3, -3][i], 0],
-                                        y: [0, [-3, 5, 6][i], 0],
-                                    }}
-                                    transition={{
-                                        duration: [3, 2.5, 4][i] + index * 0.5,
-                                        repeat: Infinity,
-                                        delay: [2, 3, 4][i] + index * 0.8,
-                                        ease: "easeInOut",
-                                    }}
-                                />
-                            ))}
                         </motion.div>
 
                         <div
-                            className="relative p-4 backdrop-blur-lg border rounded-[40px] overflow-hidden group h-[155px]"
+                            className="relative p-4 backdrop-blur-lg border rounded-[24px] overflow-hidden group h-[155px]"
                             style={{
                                 background:
                                     "linear-gradient(135deg, rgba(173, 200, 255, 0.9) 0%, rgba(173, 200, 255, 0.7) 100%)",
@@ -399,7 +340,7 @@ export function PalacesOverview({
                             </div>
 
                             <div
-                                className="absolute inset-0 pointer-events-none rounded-[40px] bg-gradient-to-br from-white/10 via-white/5 to-transparent"/>
+                                className="absolute inset-0 pointer-events-none rounded-[24px] bg-gradient-to-br from-white/10 via-white/5 to-transparent"/>
                         </div>
                     </motion.div>
                 ))}

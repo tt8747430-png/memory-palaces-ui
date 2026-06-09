@@ -72,7 +72,7 @@ export function TrainingStreak({
                             }}
                             className={`w-9 h-9 rounded-[18px] flex items-center justify-center transition-all duration-200 ${
                                 completedDays[index]
-                                    ? "bg-gradient-to-br from-[#F59E0B] to-[#EF4444] shadow-interactive"
+                                    ? "bg-gradient-to-br from-[#FFC71E] to-[#F59E0B] shadow-interactive"
                                     : "bg-[#F3F4F6] border border-white/20"
                             }`}
                         >

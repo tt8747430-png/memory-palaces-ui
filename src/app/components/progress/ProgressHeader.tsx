@@ -90,7 +90,6 @@ export function ProgressHeader({
                         <motion.button
                             onClick={onProfileClick}
                             aria-label="Open profile"
-                            whileHover={{scale: 1.05}}
                             whileTap={{scale: 0.98}}
                             className="relative cursor-pointer"
                         >
