@@ -146,10 +146,10 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                         <div className="flex items-center justify-between mb-2 mt-4">
                             <motion.button
                                 type="button"
-                                whileHover={{scale: 1.05}}
-                                whileTap={{scale: 0.95}}
+                                whileTap={{scale: 0.92}}
+                                aria-label="Go back"
                                 onClick={onBack}
-                                className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center"
+                                className="w-11 h-11 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                             >
                                 <ArrowLeft className="w-4 h-4 text-white"/>
                             </motion.button>
@@ -158,7 +158,7 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                 Edit Palace
                             </h1>
 
-                            <div className="w-10"/>
+                            <div className="w-11"/>
                         </div>
                     </div>
                 </div>
@@ -179,7 +179,9 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                 className="w-full px-5 py-4 h-auto bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
                             />
                             {errors.name && (
-                                <p className="text-red-300 text-[13px] mt-2">{errors.name}</p>
+                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                                    {errors.name}
+                                </p>
                             )}
                         </div>
 
@@ -195,7 +197,9 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                 className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all resize-none"
                             />
                             {errors.description && (
-                                <p className="text-red-300 text-[13px] mt-2">{errors.description}</p>
+                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                                    {errors.description}
+                                </p>
                             )}
                         </div>
 
@@ -212,7 +216,7 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                         onClick={() => setFormData({...formData, category})}
                                         className={`px-4 py-3 rounded-2xl font-medium text-[14px] transition-all ${
                                             formData.category === category
-                                                ? "bg-white text-[#007AFF]"
+                                                ? "bg-white text-[#091A7A] shadow-md"
                                                 : "bg-white/20 text-white"
                                         }`}
                                     >
@@ -221,7 +225,9 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                 ))}
                             </div>
                             {errors.category && (
-                                <p className="text-red-300 text-[13px] mt-2">{errors.category}</p>
+                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                                    {errors.category}
+                                </p>
                             )}
                         </div>
 
@@ -282,13 +288,13 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
                                             />
                                             <span
                                                 className={`font-medium text-[15px] ${
-                                                    formData.color === color.value ? "text-[#007AFF]" : "text-white"
+                                                    formData.color === color.value ? "text-[#091A7A]" : "text-white"
                                                 }`}
                                             >
                         {color.name}
                       </span>
                                             {formData.color === color.value && (
-                                                <Check size={20} className="text-[#007AFF] ml-auto"/>
+                                                <Check size={20} className="text-[#091A7A] ml-auto"/>
                                             )}
                                         </motion.button>
                                     ))}
@@ -301,13 +307,12 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
 
                 <div className="p-6 bg-white/95 backdrop-blur-xl shrink-0 border-t border-white/20">
                     <motion.button
-                        whileHover={{scale: 1.02}}
                         whileTap={{scale: 0.98}}
                         onClick={handleSubmit}
-                        className="w-full py-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2"
                     >
                         <Save size={20}/>
-                        <span>Save Changes</span>
+                        <span>Save changes</span>
                     </motion.button>
                 </div>
             </div>

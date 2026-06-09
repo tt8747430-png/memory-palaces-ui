@@ -32,7 +32,7 @@ import {PhoneConnectScreen} from "./settings/PhoneConnectScreen";
 import {ImageWithFallback} from "./ui/ImageWithFallback";
 import {Switch} from "./ui/switch";
 import {toast} from "sonner";
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,} from "./ui/dialog";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "./ui/dialog";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "./ui/select";
 import {Tooltip, TooltipContent, TooltipTrigger} from "./ui/tooltip";
 
@@ -578,30 +578,34 @@ export function SettingsScreen({
             </div>
 
             <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle className="text-center">Log out?</DialogTitle>
-                        <DialogDescription className="text-center">
-                            You'll need to log in again to get back to your palaces. Your
-                            progress stays saved.
+                <DialogContent showCloseButton={false} className="max-w-[340px] rounded-2xl p-6">
+                    <DialogHeader className="items-center gap-3">
+                        <div className="w-14 h-14 rounded-full bg-[#EAF4FF] flex items-center justify-center">
+                            <LogOut className="w-6 h-6 text-[#091A7A]" strokeWidth={2.2}/>
+                        </div>
+                        <DialogTitle className="text-center text-[18px] font-bold text-[#091A7A]">
+                            Log out of Mindscape?
+                        </DialogTitle>
+                        <DialogDescription className="text-center text-[14px] text-[#091A7A]/70 text-pretty">
+                            You'll need to sign in again to reach your palaces. Your progress stays saved.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="flex gap-3 sm:justify-center">
+                    <div className="flex gap-3 mt-1">
                         <motion.button
-                            whileTap={{scale: 0.95}}
+                            whileTap={{scale: 0.97}}
                             onClick={() => setShowLogoutDialog(false)}
-                            className="flex-1 h-[44px] rounded-xl border-[1.5px] border-[#091A7A] flex items-center justify-center font-semibold text-[14px] text-[#091A7A]"
+                            className="flex-1 h-11 rounded-xl bg-[#EAF4FF] flex items-center justify-center font-semibold text-[14px] text-[#091A7A] transition-colors hover:bg-[#dcebff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             Cancel
                         </motion.button>
                         <motion.button
-                            whileTap={{scale: 0.95}}
+                            whileTap={{scale: 0.97}}
                             onClick={handleLogout}
-                            className="flex-1 h-[44px] rounded-xl bg-[#091A7A] flex items-center justify-center font-semibold text-[14px] text-white"
+                            className="flex-1 h-11 rounded-xl bg-[#091A7A] flex items-center justify-center font-semibold text-[14px] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] transition-colors hover:bg-[#0a2090] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             Log out
                         </motion.button>
-                    </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 

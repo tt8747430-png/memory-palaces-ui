@@ -62,17 +62,17 @@ function PalaceActionsMenu({
             <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
                 <DropdownMenuItem
                     onClick={onEdit}
-                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
                 >
                     <Edit2 size={16} className="text-[#091A7A]"/>
-                    <span className="text-[14px] font-medium text-[#2C2C2C]">Edit</span>
+                    <span className="text-[14px] font-medium text-[#2C2C2C]">Edit palace</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={onDelete}
-                    className="rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3"
+                    className="rounded-[10px] px-3 py-2.5 hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
                 >
                     <Trash2 size={16} className="text-red-600"/>
-                    <span className="text-[14px] font-medium text-red-600">Delete</span>
+                    <span className="text-[14px] font-medium text-red-600">Delete palace</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -220,15 +220,15 @@ export function PalacesPage({
                                         </motion.button>
                                     }
                                 />
-                                <DropdownMenuContent align="end" className="w-[180px] rounded-[20px] p-2">
-                                    <p className="text-[11px] font-semibold text-[#4b5563] uppercase tracking-wider px-2 py-2">
-                                        Sort By
+                                <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
+                                    <p className="text-[12px] font-medium text-[#4b5563] px-3 py-2">
+                                        Sort by
                                     </p>
                                     {sortOptions.map((option) => (
                                         <DropdownMenuItem
                                             key={option}
                                             onClick={() => setSortBy(option)}
-                                            className={`rounded-[12px] px-3 py-2 cursor-pointer transition-all ${
+                                            className={`rounded-[10px] px-3 py-2.5 cursor-pointer transition-all ${
                                                 sortBy === option ? "bg-[#091A7A]/10 text-[#091A7A]" : ""
                                             }`}
                                         >

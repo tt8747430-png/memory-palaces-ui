@@ -149,8 +149,8 @@ export function CreatePalaceScreen({
         >
             <div>
                 <h2 className="text-2xl font-bold text-white mb-2">Basic Information</h2>
-                <p className="text-white/70 text-[15px]">
-                    Let's start with the essentials
+                <p className="text-white/80 text-[15px]">
+                    Name your palace and pick what it covers
                 </p>
             </div>
 
@@ -164,7 +164,9 @@ export function CreatePalaceScreen({
                     className="w-full px-5 py-4 h-auto bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
                 />
                 {errors.name && (
-                    <p className="text-red-300 text-[13px] mt-2">{errors.name.message}</p>
+                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                        {errors.name.message}
+                    </p>
                 )}
             </div>
 
@@ -179,7 +181,9 @@ export function CreatePalaceScreen({
                     className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all resize-none"
                 />
                 {errors.description && (
-                    <p className="text-red-300 text-[13px] mt-2">{errors.description.message}</p>
+                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                        {errors.description.message}
+                    </p>
                 )}
             </div>
 
@@ -199,7 +203,7 @@ export function CreatePalaceScreen({
                             }}
                             className={`px-4 py-3 rounded-2xl font-medium text-[14px] transition-all ${
                                 watchCategory === category
-                                    ? "bg-white text-[#007AFF]"
+                                    ? "bg-white text-[#091A7A] shadow-md"
                                     : "bg-white/20 text-white"
                             }`}
                         >
@@ -208,7 +212,9 @@ export function CreatePalaceScreen({
                     ))}
                 </div>
                 {errors.category && (
-                    <p className="text-red-300 text-[13px] mt-2">{errors.category.message}</p>
+                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
+                        {errors.category.message}
+                    </p>
                 )}
             </div>
         </motion.div>
@@ -224,8 +230,8 @@ export function CreatePalaceScreen({
         >
             <div>
                 <h2 className="text-2xl font-bold text-white mb-2">Choose an Icon</h2>
-                <p className="text-white/70 text-[15px]">
-                    Select an icon that represents your palace
+                <p className="text-white/80 text-[15px]">
+                    It marks this palace everywhere in the app
                 </p>
             </div>
 
@@ -270,8 +276,8 @@ export function CreatePalaceScreen({
         >
             <div>
                 <h2 className="text-2xl font-bold text-white mb-2">Choose a Color</h2>
-                <p className="text-white/70 text-[15px]">
-                    Pick a color scheme for your palace card
+                <p className="text-white/80 text-[15px]">
+                    It colors this palace's card and icon backdrop
                 </p>
             </div>
 
@@ -302,13 +308,13 @@ export function CreatePalaceScreen({
                             />
                             <span
                                 className={`font-medium text-[15px] ${
-                                    watchColor === color.value ? "text-[#007AFF]" : "text-white"
+                                    watchColor === color.value ? "text-[#091A7A]" : "text-white"
                                 }`}
                             >
                 {color.name}
               </span>
                             {watchColor === color.value && (
-                                <Check size={20} className="text-[#007AFF] ml-auto"/>
+                                <Check size={20} className="text-[#091A7A] ml-auto"/>
                             )}
                         </motion.button>
                     ))}
@@ -332,10 +338,10 @@ export function CreatePalaceScreen({
                         <div className="flex items-center justify-between mb-6">
                             <motion.button
                                 type="button"
-                                whileHover={{scale: 1.05}}
-                                whileTap={{scale: 0.95}}
+                                whileTap={{scale: 0.92}}
+                                aria-label={currentStep > 1 ? "Previous step" : "Close"}
                                 onClick={handleBack}
-                                className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center"
+                                className="w-11 h-11 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                             >
                                 <ArrowLeft className="w-4 h-4 text-white"/>
                             </motion.button>
@@ -344,7 +350,9 @@ export function CreatePalaceScreen({
                                 Create Palace
                             </h1>
 
-                            <div className="w-10"/>
+                            <span className="w-11 text-right text-[13px] font-medium text-white/80">
+                                {currentStep}/{totalSteps}
+                            </span>
                         </div>
 
                         {renderProgressBar()}
@@ -367,10 +375,9 @@ export function CreatePalaceScreen({
                         {currentStep < totalSteps ? (
                             <motion.button
                                 type="button"
-                                whileHover={{scale: 1.02}}
                                 whileTap={{scale: 0.98}}
                                 onClick={handleNext}
-                                className="flex-1 py-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2"
                             >
                                 <span>Continue</span>
                                 <ChevronRight size={20}/>
@@ -379,12 +386,11 @@ export function CreatePalaceScreen({
                             <motion.button
                                 type="submit"
                                 form="create-palace-form"
-                                whileHover={{scale: 1.02}}
                                 whileTap={{scale: 0.98}}
-                                className="flex-1 py-4 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2"
                             >
                                 <Sparkles size={20}/>
-                                <span>Create Palace</span>
+                                <span>Create palace</span>
                             </motion.button>
                         )}
                     </div>

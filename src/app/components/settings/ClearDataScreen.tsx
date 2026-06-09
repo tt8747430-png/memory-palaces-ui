@@ -8,7 +8,6 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
-    AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle
 } from "../ui/alert-dialog";
@@ -227,49 +226,63 @@ export function ClearDataScreen({onBack}: ClearDataScreenProps) {
             </div>
 
             <AlertDialog open={showConfirmDialog} onOpenChange={(open) => !isClearing && setShowConfirmDialog(open)}>
-                <AlertDialogContent className="sm:max-w-[400px] rounded-3xl!">
-                    <AlertDialogHeader>
+                <AlertDialogContent size="sm" className="max-w-[340px] rounded-2xl p-6">
+                    <AlertDialogHeader className="gap-3">
                         <div
-                            className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <AlertTriangle className="w-7 h-7 text-red-600"/>
+                            className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                hasDangerousSelections ? "bg-red-100" : "bg-[#EAF4FF]"
+                            }`}
+                        >
+                            {hasDangerousSelections ? (
+                                <AlertTriangle className="w-6 h-6 text-[#EF4444]" strokeWidth={2.2}/>
+                            ) : (
+                                <Trash2 className="w-6 h-6 text-[#091A7A]" strokeWidth={2.2}/>
+                            )}
                         </div>
-                        <AlertDialogTitle className="text-center text-[#091A7A] text-xl">Clear Selected
-                            Data?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[#091A7A]/70">
+                        <AlertDialogTitle className="text-center text-[18px] font-bold text-[#091A7A]">
+                            {hasDangerousSelections ? "Delete selected data?" : "Clear cache?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center text-[14px] text-[#091A7A]/70 text-pretty">
                             {hasDangerousSelections
-                                ? "This action cannot be undone. Your selected data will be permanently deleted."
-                                : "This will free up space on your device. You can always rebuild your cache."}
+                                ? "This permanently deletes your selected data and can't be undone."
+                                : "This frees up space on your device. You can rebuild your cache anytime."}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">
+                    <div className="flex gap-3 mt-1">
                         <AlertDialogCancel
                             disabled={isClearing}
+                            variant="ghost"
                             onClick={() => setShowConfirmDialog(false)}
-                            className="flex-1 py-4 h-auto border-none hover:bg-gray-200 bg-gray-100 text-[#091A7A] font-semibold rounded-2xl disabled:opacity-50"
+                            className="flex-1 h-11 rounded-xl bg-[#EAF4FF] flex items-center justify-center font-semibold text-[14px] text-[#091A7A] transition-colors hover:bg-[#dcebff] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
+                            variant="ghost"
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleClearData();
                             }}
                             disabled={isClearing}
-                            className="flex-1 py-4 h-auto bg-gradient-to-r hover:bg-gradient-to-r from-red-500 hover:from-red-600 to-red-600 hover:to-red-700 text-white font-semibold rounded-2xl disabled:opacity-50"
+                            className={`flex-1 h-11 rounded-xl flex items-center justify-center font-semibold text-[14px] text-white transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 ${
+                                hasDangerousSelections
+                                    ? "bg-[#EF4444] hover:bg-[#dc2626] shadow-[0_8px_20px_rgba(239,68,68,0.25)] focus-visible:ring-[#EF4444]/40"
+                                    : "bg-[#091A7A] hover:bg-[#0a2090] shadow-[0_8px_20px_rgba(9,26,122,0.25)] focus-visible:ring-[#091A7A]/40"
+                            }`}
                         >
                             {isClearing ? (
-                                <span className="flex items-center justify-center gap-2">
-                  <motion.div
-                      animate={{rotate: 360}}
-                      transition={{duration: 1, repeat: Infinity, ease: "linear"}}
-                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                  />
-                </span>
+                                <motion.div
+                                    animate={{rotate: 360}}
+                                    transition={{duration: 1, repeat: Infinity, ease: "linear"}}
+                                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                                />
+                            ) : hasDangerousSelections ? (
+                                "Delete data"
                             ) : (
-                                "Clear Data"
+                                "Clear cache"
                             )}
                         </AlertDialogAction>
-                    </AlertDialogFooter>
+                    </div>
                 </AlertDialogContent>
             </AlertDialog>
         </div>
