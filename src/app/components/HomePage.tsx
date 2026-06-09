@@ -163,14 +163,17 @@ export default function HomePage() {
         setShowXPAnimation(false);
     };
 
-    const handleCreatePalaceSuccess = () => {
+    // Land inside the new palace: it has no floors yet, and the detail screen's
+    // empty state carries the "Add floor" action that continues the flow.
+    const handleCreatePalaceSuccess = (palaceId: string) => {
         setShowCreatePalace(false);
-        toast.success("Palace Created!");
+        setSelectedPalaceId(palaceId);
+        toast.success("Palace created. Add a floor to start building.");
     };
 
     const handleEditPalaceSuccess = () => {
         setEditingPalaceId(null);
-        toast.success("Palace Updated!");
+        toast.success("Changes saved");
     };
 
 

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {animate, AnimatePresence, motion, useMotionValue} from "motion/react";
+import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
 import {
   ArrowLeft,
   Brain,
@@ -92,7 +92,16 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
     }, {axis: 'x', filterTaps: true});
 
     return (
-        <div className="relative overflow-hidden rounded-2xl touch-pan-y">
+        <motion.div
+            initial={{opacity: 0, y: 12}}
+            animate={{opacity: 1, y: 0}}
+            transition={{
+                delay: roomIndex * 0.06,
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1],
+            }}
+            className="relative overflow-hidden rounded-2xl touch-pan-y"
+        >
             {/* Hidden Action Buttons behind the card */}
             <div
                 className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 gap-3 bg-[#EAF4FF]/70 rounded-2xl w-full">
@@ -120,16 +129,14 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
                 </motion.button>
             </div>
 
-            {/* Foreground Card */}
+            {/* Foreground Card. Drag offset lives solely in the `x` motion value;
+                entrance animation is on the wrapper so the two never fight.
+                The cast bridges use-gesture's DOM handler types with motion's
+                overloaded event props (onAnimationStart etc.); only pointer
+                handlers are actually produced by bind(). */}
             <motion.div
-                {...bind()}
+                {...(bind() as unknown as HTMLMotionProps<"div">)}
                 style={{x}}
-                initial={{opacity: 0, x: -20}}
-                animate={{opacity: 1, x: x.get() === 0 ? 0 : x.get()}}
-                transition={{
-                    delay: roomIndex * 0.08,
-                    duration: 0.2,
-                }}
                 className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-white/70 shadow-card relative z-10 w-full"
             >
                 <div className="flex items-start justify-between mb-3">
@@ -217,7 +224,7 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
                     </div>
                 )}
             </motion.div>
-        </div>
+        </motion.div>
     );
 }
 
@@ -269,6 +276,14 @@ export function PalaceDetailScreen({
                 ? prev.filter((id) => id !== floorId)
                 : [...prev, floorId],
         );
+    };
+
+    const openAddFloor = () => {
+        // The add-floor modal shares floorFormData with the inline floor editor;
+        // clear both so an in-progress edit never leaks into the new-floor form.
+        setEditingFloorId(null);
+        setFloorFormData({title: "", description: ""});
+        setShowAddFloor(true);
     };
 
     const handleAddFloor = () => {
@@ -342,7 +357,7 @@ export function PalaceDetailScreen({
     const handleSaveRoom = (floorId: string, roomId: string) => {
         if (!roomFormData.title.trim() || !roomFormData.description.trim() || !roomFormData.content.trim()) return;
 
-        actions.updateRoom(floorId, roomId, {
+        actions.updateRoom(palaceId, floorId, roomId, {
             title: roomFormData.title.trim(),
             description: roomFormData.description.trim(),
             duration: roomFormData.duration,
@@ -395,7 +410,7 @@ export function PalaceDetailScreen({
                         <motion.button
                             whileTap={{scale: 0.92}}
                             aria-label="Add floor"
-                            onClick={() => setShowAddFloor(true)}
+                            onClick={openAddFloor}
                             className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             <Plus className="w-5 h-5 text-[#091A7A]"/>
@@ -545,7 +560,7 @@ export function PalaceDetailScreen({
                         description="Floors group the rooms of your palace by topic or level. Add one to start placing rooms."
                         action={
                             <button
-                                onClick={() => setShowAddFloor(true)}
+                                onClick={openAddFloor}
                                 className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
                             >
                                 <Plus className="h-4 w-4"/>
@@ -790,20 +805,23 @@ export function PalaceDetailScreen({
             <Drawer.Root open={!!showAddRoom} onOpenChange={(open) => {
                 if (!open) {
                     setShowAddRoom(null);
+                    setEditingRoomId(null);
                     setRoomFormData({title: "", description: "", duration: 10, content: "", isUnlocked: true});
                 }
             }}>
                 <Drawer.Portal>
                     <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
                     <Drawer.Content
+                        aria-describedby={undefined}
                         className="bg-[#F5F5F7] flex flex-col rounded-t-[10px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none h-auto max-h-[90%]">
                         <div className="p-4 bg-white rounded-t-[10px] flex-1 overflow-y-auto">
                             <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-6"/>
 
                             <div className="px-2 pb-6 space-y-4">
-                                <h4 className="text-[20px] font-bold text-[#091A7A] mb-4">
+                                <Drawer.Title
+                                    className="text-[20px] font-bold text-[#091A7A] mb-4 block">
                                     {editingRoomId ? "Edit room" : "Add a room"}
-                                </h4>
+                                </Drawer.Title>
                                 <div className="space-y-4">
                                     <div>
                                         <label

@@ -18,9 +18,7 @@ interface SearchResultProps {
 }
 
 export function SearchResultCard({
-                                     id,
                                      name,
-                                     description,
                                      icon,
                                      difficulty,
                                      totalRooms,

@@ -192,7 +192,7 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                                     <h4 className="font-semibold text-[#091A7A] mb-3 px-2">
                                         {category.title}
                                     </h4>
-                                    <Accordion type="single" collapsible
+                                    <Accordion multiple={false}
                                                className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card px-5">
                                         {category.items.map((item, itemIndex) => (
                                             <AccordionItem key={itemIndex} value={`item-${itemIndex}`}

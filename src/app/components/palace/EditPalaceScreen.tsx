@@ -1,12 +1,15 @@
-import {useEffect, useState} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
 import {motion} from "motion/react";
-import {ArrowLeft, Check, Save} from "lucide-react";
+import {ArrowLeft, Save} from "lucide-react";
 import {StatusBar} from "../ui/StatusBar";
 import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
 import {useProgressState} from "../../hooks/useProgressState";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
+import {PalaceFormData, palaceFormSchema} from "./palaceForm";
+import {CategoryGrid, ColorList, FieldError, IconGrid, PalacePreview,} from "./PalaceFormFields";
 
 interface EditPalaceScreenProps {
     palaceId: string;
@@ -14,67 +17,32 @@ interface EditPalaceScreenProps {
     onSuccess: () => void;
 }
 
-const iconOptions = [
-    "🏛️", "🌌", "🌍", "🫀", "⚗️", "💻", "📚", "🎨", "🎭", "🎵",
-    "⚽", "🏀", "🎯", "🎲", "🎪", "🎬", "📷", "🎤", "🎧", "🎸",
-    "🌸", "🌺", "🌻", "🌹", "🌷", "🍎", "🍊", "🍋", "🍌", "🍇"
-];
-
-const colorOptions = [
-    {name: "Purple & Pink", value: "from-purple-500 to-pink-500"},
-    {name: "Blue & Cyan", value: "from-blue-500 to-cyan-500"},
-    {name: "Green & Emerald", value: "from-green-500 to-emerald-500"},
-    {name: "Red & Orange", value: "from-red-500 to-orange-500"},
-    {name: "Indigo & Purple", value: "from-indigo-500 to-purple-500"},
-    {name: "Amber & Yellow", value: "from-amber-500 to-yellow-500"},
-    {name: "Pink & Rose", value: "from-pink-500 to-rose-500"},
-    {name: "Teal & Green", value: "from-teal-500 to-green-500"},
-    {name: "Violet & Purple", value: "from-violet-500 to-purple-500"},
-    {name: "Sky & Blue", value: "from-sky-500 to-blue-500"},
-];
-
-const categoryOptions = [
-    "Science",
-    "History",
-    "Geography",
-    "Technology",
-    "Arts",
-    "Sports",
-    "Music",
-    "Literature",
-    "Mathematics",
-    "Languages",
-];
-
 export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreenProps) {
     const {state, actions} = useProgressState();
     const palace = state.palaces.find((p) => p.id === palaceId);
 
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        category: "",
-        icon: "🏛️",
-        color: "from-purple-500 to-pink-500",
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        trigger,
+        formState: {errors},
+    } = useForm<PalaceFormData>({
+        resolver: zodResolver(palaceFormSchema),
+        defaultValues: {
+            name: palace?.name ?? "",
+            description: palace?.description ?? "",
+            category: palace?.category ?? "",
+            icon: palace?.icon ?? "🏛️",
+            color: palace?.color ?? "from-purple-500 to-pink-500",
+        },
+        mode: "onChange",
     });
 
-    const [errors, setErrors] = useState({
-        name: "",
-        description: "",
-        category: "",
-    });
-
-    useEffect(() => {
-        if (palace) {
-            setFormData({
-                name: palace.name,
-                description: palace.description,
-                category: palace.category,
-                icon: palace.icon,
-                color: palace.color,
-            });
-        }
-    }, [palace]);
+    const watchIcon = watch("icon");
+    const watchColor = watch("color");
+    const watchCategory = watch("category");
 
     if (!palace) {
         return (
@@ -84,46 +52,14 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
         );
     }
 
-    const validateForm = () => {
-        const newErrors = {
-            name: "",
-            description: "",
-            category: "",
-        };
-
-        if (!formData.name.trim()) {
-            newErrors.name = "Palace name is required";
-        } else if (formData.name.trim().length < 3) {
-            newErrors.name = "Name must be at least 3 characters";
-        }
-
-        if (!formData.description.trim()) {
-            newErrors.description = "Description is required";
-        } else if (formData.description.trim().length < 10) {
-            newErrors.description = "Description must be at least 10 characters";
-        }
-
-        if (!formData.category) {
-            newErrors.category = "Please select a category";
-        }
-
-        setErrors(newErrors);
-        return !Object.values(newErrors).some((error) => error);
-    };
-
-    const handleSubmit = () => {
-        if (!validateForm()) {
-            return;
-        }
-
+    const onSubmit = (data: PalaceFormData) => {
         actions.updatePalace(palaceId, {
-            name: formData.name.trim(),
-            description: formData.description.trim(),
-            category: formData.category,
-            icon: formData.icon,
-            color: formData.color,
+            name: data.name.trim(),
+            description: data.description.trim(),
+            category: data.category,
+            icon: data.icon,
+            color: data.color,
         });
-
         onSuccess();
     };
 
@@ -165,150 +101,85 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
 
                 <div
                     className="flex-1 overflow-y-auto scrollbar-hide px-6 py-6 bg-gradient-to-b from-[#4F8EFF]/95 to-[#ADC8FF]/95 relative">
-                    <div className="space-y-6">
-
-                        {/* Form Fields */}
+                    <form
+                        id="edit-palace-form"
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="space-y-6"
+                    >
                         <div>
-                            <label className="text-white text-[14px] font-medium mb-2 block">
+                            <label htmlFor="edit-palace-name" className="text-white text-[14px] font-medium mb-2 block">
                                 Palace Name
                             </label>
                             <Input
-                                value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                id="edit-palace-name"
+                                {...register("name")}
                                 placeholder="e.g., Ancient Rome"
                                 className="w-full px-5 py-4 h-auto bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
                             />
-                            {errors.name && (
-                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                                    {errors.name}
-                                </p>
-                            )}
+                            <FieldError message={errors.name?.message}/>
                         </div>
 
                         <div>
-                            <label className="text-white text-[14px] font-medium mb-2 block">
+                            <label htmlFor="edit-palace-description"
+                                   className="text-white text-[14px] font-medium mb-2 block">
                                 Description
                             </label>
                             <Textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                id="edit-palace-description"
+                                {...register("description")}
                                 placeholder="Describe what you'll learn in this memory palace..."
                                 rows={4}
                                 className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all resize-none"
                             />
-                            {errors.description && (
-                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                                    {errors.description}
-                                </p>
-                            )}
+                            <FieldError message={errors.description?.message}/>
                         </div>
 
                         <div>
-                            <label className="text-white text-[14px] font-medium mb-3 block">
+                            <span className="text-white text-[14px] font-medium mb-3 block">
                                 Category
-                            </label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {categoryOptions.map((category) => (
-                                    <motion.button
-                                        key={category}
-                                        type="button"
-                                        whileTap={{scale: 0.96}}
-                                        onClick={() => setFormData({...formData, category})}
-                                        className={`px-4 py-3 rounded-2xl font-medium text-[14px] transition-all ${
-                                            formData.category === category
-                                                ? "bg-white text-[#091A7A] shadow-md"
-                                                : "bg-white/20 text-white"
-                                        }`}
-                                    >
-                                        {category}
-                                    </motion.button>
-                                ))}
-                            </div>
-                            {errors.category && (
-                                <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                                    {errors.category}
-                                </p>
-                            )}
+                            </span>
+                            <CategoryGrid
+                                value={watchCategory}
+                                onChange={(category) => {
+                                    setValue("category", category);
+                                    trigger("category");
+                                }}
+                            />
+                            <FieldError message={errors.category?.message}/>
                         </div>
 
                         <div>
-                            <label className="text-white text-[14px] font-medium mb-3 block">
+                            <span className="text-white text-[14px] font-medium mb-3 block">
                                 Icon
-                            </label>
-                            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
-                                <div className="flex items-center justify-center mb-6">
-                                    <div
-                                        className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${formData.color} flex items-center justify-center shadow-2xl`}
-                                    >
-                                        <span className="text-[56px]">{formData.icon}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-5 gap-3">
-                                    {iconOptions.map((icon) => (
-                                        <motion.button
-                                            key={icon}
-                                            type="button"
-                                            whileHover={{scale: 1.1}}
-                                            whileTap={{scale: 0.9}}
-                                            onClick={() => setFormData({...formData, icon})}
-                                            className={`aspect-square rounded-2xl flex items-center justify-center text-[28px] transition-all ${
-                                                formData.icon === icon
-                                                    ? "bg-white shadow-lg"
-                                                    : "bg-white/20 hover:bg-white/30"
-                                            }`}
-                                        >
-                                            {icon}
-                                        </motion.button>
-                                    ))}
-                                </div>
+                            </span>
+                            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6 space-y-6">
+                                <PalacePreview icon={watchIcon} color={watchColor}/>
+                                <IconGrid
+                                    value={watchIcon}
+                                    onChange={(icon) => setValue("icon", icon)}
+                                />
                             </div>
                         </div>
 
                         <div>
-                            <label className="text-white text-[14px] font-medium mb-3 block">
+                            <span className="text-white text-[14px] font-medium mb-3 block">
                                 Color Scheme
-                            </label>
+                            </span>
                             <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
-                                <div className="space-y-3">
-                                    {colorOptions.map((color) => (
-                                        <motion.button
-                                            key={color.value}
-                                            type="button"
-                                            whileTap={{scale: 0.98}}
-                                            onClick={() => setFormData({...formData, color: color.value})}
-                                            className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                                                formData.color === color.value
-                                                    ? "bg-white shadow-lg"
-                                                    : "bg-white/20 hover:bg-white/30"
-                                            }`}
-                                        >
-                                            <div
-                                                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color.value} flex-shrink-0 shadow-md`}
-                                            />
-                                            <span
-                                                className={`font-medium text-[15px] ${
-                                                    formData.color === color.value ? "text-[#091A7A]" : "text-white"
-                                                }`}
-                                            >
-                        {color.name}
-                      </span>
-                                            {formData.color === color.value && (
-                                                <Check size={20} className="text-[#091A7A] ml-auto"/>
-                                            )}
-                                        </motion.button>
-                                    ))}
-                                </div>
+                                <ColorList
+                                    value={watchColor}
+                                    onChange={(color) => setValue("color", color)}
+                                />
                             </div>
                         </div>
-
-                    </div>
+                    </form>
                 </div>
 
                 <div className="p-6 bg-white/95 backdrop-blur-xl shrink-0 border-t border-white/20">
                     <motion.button
+                        type="submit"
+                        form="edit-palace-form"
                         whileTap={{scale: 0.98}}
-                        onClick={handleSubmit}
                         className="w-full py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2"
                     >
                         <Save size={20}/>

@@ -107,12 +107,12 @@ export function PalacesPage({
     const [sortBy, setSortBy] = useState("Recent");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
+    // Derive filter chips from the palaces that exist, so every palace is
+    // always reachable through the filter (creation offers more categories
+    // than the old hardcoded list showed).
     const categories = [
         "All",
-        "Science",
-        "History",
-        "Geography",
-        "Technology",
+        ...Array.from(new Set(palaces.map((p) => p.category))).sort(),
     ];
     const sortOptions = [
         "Recent",
@@ -339,7 +339,6 @@ export function PalacesPage({
                                                 progress={palace.progress}
                                                 totalRooms={palace.totalRooms}
                                                 roomsCompleted={palace.roomsCompleted}
-                                                estimatedTime={`${Math.floor(palace.totalRooms * 8 / 60)}h ${(palace.totalRooms * 8) % 60}min`}
                                                 difficulty={
                                                     palace.totalRooms < 5
                                                         ? "Beginner"
@@ -347,7 +346,6 @@ export function PalacesPage({
                                                             ? "Intermediate"
                                                             : "Advanced"
                                                 }
-                                                rating={4.9}
                                                 variant="compact"
                                                 onClick={() => {
                                                 }}

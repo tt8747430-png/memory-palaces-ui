@@ -10,7 +10,7 @@ createRoot(document.getElementById("root")!).render(
     // reducedMotion="user" makes every Motion animation honor the OS
     // "Reduce motion" setting: transforms are skipped, opacity is kept.
     <MotionConfig reducedMotion="user">
-        <TooltipProvider delayDuration={300}>
+        <TooltipProvider delay={300}>
             <SmoothScrollProvider>
                 <App/>
                 <Toaster position="top-center"/>

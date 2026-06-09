@@ -1,64 +1,24 @@
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {AnimatePresence, motion} from "motion/react";
-import {ArrowLeft, Check, ChevronRight, Sparkles,} from "lucide-react";
+import {ArrowLeft, ChevronRight, Sparkles} from "lucide-react";
 import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
 import {useProgressState} from "../../hooks/useProgressState";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {Drawer} from "vaul";
-
-const formSchema = z.object({
-    name: z.string().min(3, "Name must be at least 3 characters"),
-    description: z.string().min(10, "Description must be at least 10 characters"),
-    category: z.string().min(1, "Please select a category"),
-    icon: z.string(),
-    color: z.string(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import {PalaceFormData, palaceFormSchema} from "./palaceForm";
+import {CategoryGrid, ColorList, FieldError, IconGrid, PalacePreview,} from "./PalaceFormFields";
 
 interface CreatePalaceScreenProps {
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
     onBack?: () => void;
-    onSuccess: () => void;
+    /** Called with the new palace's id so the caller can navigate into it. */
+    onSuccess: (palaceId: string) => void;
 }
-
-const iconOptions = [
-    "🏛️", "🌌", "🌍", "🫀", "⚗️", "💻", "📚", "🎨", "🎭", "🎵",
-    "⚽", "🏀", "🎯", "🎲", "🎪", "🎬", "📷", "🎤", "🎧", "🎸",
-    "🌸", "🌺", "🌻", "🌹", "🌷", "🍎", "🍊", "🍋", "🍌", "🍇"
-];
-
-const colorOptions = [
-    {name: "Purple & Pink", value: "from-purple-500 to-pink-500"},
-    {name: "Blue & Cyan", value: "from-blue-500 to-cyan-500"},
-    {name: "Green & Emerald", value: "from-green-500 to-emerald-500"},
-    {name: "Red & Orange", value: "from-red-500 to-orange-500"},
-    {name: "Indigo & Purple", value: "from-indigo-500 to-purple-500"},
-    {name: "Amber & Yellow", value: "from-amber-500 to-yellow-500"},
-    {name: "Pink & Rose", value: "from-pink-500 to-rose-500"},
-    {name: "Teal & Green", value: "from-teal-500 to-green-500"},
-    {name: "Violet & Purple", value: "from-violet-500 to-purple-500"},
-    {name: "Sky & Blue", value: "from-sky-500 to-blue-500"},
-];
-
-const categoryOptions = [
-    "Science",
-    "History",
-    "Geography",
-    "Technology",
-    "Arts",
-    "Sports",
-    "Music",
-    "Literature",
-    "Mathematics",
-    "Languages",
-];
 
 export function CreatePalaceScreen({
                                        open = true,
@@ -77,8 +37,8 @@ export function CreatePalaceScreen({
         watch,
         trigger,
         formState: {errors},
-    } = useForm<FormData>({
-        resolver: zodResolver(formSchema),
+    } = useForm<PalaceFormData>({
+        resolver: zodResolver(palaceFormSchema),
         defaultValues: {
             name: "",
             description: "",
@@ -92,6 +52,11 @@ export function CreatePalaceScreen({
     const watchIcon = watch("icon");
     const watchColor = watch("color");
     const watchCategory = watch("category");
+
+    const close = () => {
+        onOpenChange?.(false);
+        onBack?.();
+    };
 
     const handleNext = async () => {
         if (currentStep === 1) {
@@ -107,13 +72,12 @@ export function CreatePalaceScreen({
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1);
         } else {
-            if (onOpenChange) onOpenChange(false);
-            if (onBack) onBack();
+            close();
         }
     };
 
-    const onSubmit = (data: FormData) => {
-        actions.createPalace({
+    const onSubmit = (data: PalaceFormData) => {
+        const palaceId = actions.createPalace({
             name: data.name.trim(),
             description: data.description.trim(),
             category: data.category,
@@ -121,7 +85,7 @@ export function CreatePalaceScreen({
             color: data.color,
             totalRooms: 0,
         });
-        onSuccess();
+        onSuccess(palaceId);
     };
 
     const renderProgressBar = () => (
@@ -155,67 +119,44 @@ export function CreatePalaceScreen({
             </div>
 
             <div>
-                <label className="text-white text-[14px] font-medium mb-2 block">
+                <label htmlFor="palace-name" className="text-white text-[14px] font-medium mb-2 block">
                     Palace Name
                 </label>
                 <Input
+                    id="palace-name"
                     {...register("name")}
                     placeholder="e.g., Ancient Rome"
                     className="w-full px-5 py-4 h-auto bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all"
                 />
-                {errors.name && (
-                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                        {errors.name.message}
-                    </p>
-                )}
+                <FieldError message={errors.name?.message}/>
             </div>
 
             <div>
-                <label className="text-white text-[14px] font-medium mb-2 block">
+                <label htmlFor="palace-description" className="text-white text-[14px] font-medium mb-2 block">
                     Description
                 </label>
                 <Textarea
+                    id="palace-description"
                     {...register("description")}
                     placeholder="Describe what you'll learn in this memory palace..."
                     rows={4}
                     className="w-full px-5 py-4 bg-white/20 backdrop-blur-md rounded-2xl text-white placeholder:text-white/50 outline-none border-2 border-transparent focus:border-white/50 transition-all resize-none"
                 />
-                {errors.description && (
-                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                        {errors.description.message}
-                    </p>
-                )}
+                <FieldError message={errors.description?.message}/>
             </div>
 
             <div>
-                <label className="text-white text-[14px] font-medium mb-3 block">
+                <span className="text-white text-[14px] font-medium mb-3 block">
                     Category
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                    {categoryOptions.map((category) => (
-                        <motion.button
-                            key={category}
-                            type="button"
-                            whileTap={{scale: 0.96}}
-                            onClick={() => {
-                                setValue("category", category);
-                                trigger("category");
-                            }}
-                            className={`px-4 py-3 rounded-2xl font-medium text-[14px] transition-all ${
-                                watchCategory === category
-                                    ? "bg-white text-[#091A7A] shadow-md"
-                                    : "bg-white/20 text-white"
-                            }`}
-                        >
-                            {category}
-                        </motion.button>
-                    ))}
-                </div>
-                {errors.category && (
-                    <p className="mt-2 inline-block rounded-lg bg-[#B91C1C]/90 px-2.5 py-1 text-[12px] font-medium text-white">
-                        {errors.category.message}
-                    </p>
-                )}
+                </span>
+                <CategoryGrid
+                    value={watchCategory}
+                    onChange={(category) => {
+                        setValue("category", category);
+                        trigger("category");
+                    }}
+                />
+                <FieldError message={errors.category?.message}/>
             </div>
         </motion.div>
     );
@@ -235,33 +176,12 @@ export function CreatePalaceScreen({
                 </p>
             </div>
 
-            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
-                <div className="flex items-center justify-center mb-6">
-                    <div
-                        className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${watchColor} flex items-center justify-center shadow-2xl`}
-                    >
-                        <span className="text-[56px]">{watchIcon}</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-5 gap-3">
-                    {iconOptions.map((icon) => (
-                        <motion.button
-                            key={icon}
-                            type="button"
-                            whileHover={{scale: 1.1}}
-                            whileTap={{scale: 0.9}}
-                            onClick={() => setValue("icon", icon)}
-                            className={`aspect-square rounded-2xl flex items-center justify-center text-[28px] transition-all ${
-                                watchIcon === icon
-                                    ? "bg-white shadow-lg"
-                                    : "bg-white/20 hover:bg-white/30"
-                            }`}
-                        >
-                            {icon}
-                        </motion.button>
-                    ))}
-                </div>
+            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6 space-y-6">
+                <PalacePreview icon={watchIcon} color={watchColor}/>
+                <IconGrid
+                    value={watchIcon}
+                    onChange={(icon) => setValue("icon", icon)}
+                />
             </div>
         </motion.div>
     );
@@ -281,44 +201,12 @@ export function CreatePalaceScreen({
                 </p>
             </div>
 
-            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6">
-                <div className="flex items-center justify-center mb-6">
-                    <div
-                        className={`w-32 h-32 rounded-3xl bg-gradient-to-br ${watchColor} flex items-center justify-center shadow-2xl`}
-                    >
-                        <span className="text-[64px]">{watchIcon}</span>
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    {colorOptions.map((color) => (
-                        <motion.button
-                            key={color.value}
-                            type="button"
-                            whileTap={{scale: 0.98}}
-                            onClick={() => setValue("color", color.value)}
-                            className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                                watchColor === color.value
-                                    ? "bg-white shadow-lg"
-                                    : "bg-white/20 hover:bg-white/30"
-                            }`}
-                        >
-                            <div
-                                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color.value} flex-shrink-0 shadow-md`}
-                            />
-                            <span
-                                className={`font-medium text-[15px] ${
-                                    watchColor === color.value ? "text-[#091A7A]" : "text-white"
-                                }`}
-                            >
-                {color.name}
-              </span>
-                            {watchColor === color.value && (
-                                <Check size={20} className="text-[#091A7A] ml-auto"/>
-                            )}
-                        </motion.button>
-                    ))}
-                </div>
+            <div className="bg-white/15 backdrop-blur-md rounded-3xl p-6 space-y-6">
+                <PalacePreview icon={watchIcon} color={watchColor} size="lg"/>
+                <ColorList
+                    value={watchColor}
+                    onChange={(color) => setValue("color", color)}
+                />
             </div>
         </motion.div>
     );
@@ -400,11 +288,19 @@ export function CreatePalaceScreen({
     );
 
     return (
-        <Drawer.Root open={open} onOpenChange={onOpenChange}>
+        <Drawer.Root
+            open={open}
+            onOpenChange={(isOpen) => {
+                onOpenChange?.(isOpen);
+                if (!isOpen) onBack?.();
+            }}
+        >
             <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]"/>
+                <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
                 <Drawer.Content
+                    aria-describedby={undefined}
                     className="bg-white flex flex-col rounded-t-[10px] h-[96%] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none overflow-hidden">
+                    <Drawer.Title className="sr-only">Create Palace</Drawer.Title>
                     <div className="pt-4 bg-[#091A7A] rounded-t-[10px] flex-1 flex flex-col overflow-hidden">
                         <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-white/50 mb-2"/>
                         <div className="flex-1 overflow-hidden">

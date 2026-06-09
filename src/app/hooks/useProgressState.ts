@@ -63,6 +63,26 @@ export type ProgressEvent = {
     };
 };
 
+/**
+ * Recompute a palace's room-derived stats from its floors. Every mutation that
+ * adds, edits, or removes rooms (including deleting a whole floor) must go
+ * through this, or `totalRooms` / `roomsCompleted` / `progress` drift from the
+ * real structure.
+ */
+function withRoomStats(palace: Palace): Palace {
+    const rooms = (palace.floors || []).flatMap((floor) => floor.rooms);
+    const roomsCompleted = rooms.filter((room) => room.isCompleted).length;
+    return {
+        ...palace,
+        totalRooms: rooms.length,
+        roomsCompleted,
+        progress:
+            rooms.length > 0
+                ? Math.round((roomsCompleted / rooms.length) * 100)
+                : 0,
+    };
+}
+
 const DEFAULT_STATE: ProgressState = {
     userXP: 2450,
     currentLevel: 12,
@@ -400,11 +420,11 @@ export function useProgressState(
             ...prev,
             palaces: prev.palaces.map((palace) =>
                 palace.id === palaceId
-                    ? {
+                    ? withRoomStats({
                         ...palace,
                         floors: (palace.floors || []).filter((floor) => floor.id !== floorId),
                         updatedAt: new Date().toISOString(),
-                    }
+                    })
                     : palace
             ),
         }));
@@ -418,28 +438,19 @@ export function useProgressState(
 
         setState((prev) => ({
             ...prev,
-            palaces: prev.palaces.map((palace) => {
-                if (palace.id === palaceId) {
-                    const updatedFloors = (palace.floors || []).map((floor) =>
-                        floor.id === floorId
-                            ? {...floor, rooms: [...floor.rooms, newRoom]}
-                            : floor
-                    );
-
-                    const totalRooms = updatedFloors.reduce(
-                        (sum, floor) => sum + floor.rooms.length,
-                        0
-                    );
-
-                    return {
+            palaces: prev.palaces.map((palace) =>
+                palace.id === palaceId
+                    ? withRoomStats({
                         ...palace,
-                        floors: updatedFloors,
-                        totalRooms,
+                        floors: (palace.floors || []).map((floor) =>
+                            floor.id === floorId
+                                ? {...floor, rooms: [...floor.rooms, newRoom]}
+                                : floor
+                        ),
                         updatedAt: new Date().toISOString(),
-                    };
-                }
-                return palace;
-            }),
+                    })
+                    : palace
+            ),
         }));
 
         return newRoom.id;
@@ -450,7 +461,7 @@ export function useProgressState(
             ...prev,
             palaces: prev.palaces.map((palace) =>
                 palace.id === palaceId
-                    ? {
+                    ? withRoomStats({
                         ...palace,
                         floors: (palace.floors || []).map((floor) =>
                             floor.id === floorId
@@ -463,7 +474,7 @@ export function useProgressState(
                                 : floor
                         ),
                         updatedAt: new Date().toISOString(),
-                    }
+                    })
                     : palace
             ),
         }));
@@ -472,28 +483,19 @@ export function useProgressState(
     const deleteRoom = (palaceId: string, floorId: string, roomId: string) => {
         setState((prev) => ({
             ...prev,
-            palaces: prev.palaces.map((palace) => {
-                if (palace.id === palaceId) {
-                    const updatedFloors = (palace.floors || []).map((floor) =>
-                        floor.id === floorId
-                            ? {...floor, rooms: floor.rooms.filter((room) => room.id !== roomId)}
-                            : floor
-                    );
-
-                    const totalRooms = updatedFloors.reduce(
-                        (sum, floor) => sum + floor.rooms.length,
-                        0
-                    );
-
-                    return {
+            palaces: prev.palaces.map((palace) =>
+                palace.id === palaceId
+                    ? withRoomStats({
                         ...palace,
-                        floors: updatedFloors,
-                        totalRooms,
+                        floors: (palace.floors || []).map((floor) =>
+                            floor.id === floorId
+                                ? {...floor, rooms: floor.rooms.filter((room) => room.id !== roomId)}
+                                : floor
+                        ),
                         updatedAt: new Date().toISOString(),
-                    };
-                }
-                return palace;
-            }),
+                    })
+                    : palace
+            ),
         }));
     };
 

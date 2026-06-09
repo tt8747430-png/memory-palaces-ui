@@ -9,8 +9,9 @@ interface PalaceCardProps {
     icon: string;
     progress: number;
     totalRooms: number;
-    roomsCompleted: number;
-    estimatedTime: string;
+    roomsCompleted?: number;
+    /** Falls back to an estimate of ~8 minutes per room when omitted. */
+    estimatedTime?: string;
     difficulty?: "Beginner" | "Intermediate" | "Advanced";
     rating?: number;
     isLocked?: boolean;
@@ -20,14 +21,19 @@ interface PalaceCardProps {
     onFavoriteToggle?: () => void;
 }
 
+function defaultEstimatedTime(totalRooms: number): string {
+    const minutes = totalRooms * 8;
+    return minutes >= 60
+        ? `${Math.floor(minutes / 60)}h ${minutes % 60}min`
+        : `${minutes}min`;
+}
+
 export function PalaceCard({
-                               id,
                                name,
                                description,
                                icon,
                                progress,
                                totalRooms,
-                               roomsCompleted,
                                estimatedTime,
                                difficulty = "Beginner",
                                rating,
@@ -38,6 +44,7 @@ export function PalaceCard({
                                onFavoriteToggle,
                            }: PalaceCardProps) {
     const [localFavorite, setLocalFavorite] = useState(isFavorite);
+    const displayTime = estimatedTime ?? defaultEstimatedTime(totalRooms);
 
     const handleFavoriteClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -89,7 +96,7 @@ export function PalaceCard({
                             <div className="flex items-center gap-1 bg-[#eaf4ff] px-2.5 py-1 rounded-lg">
                                 <Clock className="w-3.5 h-3.5 text-[#3d8fef]"/>
                                 <span className="text-xs font-medium text-[#3d8fef]">
-                  {estimatedTime}
+                  {displayTime}
                 </span>
                             </div>
                             {rating && (
@@ -202,7 +209,7 @@ export function PalaceCard({
                     <div className="inline-flex items-center gap-2 bg-[#eaf4ff] px-3 py-2 rounded-xl">
                         <Clock className="w-4 h-4 text-[#3d8fef]"/>
                         <span className="text-sm font-medium text-[#3d8fef]">
-              {estimatedTime}
+              {displayTime}
             </span>
                     </div>
                 </div>
@@ -264,7 +271,7 @@ export function PalaceCard({
                     <div className="flex items-center gap-1 bg-[#eaf4ff] px-2.5 py-1.5 rounded-lg">
                         <Clock className="w-3.5 h-3.5 text-[#3d8fef]"/>
                         <span className="text-sm font-medium text-[#3d8fef]">
-              {estimatedTime}
+              {displayTime}
             </span>
                     </div>
 
