@@ -46,7 +46,7 @@ export default function SignupScreen({
         agreeToTerms;
 
     return (
-        <div className="flex-1 flex flex-col relative bg-white">
+        <div className="flex-1 flex flex-col relative">
             {/* Floating Background Elements */}
             <AuthBackground/>
 

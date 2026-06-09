@@ -94,7 +94,7 @@ export function ClearDataScreen({onBack}: ClearDataScreenProps) {
     );
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -125,15 +125,13 @@ export function ClearDataScreen({onBack}: ClearDataScreenProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-3">
-                    {dataOptions.map((option, index) => {
+                    {dataOptions.map((option) => {
                         const isSelected = selectedOptions.includes(option.id);
 
                         return (
                             <motion.button
                                 key={option.id}
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: index * 0.05}}
+                                whileTap={{scale: 0.98}}
                                 onClick={() => toggleOption(option.id)}
                                 className={`w-full text-left bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card p-5 transition-all ${
                                     isSelected
@@ -168,10 +166,10 @@ export function ClearDataScreen({onBack}: ClearDataScreenProps) {
                           </span>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-[#091A7A]/60 mb-2">
+                                            <p className="text-sm text-[#091A7A]/70 mb-2">
                                                 {option.description}
                                             </p>
-                                            <p className="text-xs text-[#091A7A]/50">
+                                            <p className="text-xs text-[#091A7A]/70">
                                                 Size: {option.size}
                                             </p>
                                         </div>
@@ -237,7 +235,7 @@ export function ClearDataScreen({onBack}: ClearDataScreenProps) {
                         </div>
                         <AlertDialogTitle className="text-center text-[#091A7A] text-xl">Clear Selected
                             Data?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[#091A7A]/60">
+                        <AlertDialogDescription className="text-center text-[#091A7A]/70">
                             {hasDangerousSelections
                                 ? "This action cannot be undone. Your selected data will be permanently deleted."
                                 : "This will free up space on your device. You can always rebuild your cache."}

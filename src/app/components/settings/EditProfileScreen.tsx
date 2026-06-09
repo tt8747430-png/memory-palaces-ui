@@ -31,7 +31,7 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
     };
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -50,7 +50,8 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
                             whileTap={{scale: 0.95}}
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="w-12 h-12 bg-gradient-to-br from-[#091A7A] to-[#1a2b8a] backdrop-blur-lg rounded-full flex items-center justify-center shadow-card disabled:opacity-50"
+                            aria-label="Save changes"
+                            className="w-12 h-12 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] backdrop-blur-lg rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(9,26,122,0.25)] disabled:opacity-50"
                         >
                             <Save className="w-5 h-5 text-white"/>
                         </motion.button>
@@ -62,36 +63,28 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-6">
                     {/* Avatar */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        className="flex flex-col items-center gap-4"
-                    >
+                    <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                             <ImageWithFallback
                                 src={avatar}
                                 alt="Profile"
-                                className="w-28 h-28 rounded-full border-4 border-white shadow-xl object-cover"
+                                className="w-28 h-28 rounded-full border-4 border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] object-cover"
                                 style={{objectPosition: "center 20%"}}
                             />
                             <motion.button
                                 whileHover={{scale: 1.05}}
                                 whileTap={{scale: 0.95}}
-                                className="absolute bottom-0 right-0 w-10 h-10 bg-gradient-to-br from-[#091A7A] to-[#1a2b8a] rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                                aria-label="Change photo"
+                                className="absolute bottom-0 right-0 w-10 h-10 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-full flex items-center justify-center shadow-[0_6px_16px_rgba(9,26,122,0.30)] border-2 border-white"
                             >
                                 <Camera className="w-5 h-5 text-white"/>
                             </motion.button>
                         </div>
-                        <p className="text-sm text-[#091A7A]/60">Tap to change photo</p>
-                    </motion.div>
+                        <p className="text-sm font-medium text-[#091A7A]/70">Tap to change photo</p>
+                    </div>
 
                     {/* Form */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.1}}
-                        className="space-y-4"
-                    >
+                    <div className="space-y-4">
                         {/* Name */}
                         <div>
                             <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
@@ -101,7 +94,7 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
+                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
                                 placeholder="Enter your name"
                             />
                         </div>
@@ -115,7 +108,7 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
+                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
                                 placeholder="Enter your email"
                             />
                         </div>
@@ -127,25 +120,23 @@ export function EditProfileScreen({onBack, onSave}: EditProfileScreenProps) {
                             </label>
                             <textarea
                                 value={bio}
-                                onChange={(e) => setBio(e.target.value)}
+                                onChange={(e) => setBio(e.target.value.slice(0, 200))}
                                 rows={4}
-                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all resize-none"
+                                maxLength={200}
+                                className="w-full px-4 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all resize-none"
                                 placeholder="Tell us about yourself"
                             />
-                            <p className="text-xs text-[#091A7A]/50 mt-2 px-2">{bio.length}/200 characters</p>
+                            <p className="text-xs font-medium text-[#091A7A]/65 mt-2 px-2">{bio.length}/200 characters</p>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Save Button */}
                     <motion.button
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.2}}
                         whileHover={{scale: 1.02}}
                         whileTap={{scale: 0.98}}
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="w-full py-4 bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white font-semibold rounded-2xl shadow-lg disabled:opacity-50 transition-all"
+                        className="w-full py-4 bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white font-semibold rounded-2xl shadow-[0_10px_28px_rgba(9,26,122,0.25)] disabled:opacity-50 transition-all"
                     >
                         {isSaving ? (
                             <span className="flex items-center justify-center gap-2">

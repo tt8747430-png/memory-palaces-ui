@@ -20,7 +20,7 @@ const helpCategories = [
             },
             {
                 q: "Navigating the app interface",
-                a: "Use the bottom navigation bar to switch between Home, Training, Progress, and Profile screens."
+                a: "Use the bottom navigation bar to switch between the Home, Palaces, and Profile tabs."
             },
             {
                 q: "Setting up your profile",
@@ -104,7 +104,7 @@ const contactOptions = [
     {
         icon: Mail,
         label: "Email Support",
-        description: "support@memorypalace.app",
+        description: "support@mindscape.app",
         action: "Send Email",
         available: true,
     },
@@ -119,7 +119,7 @@ const contactOptions = [
 
 export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -135,7 +135,7 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                         </motion.button>
                         <h1 className="text-2xl font-bold text-[#091A7A]">Help Center</h1>
                     </div>
-                    <p className="text-sm text-[#091A7A]/60 px-2">
+                    <p className="text-sm text-[#091A7A]/70 px-2">
                         Find answers and get support
                     </p>
                 </div>
@@ -150,16 +150,14 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                             Contact Support
                         </h3>
                         <div className="space-y-3">
-                            {contactOptions.map((option, index) => (
+                            {contactOptions.map((option) => (
                                 <motion.button
                                     key={option.label}
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{delay: index * 0.05}}
+                                    whileTap={{scale: 0.98}}
                                     onClick={() => {
-                                        if (option.label === "Email Support") window.location.href = "mailto:support@memorypalace.app";
-                                        else if (option.label === "Documentation") window.open("https://docs.memorypalace.app", "_blank");
-                                        else window.open("https://chat.memorypalace.app", "_blank");
+                                        if (option.label === "Email Support") window.location.href = "mailto:support@mindscape.app";
+                                        else if (option.label === "Documentation") window.open("https://docs.mindscape.app", "_blank");
+                                        else window.open("https://chat.mindscape.app", "_blank");
                                     }}
                                     className="w-full flex items-center justify-between p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card hover:bg-[#F5F5F7] transition-all text-left"
                                 >
@@ -172,7 +170,7 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                                             <p className="font-semibold text-[#091A7A] mb-0.5">
                                                 {option.label}
                                             </p>
-                                            <p className="text-sm text-[#091A7A]/60">
+                                            <p className="text-sm text-[#091A7A]/70">
                                                 {option.description}
                                             </p>
                                         </div>
@@ -189,13 +187,8 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                             Frequently Asked Questions
                         </h3>
                         <div className="space-y-6">
-                            {helpCategories.map((category, categoryIndex) => (
-                                <motion.div
-                                    key={category.title}
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{delay: 0.2 + categoryIndex * 0.1}}
-                                >
+                            {helpCategories.map((category) => (
+                                <div key={category.title}>
                                     <h4 className="font-semibold text-[#091A7A] mb-3 px-2">
                                         {category.title}
                                     </h4>
@@ -214,7 +207,7 @@ export function HelpCenterScreen({onBack}: HelpCenterScreenProps) {
                                             </AccordionItem>
                                         ))}
                                     </Accordion>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
                     </div>

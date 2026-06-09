@@ -69,7 +69,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
     };
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -87,7 +87,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                             {step === "phone" ? "Connect Phone" : "Verify Phone"}
                         </h1>
                     </div>
-                    <p className="text-sm text-[#091A7A]/60 px-2">
+                    <p className="text-sm text-[#091A7A]/70 px-2">
                         {step === "phone"
                             ? "Add your phone number for account recovery"
                             : "Enter the code we sent to your phone"}
@@ -113,11 +113,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                             </motion.div>
 
                             {/* Phone Input */}
-                            <motion.div
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.1}}
-                            >
+                            <div>
                                 <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
                                     Phone Number
                                 </label>
@@ -129,7 +125,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                         value={phoneNumber}
                                         onChange={handlePhoneChange}
                                         maxLength={12}
-                                        className={`w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] text-lg placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 transition-all ${
+                                        className={`w-full pl-12 pr-4 py-4 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] text-lg placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 transition-all ${
                                             error
                                                 ? "border-red-300 focus:ring-red-200"
                                                 : "border-white/60 focus:ring-[#091A7A]/20"
@@ -143,26 +139,18 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                         <p className="text-sm text-red-600">{error}</p>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
 
                             {/* Info */}
-                            <motion.div
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.2}}
-                                className="bg-blue-50 border border-blue-200 rounded-2xl p-4"
-                            >
+                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                                 <p className="text-sm text-blue-900">
                                     We'll send you a verification code to confirm your number. Standard messaging rates
                                     may apply.
                                 </p>
-                            </motion.div>
+                            </div>
 
                             {/* Send Code Button */}
                             <motion.button
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.3}}
                                 whileHover={{scale: 1.02}}
                                 whileTap={{scale: 0.98}}
                                 onClick={handleSendCode}
@@ -198,25 +186,17 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                             </motion.div>
 
                             {/* Code sent message */}
-                            <motion.div
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                className="text-center"
-                            >
-                                <p className="text-sm text-[#091A7A]/60">
+                            <div className="text-center">
+                                <p className="text-sm text-[#091A7A]/70">
                                     We sent a 6-digit code to
                                 </p>
                                 <p className="text-lg font-semibold text-[#091A7A] mt-1">
                                     {phoneNumber}
                                 </p>
-                            </motion.div>
+                            </div>
 
                             {/* Verification Code Input */}
-                            <motion.div
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.1}}
-                            >
+                            <div>
                                 <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
                                     Verification Code
                                 </label>
@@ -229,7 +209,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                         setError("");
                                     }}
                                     maxLength={6}
-                                    className={`w-full px-4 py-4 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] text-2xl text-center tracking-widest placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 transition-all ${
+                                    className={`w-full px-4 py-4 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] text-2xl text-center tracking-widest placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 transition-all ${
                                         error
                                             ? "border-red-300 focus:ring-red-200"
                                             : "border-white/60 focus:ring-[#091A7A]/20"
@@ -242,16 +222,11 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                         <p className="text-sm text-red-600">{error}</p>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
 
                             {/* Resend Code */}
-                            <motion.div
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.2}}
-                                className="text-center"
-                            >
-                                <p className="text-sm text-[#091A7A]/60 mb-2">
+                            <div className="text-center">
+                                <p className="text-sm text-[#091A7A]/70 mb-2">
                                     Didn't receive a code?
                                 </p>
                                 <button
@@ -261,13 +236,10 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                 >
                                     {isSending ? "Sending..." : "Resend Code"}
                                 </button>
-                            </motion.div>
+                            </div>
 
                             {/* Verify Button */}
                             <motion.button
-                                initial={{opacity: 0, y: 20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.3}}
                                 whileHover={{scale: 1.02}}
                                 whileTap={{scale: 0.98}}
                                 onClick={handleVerify}
@@ -295,7 +267,7 @@ export function PhoneConnectScreen({onBack, onPhoneConnected}: PhoneConnectScree
                                     setVerificationCode("");
                                     setError("");
                                 }}
-                                className="w-full py-3 text-[#091A7A]/60 font-medium hover:text-[#091A7A] transition-colors"
+                                className="w-full py-3 text-[#091A7A]/70 font-medium hover:text-[#091A7A] transition-colors"
                             >
                                 Change Phone Number
                             </button>

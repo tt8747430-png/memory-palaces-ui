@@ -1,13 +1,18 @@
 import {motion} from "motion/react";
+import {useState} from "react";
 
 export function AmbientParticles() {
-    const particles = Array.from({length: 12}, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 2 + Math.random() * 4,
-        delay: Math.random() * 0.6,
-    }));
+    // Generated once so particles keep stable positions across re-renders
+    // (HomePage re-renders on XP/save state changes); otherwise they teleport.
+    const [particles] = useState(() =>
+        Array.from({length: 12}, (_, i) => ({
+            id: i,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: 2 + Math.random() * 4,
+            delay: Math.random() * 0.6,
+        }))
+    );
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">

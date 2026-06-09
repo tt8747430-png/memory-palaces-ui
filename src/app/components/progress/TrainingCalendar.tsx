@@ -101,9 +101,9 @@ export function TrainingCalendar() {
 
     return (
         <motion.div
-            initial={{opacity: 0, y: 20}}
+            initial={{opacity: 0, y: 16}}
             animate={{opacity: 1, y: 0}}
-            transition={{delay: 0.4, duration: 0.5}}
+            transition={{delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1]}}
             className="p-6 bg-card-glass backdrop-blur-lg rounded-[20px] shadow-card border border-white/20"
         >
             {/* Header */}
@@ -142,19 +142,10 @@ export function TrainingCalendar() {
                 {/* Calendar days */}
                 {monthData.map((dayObj, index) => {
                     const isCurrentMonth = dayObj.month === "current";
-                    const isPastMonth = dayObj.month === "prev";
 
                     return (
                         <motion.button
                             key={`${dayObj.fullDate}-${index}`}
-                            initial={{scale: 0, opacity: 0}}
-                            animate={{scale: 1, opacity: 1}}
-                            transition={{
-                                delay: 0.5 + index * 0.01,
-                                type: "spring",
-                                stiffness: 400,
-                                damping: 25,
-                            }}
                             whileTap={{scale: 0.95}}
                             className={`
                 aspect-square flex items-center justify-center rounded-[12px] text-small font-medium transition-all duration-200 relative

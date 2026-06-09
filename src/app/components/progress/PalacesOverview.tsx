@@ -93,56 +93,13 @@ export function PalacesOverview({
 
     return (
         <div className="relative mx-6 mb-6">
-            <div className="absolute inset-0 pointer-events-none overflow-hidden -inset-8">
-                {[
-                    {delay: 0.5, duration: 12, x: 15, y: -25},
-                    {delay: 2, duration: 9, x: -12, y: -18},
-                    {delay: 4, duration: 15, x: 20, y: -30},
-                    {delay: 6, duration: 11, x: -8, y: -22},
-                ].map((anim, i) => (
-                    <motion.div
-                        key={i}
-                        className={`absolute ${["top-16 left-4", "top-32 right-8", "bottom-20 left-16", "top-24 right-2"][i]} ${["w-1.5 h-1.5", "w-1 h-1", "w-0.5 h-0.5", "w-2 h-2"][i]} bg-gradient-to-br from-[#ADC8FF]/40 to-[#091A7A]/20 rounded-full blur-sm`}
-                        animate={{
-                            y: [0, anim.y, 0],
-                            x: [0, anim.x, 0],
-                            scale: [
-                                [0.4, 0.3, 0.5, 0.2][i],
-                                [1.2, 0.9, 1.5, 1][i],
-                                [0.4, 0.3, 0.5, 0.2][i],
-                            ],
-                            opacity: [
-                                [0.2, 0.3, 0.4, 0.2][i],
-                                [0.7, 0.6, 0.8, 0.5][i],
-                                [0.2, 0.3, 0.4, 0.2][i],
-                            ],
-                            rotate: i === 3 ? [0, 180, 360] : undefined,
-                        }}
-                        transition={{
-                            duration: anim.duration,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: anim.delay,
-                        }}
-                    />
-                ))}
-            </div>
-
             <div className="flex items-center justify-between mb-6">
-                <motion.h3
-                    initial={{opacity: 0, x: -8}}
-                    animate={{opacity: 1, x: 0}}
-                    transition={{delay: 0.5}}
-                    className="text-section-header text-[#091A7A]"
-                >
+                <h3 className="text-section-header text-[#091A7A]">
                     Your Memory Palaces
-                </motion.h3>
+                </h3>
                 <motion.button
-                    initial={{opacity: 0, x: 8}}
-                    animate={{opacity: 1, x: 0}}
-                    transition={{delay: 0.6}}
                     whileTap={{scale: 0.98}}
-                    className="text-xs font-medium text-[#091A7A] px-3 py-1 rounded-[50px] transition-all duration-200 hover:bg-white/20"
+                    className="text-xs font-medium text-[#091A7A] px-3 py-1 rounded-[50px] transition-colors duration-200 hover:bg-white/20"
                 >
                     View all
                 </motion.button>
@@ -184,11 +141,12 @@ export function PalacesOverview({
                 {palaces.map((palace, index) => (
                     <motion.div
                         key={palace.id}
-                        initial={{opacity: 0, y: 20}}
+                        initial={{opacity: 0, y: 14}}
                         animate={{opacity: 1, y: 0}}
                         transition={{
-                            delay: 0.7 + index * 0.1,
-                            duration: 0.5,
+                            delay: 0.08 + index * 0.06,
+                            duration: 0.4,
+                            ease: [0.22, 1, 0.36, 1],
                         }}
                         whileTap={{scale: 0.98}}
                         onClick={() => onPalaceClick(palace.id)}
@@ -196,17 +154,12 @@ export function PalacesOverview({
                     >
                         <motion.div
                             className="absolute -top-4 right-2 opacity-90 z-50 pointer-events-none text-5xl"
-                            initial={{opacity: 0, scale: 0.8, y: 20}}
+                            initial={{opacity: 0, scale: 0.85, y: 12}}
                             animate={{opacity: 0.9, scale: 1, y: 0}}
                             transition={{
-                                delay: 0.8 + index * 0.2,
-                                duration: 0.8,
-                                scale: {
-                                    delay: 0.8 + index * 0.2,
-                                    duration: 0.8,
-                                    type: "spring",
-                                    stiffness: 200,
-                                },
+                                delay: 0.14 + index * 0.06,
+                                duration: 0.45,
+                                ease: [0.22, 1, 0.36, 1],
                             }}
                             style={{
                                 filter:
@@ -225,7 +178,7 @@ export function PalacesOverview({
                                 WebkitBackdropFilter: "blur(16px)",
                                 borderColor: "rgba(255, 255, 255, 0.3)",
                                 boxShadow:
-                                    "0 25px 50px -12px rgba(9, 26, 122, 0.25)",
+                                    "0 10px 28px rgba(9, 26, 122, 0.14)",
                             }}
                         >
                             {palace.progress >= 70 && (
@@ -233,11 +186,11 @@ export function PalacesOverview({
                                     initial={{scale: 0, rotate: -15}}
                                     animate={{scale: 1, rotate: 0}}
                                     transition={{
-                                        delay: 1 + index * 0.1,
+                                        delay: 0.5 + index * 0.06,
                                         type: "spring",
                                         stiffness: 300,
                                     }}
-                                    className="absolute -top-2 -right-2 z-30 p-1 rounded-full bg-gradient-to-br from-[#facc15] to-[#f97316]"
+                                    className="absolute -top-2 -right-2 z-30 p-1 rounded-full bg-gradient-to-br from-[#FFC71E] to-[#F59E0B]"
                                 >
                                     <Star
                                         className="w-4 h-4 text-white"
@@ -305,9 +258,9 @@ export function PalacesOverview({
                                                     circumference,
                                             }}
                                             transition={{
-                                                delay: 0.7 + index * 0.1,
-                                                duration: 1.5,
-                                                ease: "easeOut",
+                                                delay: 0.2 + index * 0.06,
+                                                duration: 0.9,
+                                                ease: [0.22, 1, 0.36, 1],
                                             }}
                                             transform="rotate(-90 40 40)"
                                         />
@@ -317,10 +270,9 @@ export function PalacesOverview({
                                         initial={{scale: 0, opacity: 0}}
                                         animate={{scale: 1, opacity: 1}}
                                         transition={{
-                                            delay: 1 + index * 0.1,
-                                            duration: 0.5,
-                                            type: "spring",
-                                            stiffness: 300,
+                                            delay: 0.45 + index * 0.06,
+                                            duration: 0.4,
+                                            ease: [0.22, 1, 0.36, 1],
                                         }}
                                         className="absolute inset-0 flex items-center justify-center text-section-header text-[#091A7A]"
                                     >
@@ -332,7 +284,7 @@ export function PalacesOverview({
                                     <h4 className="text-subheading text-[#091A7A]">
                                         {palace.name}
                                     </h4>
-                                    <p className="text-[10px] text-[#525252]">
+                                    <p className="text-[11px] font-medium text-[#33417A]">
                                         {palace.roomsCompleted}/{palace.totalRooms}{" "}
                                         rooms
                                     </p>

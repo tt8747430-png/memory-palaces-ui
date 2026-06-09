@@ -43,7 +43,7 @@ export default function LoginScreen({
         password.length >= 6;
 
     return (
-        <div className="flex-1 flex flex-col relative bg-white">
+        <div className="flex-1 flex flex-col relative">
             {/* Floating Background Elements */}
             <AuthBackground/>
 

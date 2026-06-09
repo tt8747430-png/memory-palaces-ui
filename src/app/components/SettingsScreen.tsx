@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import {type ChangeEvent, useEffect, useRef, useState} from "react";
+import {useLocalStorage} from "../hooks/useLocalStorage";
 import {Skeleton} from "./ui/Skeleton";
 import {ProgressUtils} from "../utils/progressUtils";
 import {EditProfileScreen} from "./settings/EditProfileScreen";
@@ -90,9 +91,10 @@ export function SettingsScreen({
         }, 550);
         return () => clearTimeout(timer);
     }, []);
-    const [darkMode, setDarkMode] = useState(false);
-    const [notifications, setNotifications] = useState(true);
-    const [language, setLanguage] = useState("en");
+    // Preferences persist across sessions so toggling them actually sticks.
+    const [darkMode, setDarkMode] = useLocalStorage("mindscape:darkMode", false);
+    const [notifications, setNotifications] = useLocalStorage("mindscape:notifications", true);
+    const [language, setLanguage] = useLocalStorage("mindscape:language", "en");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
@@ -110,7 +112,6 @@ export function SettingsScreen({
     const profileY = useTransform(scrollY, [-150, 0], [20, 0]);
 
     const compactHeaderOpacity = useTransform(scrollY, [40, 80], [0, 1]);
-    const gradientOpacity = useTransform(scrollY, [0, 100], [1, 0]);
     const headerPointerEvents = useTransform(headerOpacity, (v) =>
         v > 0.5 ? "auto" : "none"
     );
@@ -126,7 +127,7 @@ export function SettingsScreen({
                 await ProgressUtils.importProgress(file);
                 toast.success("Progress imported successfully");
             } catch (error) {
-                toast.error("Failed to import progress");
+                toast.error("Couldn't import that file. Choose a Mindscape export (.json).");
             }
         }
         if (fileInputRef.current) {
@@ -333,12 +334,12 @@ export function SettingsScreen({
     const mainContent = (
         <div
             ref={scrollRef}
-            className="size-full overflow-y-auto scrollbar-hide relative bg-[#FAFAFC] pb-[100px]"
+            className="size-full overflow-y-auto scrollbar-hide relative pb-[100px]"
         >
             {/* Sticky Compact Header */}
             <motion.div
                 style={{opacity: compactHeaderOpacity}}
-                className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-black/[0.05] shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
+                className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-[#091A7A]/[0.06] shadow-[0_4px_24px_rgba(9,26,122,0.04)]"
             >
                 <div className="flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-3">
@@ -348,22 +349,17 @@ export function SettingsScreen({
                                 if (onOpenChange) onOpenChange(false);
                                 if (onBack) onBack();
                             }}
-                            className="w-9 h-9 bg-gray-100/80 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors"
+                            aria-label="Back"
+                            className="w-9 h-9 bg-[#EAF4FF] rounded-full flex items-center justify-center text-[#091A7A] hover:bg-[#dcebff] transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4"/>
                         </motion.button>
-                        <h2 className="text-[15px] font-semibold text-gray-900 leading-tight">
+                        <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">
                             Settings
                         </h2>
                     </div>
                 </div>
             </motion.div>
-
-            {/* Decorative Background Mesh/Gradient */}
-            <motion.div
-                style={{opacity: gradientOpacity}}
-                className="absolute inset-x-0 top-0 h-[300px] bg-gradient-to-b from-[#ADC8FF]/30 via-[#E2EBFF]/10 to-transparent pointer-events-none"
-            />
 
             {/* Large Header */}
             <motion.div
@@ -382,7 +378,8 @@ export function SettingsScreen({
                             if (onOpenChange) onOpenChange(false);
                             if (onBack) onBack();
                         }}
-                        className="w-11 h-11 bg-white/60 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-sm border border-white/80 text-gray-700 hover:bg-white transition-colors"
+                        aria-label="Back"
+                        className="w-11 h-11 bg-white/70 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-[0_6px_16px_rgba(9,26,122,0.08)] border border-white/80 text-[#091A7A] hover:bg-white transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5"/>
                     </motion.button>
@@ -400,7 +397,7 @@ export function SettingsScreen({
                         <ImageWithFallback
                             src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
                             alt="Profile"
-                            className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-xl object-cover bg-white"
+                            className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] object-cover bg-white"
                             style={{objectPosition: "center 20%"}}
                         />
                         <Tooltip>
@@ -410,7 +407,8 @@ export function SettingsScreen({
                                         whileHover={{scale: 1.05}}
                                         whileTap={{scale: 0.95}}
                                         onClick={() => setCurrentScreen("edit-profile")}
-                                        className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl flex items-center justify-center shadow-lg border-2 border-white"
+                                        aria-label="Edit profile"
+                                        className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-xl flex items-center justify-center shadow-[0_6px_16px_rgba(9,26,122,0.30)] border-2 border-white"
                                     >
                                         <User className="w-4 h-4 text-white"/>
                                     </motion.button>
@@ -423,10 +421,10 @@ export function SettingsScreen({
                     </div>
 
                     <div className="flex flex-col items-center gap-0.5 mt-2">
-                        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-[22px] font-bold text-[#091A7A] tracking-tight">
                             Memory Master
                         </h1>
-                        <p className="text-[14px] text-gray-500 font-medium">
+                        <p className="text-[14px] text-[#091A7A]/65 font-medium">
                             @memorymaster
                         </p>
                     </div>
@@ -438,16 +436,16 @@ export function SettingsScreen({
                 {loading &&
                     Array.from({length: 4}).map((_, s) => (
                         <div key={`settings-skeleton-${s}`}>
-                            <Skeleton className="mb-2 ml-1 h-3 w-24 bg-black/5"/>
+                            <Skeleton className="mb-2 ml-1 h-3 w-24 bg-[#091A7A]/[0.06]"/>
                             <div
-                                className="rounded-[24px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+                                className="rounded-[22px] bg-white shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.05] overflow-hidden">
                                 {Array.from({length: 3}).map((_, r) => (
                                     <div
                                         key={r}
                                         className="flex items-center gap-3.5 px-4 py-3.5"
                                     >
-                                        <Skeleton className="h-9 w-9 rounded-[12px] bg-black/5"/>
-                                        <Skeleton className="h-4 w-40 max-w-[60%] bg-black/5"/>
+                                        <Skeleton className="h-9 w-9 rounded-[12px] bg-[#091A7A]/[0.06]"/>
+                                        <Skeleton className="h-4 w-40 max-w-[60%] bg-[#091A7A]/[0.06]"/>
                                     </div>
                                 ))}
                             </div>
@@ -456,43 +454,43 @@ export function SettingsScreen({
                 {!loading && sections.map((section, sectionIndex) => (
                     <motion.div
                         key={sectionIndex}
-                        initial={{opacity: 0, y: 15}}
+                        initial={{opacity: 0, y: 12}}
                         animate={{opacity: 1, y: 0}}
                         transition={{
-                            delay: sectionIndex * 0.05,
-                            type: "spring",
-                            bounce: 0,
+                            delay: sectionIndex * 0.04,
+                            ease: [0.22, 1, 0.36, 1],
+                            duration: 0.35,
                         }}
                     >
                         {section.title && (
-                            <h3 className="text-[13px] font-bold text-gray-400 mb-2 px-1 uppercase tracking-wider">
+                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
                                 {section.title}
                             </h3>
                         )}
 
                         <div
-                            className="bg-white rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
+                            className="bg-white rounded-[22px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.05] overflow-hidden relative">
                             {section.items.map((item, itemIndex) => (
                                 <motion.button
                                     key={item.label}
                                     onClick={() => handleItemClick(item)}
-                                    whileHover={{backgroundColor: "rgba(0, 0, 0, 0.02)"}}
+                                    whileHover={{backgroundColor: "rgba(9, 26, 122, 0.03)"}}
                                     whileTap={{scale: 0.98}}
                                     className={`w-full flex items-center justify-between px-4 py-3.5 transition-colors relative ${
                                         itemIndex !== section.items.length - 1
-                                            ? "after:content-[''] after:absolute after:bottom-0 after:left-14 after:right-0 after:h-[1px] after:bg-gray-100"
+                                            ? "after:content-[''] after:absolute after:bottom-0 after:left-14 after:right-0 after:h-[1px] after:bg-[#091A7A]/[0.06]"
                                             : ""
                                     }`}
                                 >
                                     <div className="flex items-center gap-3.5 flex-1 min-w-0">
                                         <div
                                             className={`w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 ${
-                                                item.color ? "bg-red-50" : "bg-gray-50"
+                                                item.color ? "bg-red-50" : "bg-[#EAF4FF]"
                                             }`}
                                         >
                                             <item.icon
                                                 className={`w-5 h-5 ${
-                                                    item.color ? "text-red-500" : "text-gray-700"
+                                                    item.color ? "text-red-500" : "text-[#091A7A]"
                                                 }`}
                                                 strokeWidth={2.2}
                                             />
@@ -500,13 +498,13 @@ export function SettingsScreen({
                                         <div className="text-left flex-1 min-w-0">
                                             <p
                                                 className={`text-[15px] font-semibold truncate ${
-                                                    item.color ? "text-red-500" : "text-gray-900"
+                                                    item.color ? "text-red-500" : "text-[#091A7A]"
                                                 }`}
                                             >
                                                 {item.label}
                                             </p>
                                             {item.value && (
-                                                <p className="text-[13px] font-medium text-gray-500 truncate leading-tight mt-0.5">
+                                                <p className="text-[13px] font-medium text-[#091A7A]/65 truncate leading-tight mt-0.5">
                                                     {item.value}
                                                 </p>
                                             )}
@@ -527,12 +525,12 @@ export function SettingsScreen({
                                                     onValueChange={(val) => item.onSelect?.(val)}
                                                 >
                                                     <SelectTrigger
-                                                        className="w-auto min-w-[100px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-gray-500 hover:text-gray-900 text-[15px] font-medium p-0 pr-1 transition-colors">
+                                                        className="w-auto min-w-[100px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-[#091A7A]/70 hover:text-[#091A7A] text-[15px] font-medium p-0 pr-1 transition-colors">
                                                         <SelectValue/>
                                                     </SelectTrigger>
                                                     <SelectContent
                                                         align="end"
-                                                        className="rounded-xl border border-gray-100 shadow-xl"
+                                                        className="rounded-xl border border-[#091A7A]/10 shadow-xl"
                                                     >
                                                         {item.options.map((opt) => (
                                                             <SelectItem
@@ -548,7 +546,7 @@ export function SettingsScreen({
                                             </div>
                                         )}
                                         {item.action === "navigate" && (
-                                            <ChevronRight className="w-5 h-5 text-gray-300"/>
+                                            <ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>
                                         )}
                                     </div>
                                 </motion.button>
@@ -562,17 +560,17 @@ export function SettingsScreen({
                 <motion.div
                     initial={{opacity: 0}}
                     animate={{opacity: 1}}
-                    transition={{delay: 0.5}}
+                    transition={{delay: 0.35}}
                     className="text-center pt-6 pb-4"
                 >
                     <div
-                        className="w-12 h-12 mx-auto bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-2xl flex items-center justify-center shadow-lg shadow-[#091A7A]/20 mb-3">
+                        className="w-12 h-12 mx-auto bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-2xl flex items-center justify-center shadow-[0_8px_20px_rgba(9,26,122,0.25)] mb-3">
                         <Shield className="w-6 h-6 text-white"/>
                     </div>
-                    <p className="text-[13px] font-bold text-gray-400">
-                        Memory Palace App
+                    <p className="text-[13px] font-bold text-[#091A7A]">
+                        Mindscape
                     </p>
-                    <p className="text-[11px] font-medium text-gray-400 mt-1">
+                    <p className="text-[11px] font-medium text-[#091A7A]/55 mt-1">
                         Version 1.0.0
                     </p>
                 </motion.div>
@@ -582,24 +580,24 @@ export function SettingsScreen({
             <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-center">Log out</DialogTitle>
+                        <DialogTitle className="text-center">Log out?</DialogTitle>
                         <DialogDescription className="text-center">
-                            Are you sure you want to log out? You'll need to login again to
-                            use the app.
+                            You'll need to log in again to get back to your palaces. Your
+                            progress stays saved.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="flex gap-2 sm:justify-center">
+                    <DialogFooter className="flex gap-3 sm:justify-center">
                         <motion.button
                             whileTap={{scale: 0.95}}
                             onClick={() => setShowLogoutDialog(false)}
-                            className="flex-1 h-[40px] rounded-xl border-[1.5px] border-[#091A7A] flex items-center justify-center font-semibold text-[12px] text-[#091A7A]"
+                            className="flex-1 h-[44px] rounded-xl border-[1.5px] border-[#091A7A] flex items-center justify-center font-semibold text-[14px] text-[#091A7A]"
                         >
                             Cancel
                         </motion.button>
                         <motion.button
                             whileTap={{scale: 0.95}}
                             onClick={handleLogout}
-                            className="flex-1 h-[40px] rounded-xl bg-[#091A7A] flex items-center justify-center font-semibold text-[12px] text-white"
+                            className="flex-1 h-[44px] rounded-xl bg-[#091A7A] flex items-center justify-center font-semibold text-[14px] text-white"
                         >
                             Log out
                         </motion.button>
@@ -625,18 +623,18 @@ export function SettingsScreen({
                     initial={{x: "100%"}}
                     animate={{x: 0}}
                     exit={{x: "100%"}}
-                    transition={{type: "spring", bounce: 0, duration: 0.4}}
-                    className="fixed inset-0 z-[100] bg-white flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.08)]"
+                    transition={{ease: [0.22, 1, 0.36, 1], duration: 0.4}}
+                    className="fixed inset-0 z-[100] bg-daylight flex flex-col shadow-[-20px_0_40px_rgba(9,26,122,0.10)]"
                 >
                     <div className="h-full overflow-hidden relative">
-                        <AnimatePresence initial={false} mode="wait">
+                        <AnimatePresence initial={false}>
                             {currentScreen === "main" ? (
                                 <motion.div
                                     key="main"
-                                    initial={{x: "-10%", opacity: 0}}
-                                    animate={{x: 0, opacity: 1}}
-                                    exit={{x: "-10%", opacity: 0}}
-                                    transition={{type: "spring", bounce: 0, duration: 0.3}}
+                                    initial={{x: "-12%"}}
+                                    animate={{x: 0}}
+                                    exit={{x: "-12%"}}
+                                    transition={{ease: [0.22, 1, 0.36, 1], duration: 0.4}}
                                     className="size-full absolute inset-0"
                                 >
                                     {mainContent}
@@ -644,11 +642,11 @@ export function SettingsScreen({
                             ) : (
                                 <motion.div
                                     key={currentScreen}
-                                    initial={{x: "100%", opacity: 1}}
-                                    animate={{x: 0, opacity: 1}}
-                                    exit={{x: "100%", opacity: 1}}
-                                    transition={{type: "spring", bounce: 0, duration: 0.4}}
-                                    className="size-full absolute inset-0 z-50 bg-white shadow-[-20px_0_40px_rgba(0,0,0,0.08)]"
+                                    initial={{x: "100%"}}
+                                    animate={{x: 0}}
+                                    exit={{x: "100%"}}
+                                    transition={{ease: [0.22, 1, 0.36, 1], duration: 0.4}}
+                                    className="size-full absolute inset-0 z-50 bg-daylight shadow-[-20px_0_40px_rgba(9,26,122,0.10)]"
                                 >
                                     {currentScreen === "edit-profile" && (
                                         <EditProfileScreen

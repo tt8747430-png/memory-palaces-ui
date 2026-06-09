@@ -1,5 +1,5 @@
 import {motion} from "motion/react";
-import {ArrowLeft, Award, ExternalLink, Heart, Users} from "lucide-react";
+import {ArrowLeft, Award, Brain, ExternalLink, Heart, Users} from "lucide-react";
 
 interface AboutScreenProps {
     onBack: () => void;
@@ -8,14 +8,14 @@ interface AboutScreenProps {
 export function AboutScreen({onBack}: AboutScreenProps) {
     const appInfo = [
         {label: "Version", value: "1.0.0"},
-        {label: "Build", value: "2024.01.15"},
+        {label: "Build", value: "2026.06.09"},
         {label: "License", value: "MIT"},
     ];
 
     const links = [
-        {label: "Terms of Service", url: "https://memorypalace.app/terms"},
-        {label: "Privacy Policy", url: "https://memorypalace.app/privacy"},
-        {label: "Open Source Licenses", url: "https://memorypalace.app/licenses"},
+        {label: "Terms of Service", url: "https://mindscape.app/terms"},
+        {label: "Privacy Policy", url: "https://mindscape.app/privacy"},
+        {label: "Open Source Licenses", url: "https://mindscape.app/licenses"},
     ];
 
     const stats = [
@@ -25,7 +25,7 @@ export function AboutScreen({onBack}: AboutScreenProps) {
     ];
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -48,30 +48,21 @@ export function AboutScreen({onBack}: AboutScreenProps) {
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-8">
                     {/* App Logo & Name */}
-                    <motion.div
-                        initial={{opacity: 0, scale: 0.9}}
-                        animate={{opacity: 1, scale: 1}}
-                        className="flex flex-col items-center text-center"
-                    >
+                    <div className="flex flex-col items-center text-center">
                         <div
-                            className="w-24 h-24 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-3xl flex items-center justify-center shadow-2xl mb-4">
-                            <span className="text-5xl">🏛️</span>
+                            className="w-24 h-24 bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] rounded-3xl flex items-center justify-center shadow-[0_16px_40px_rgba(9,26,122,0.25)] mb-4">
+                            <Brain className="w-12 h-12 text-white" strokeWidth={1.75}/>
                         </div>
                         <h2 className="text-2xl font-bold text-[#091A7A] mb-2">
-                            Memory Palace
+                            Mindscape
                         </h2>
-                        <p className="text-sm text-[#091A7A]/60 max-w-xs">
-                            Master the art of memory through interactive learning experiences
+                        <p className="text-sm text-[#091A7A]/70 max-w-xs">
+                            Build memory palaces, train recall, and watch your memory measurably improve.
                         </p>
-                    </motion.div>
+                    </div>
 
                     {/* Stats */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.1}}
-                        className="grid grid-cols-3 gap-3"
-                    >
+                    <div className="grid grid-cols-3 gap-3">
                         {stats.map((stat, index) => (
                             <div
                                 key={index}
@@ -84,19 +75,15 @@ export function AboutScreen({onBack}: AboutScreenProps) {
                                 <p className="text-lg font-bold text-[#091A7A] mb-1">
                                     {stat.value}
                                 </p>
-                                <p className="text-xs text-[#091A7A]/60">
+                                <p className="text-xs text-[#091A7A]/70">
                                     {stat.label}
                                 </p>
                             </div>
                         ))}
-                    </motion.div>
+                    </div>
 
                     {/* App Info */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.2}}
-                    >
+                    <div>
                         <h3 className="text-sm font-semibold text-[#091A7A]/70 mb-3 px-2">
                             App Information
                         </h3>
@@ -118,14 +105,10 @@ export function AboutScreen({onBack}: AboutScreenProps) {
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Legal Links */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.3}}
-                    >
+                    <div>
                         <h3 className="text-sm font-semibold text-[#091A7A]/70 mb-3 px-2">
                             Legal
                         </h3>
@@ -146,23 +129,17 @@ export function AboutScreen({onBack}: AboutScreenProps) {
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Credits */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.4}}
-                        className="text-center"
-                    >
-                        <p className="text-sm text-[#091A7A]/60 mb-2">
-                            Made with <Heart className="w-4 h-4 inline text-red-500 fill-current"/> by the Memory Palace
-                            Team
+                    <div className="text-center">
+                        <p className="text-sm text-[#091A7A]/70 mb-2">
+                            Made with <Heart className="w-4 h-4 inline text-red-500 fill-current"/> by the Mindscape team
                         </p>
-                        <p className="text-xs text-[#091A7A]/40">
-                            © 2024 Memory Palace. All rights reserved.
+                        <p className="text-xs text-[#091A7A]/60">
+                            © 2026 Mindscape. All rights reserved.
                         </p>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </div>

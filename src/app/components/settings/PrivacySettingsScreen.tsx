@@ -63,7 +63,7 @@ export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
     };
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -94,12 +94,9 @@ export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-3">
-                    {settings.map((setting, index) => (
-                        <motion.div
+                    {settings.map((setting) => (
+                        <div
                             key={setting.id}
-                            initial={{opacity: 0, y: 20}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{delay: index * 0.05}}
                             className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card p-5"
                         >
                             <div className="flex items-start justify-between gap-4">
@@ -112,7 +109,7 @@ export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
                                         <h3 className="font-semibold text-[#091A7A] mb-1">
                                             {setting.label}
                                         </h3>
-                                        <p className="text-sm text-[#091A7A]/60 leading-relaxed">
+                                        <p className="text-sm text-[#091A7A]/70 leading-relaxed">
                                             {setting.description}
                                         </p>
                                     </div>
@@ -123,7 +120,7 @@ export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
                                     onCheckedChange={() => toggleSetting(setting.id)}
                                 />
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>

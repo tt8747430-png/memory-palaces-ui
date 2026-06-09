@@ -6,7 +6,6 @@ import {useEffect, useState} from "react";
 interface PalaceProgressCardProps {
     onStartTraining: () => void;
     currentProgress?: number;
-    totalRoomsCompleted?: number;
     /** False on first run (no palaces yet): show a "create palace" path. */
     hasPalaces?: boolean;
     onCreatePalace?: () => void;
@@ -15,7 +14,6 @@ interface PalaceProgressCardProps {
 export function PalaceProgressCard({
                                        onStartTraining,
                                        currentProgress = 0,
-                                       totalRoomsCompleted = 0,
                                        hasPalaces = true,
                                        onCreatePalace,
                                    }: PalaceProgressCardProps) {
@@ -64,23 +62,18 @@ export function PalaceProgressCard({
 
     return (
         <motion.div
-            initial={{opacity: 0, y: 20}}
+            initial={{opacity: 0, y: 16}}
             animate={{opacity: 1, y: 0}}
-            transition={{delay: 0.2, duration: 0.5}}
+            transition={{delay: 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1]}}
             className="relative"
         >
             <motion.div
-                initial={{opacity: 0, scale: 0.8, y: 20, rotate: -10}}
-                animate={{opacity: 0.95, scale: 1, rotate: 0, y: 0}}
+                initial={{opacity: 0, scale: 0.85, y: 12}}
+                animate={{opacity: 0.95, scale: 1, y: 0}}
                 transition={{
-                    delay: 0.6,
-                    duration: 0.8,
-                    scale: {
-                        delay: 0.6,
-                        duration: 0.8,
-                        type: "spring",
-                        stiffness: 200,
-                    },
+                    delay: 0.12,
+                    duration: 0.5,
+                    ease: [0.22, 1, 0.36, 1],
                 }}
                 className="absolute -top-6 right-2 opacity-95 z-50 pointer-events-none"
                 style={{
@@ -100,23 +93,23 @@ export function PalaceProgressCard({
                         "linear-gradient(135deg, rgba(173, 200, 255, 0.9) 0%, rgba(173, 200, 255, 0.7) 100%)",
                     backdropFilter: "blur(16px)",
                     WebkitBackdropFilter: "blur(16px)",
-                    boxShadow: `0 8px 32px rgba(9, 26, 122, 0.3), 0 4px 16px rgba(9, 26, 122, 0.2), 0 2px 8px rgba(9, 26, 122, 0.15)`,
+                    boxShadow: `0 12px 28px rgba(9, 26, 122, 0.14)`,
                 }}
             >
                 <div className="relative z-10 h-full">
                     <motion.h3
                         initial={{opacity: 0, y: 8}}
                         animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.4}}
+                        transition={{delay: 0.12, duration: 0.35, ease: [0.22, 1, 0.36, 1]}}
                         className="text-section-header text-[#091A7A] mb-2 pr-24"
                     >
-                        Build Your Memory Palace!
+                        {hasPalaces ? "Today's training" : "Build your memory palace"}
                     </motion.h3>
 
                     <motion.p
                         initial={{opacity: 0, y: 8}}
                         animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.5}}
+                        transition={{delay: 0.18, duration: 0.35, ease: [0.22, 1, 0.36, 1]}}
                         className="text-sm font-medium text-[#33417A] mb-4 pr-16"
                     >
                         {hasPalaces
@@ -131,9 +124,9 @@ export function PalaceProgressCard({
                                     initial={{width: 0}}
                                     animate={{width: `${displayProgress}%`}}
                                     transition={{
-                                        delay: 0.7,
-                                        duration: 1.5,
-                                        ease: "easeOut",
+                                        delay: 0.3,
+                                        duration: 1.0,
+                                        ease: [0.22, 1, 0.36, 1],
                                     }}
                                     className="h-[6px] bg-gradient-to-r from-[#091A7A] to-[#1A2FB8] rounded-[3px] relative"
                                 >
@@ -141,7 +134,7 @@ export function PalaceProgressCard({
                                         initial={{scale: 0}}
                                         animate={{scale: 1}}
                                         transition={{
-                                            delay: 1.2,
+                                            delay: 0.6,
                                             duration: 0.3,
                                             type: "spring",
                                             stiffness: 300,

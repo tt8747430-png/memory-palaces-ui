@@ -24,9 +24,9 @@ export function TrainingStreak({
 
     return (
         <motion.div
-            initial={{opacity: 0, y: 20}}
+            initial={{opacity: 0, y: 16}}
             animate={{opacity: 1, y: 0}}
-            transition={{delay: 0.3, duration: 0.5}}
+            transition={{delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1]}}
             className="p-6 bg-card-glass backdrop-blur-lg rounded-[20px] border border-white/20 shadow-card"
         >
             <div className="flex items-center justify-between mb-6">
@@ -63,14 +63,15 @@ export function TrainingStreak({
               {day}
             </span>
                         <motion.div
-                            initial={{scale: 0, y: 8}}
-                            animate={{scale: 1, y: 0}}
+                            initial={{scale: 0.6, opacity: 0}}
+                            animate={{scale: 1, opacity: 1}}
                             transition={{
-                                delay: 0.5 + index * 0.08,
+                                delay: 0.18 + index * 0.04,
                                 type: "spring",
-                                stiffness: 300,
+                                stiffness: 320,
+                                damping: 22,
                             }}
-                            className={`w-9 h-9 rounded-[18px] flex items-center justify-center transition-all duration-200 ${
+                            className={`w-9 h-9 rounded-[18px] flex items-center justify-center transition-colors duration-200 ${
                                 completedDays[index]
                                     ? "bg-gradient-to-br from-[#FFC71E] to-[#F59E0B] shadow-interactive"
                                     : "bg-[#F3F4F6] border border-white/20"

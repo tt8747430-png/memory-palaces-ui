@@ -39,7 +39,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
     };
 
     return (
-        <div className="size-full flex flex-col bg-gradient-to-b from-[#ADC8FF]/20 to-white">
+        <div className="size-full flex flex-col">
             {/* Header */}
             <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#091A7A]/10 via-[#ADC8FF]/20 to-transparent"/>
@@ -62,10 +62,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-6">
                     {/* Current Password */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                    >
+                    <div>
                         <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
                             Current Password
                         </label>
@@ -75,7 +72,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                 type={showCurrent ? "text" : "password"}
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
+                                className="w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
                                 placeholder="Enter current password"
                             />
                             <button
@@ -89,14 +86,10 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                 )}
                             </button>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* New Password */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.1}}
-                    >
+                    <div>
                         <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
                             New Password
                         </label>
@@ -106,7 +99,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                 type={showNew ? "text" : "password"}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
+                                className="w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 focus:ring-[#091A7A]/20 transition-all"
                                 placeholder="Enter new password"
                             />
                             <button
@@ -120,7 +113,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                 )}
                             </button>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Password Requirements */}
                     {newPassword.length > 0 && (
@@ -141,7 +134,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                             <X className="w-3 h-3 text-gray-500" strokeWidth={3}/>
                                         )}
                                     </div>
-                                    <span className={`text-sm ${req.met ? "text-green-700" : "text-[#091A7A]/60"}`}>
+                                    <span className={`text-sm ${req.met ? "text-green-700" : "text-[#091A7A]/70"}`}>
                     {req.label}
                   </span>
                                 </div>
@@ -150,11 +143,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                     )}
 
                     {/* Confirm Password */}
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.2}}
-                    >
+                    <div>
                         <label className="block text-sm font-medium text-[#091A7A]/70 mb-2 px-2">
                             Confirm New Password
                         </label>
@@ -164,7 +153,7 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                                 type={showConfirm ? "text" : "password"}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className={`w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] placeholder:text-[#091A7A]/40 focus:outline-none focus:ring-2 transition-all ${
+                                className={`w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-sm rounded-2xl border shadow-card text-[#091A7A] placeholder:text-[#091A7A]/65 focus:outline-none focus:ring-2 transition-all ${
                                     confirmPassword.length > 0 && !passwordsMatch
                                         ? "border-red-300 focus:ring-red-200"
                                         : "border-white/60 focus:ring-[#091A7A]/20"
@@ -185,13 +174,10 @@ export function ChangePasswordScreen({onBack, onPasswordChanged}: ChangePassword
                         {confirmPassword.length > 0 && !passwordsMatch && (
                             <p className="text-sm text-red-600 mt-2 px-2">Passwords do not match</p>
                         )}
-                    </motion.div>
+                    </div>
 
                     {/* Submit Button */}
                     <motion.button
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.3}}
                         whileHover={{scale: canSubmit ? 1.02 : 1}}
                         whileTap={{scale: canSubmit ? 0.98 : 1}}
                         onClick={handleSubmit}

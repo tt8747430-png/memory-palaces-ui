@@ -283,9 +283,6 @@ export default function HomePage() {
                                     <PalaceProgressCard
                                         onStartTraining={handleStartTraining}
                                         currentProgress={state.currentProgress}
-                                        totalRoomsCompleted={
-                                            state.totalRoomsCompleted
-                                        }
                                         hasPalaces={state.palaces.length > 0}
                                         onCreatePalace={() => setShowCreatePalace(true)}
                                     />

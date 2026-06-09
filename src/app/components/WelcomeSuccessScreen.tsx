@@ -25,7 +25,7 @@ export function WelcomeSuccessScreen({
 
     return (
         <div
-            className="flex-1 flex flex-col items-center justify-center px-6 py-6 relative overflow-hidden min-h-screen bg-white">
+            className="flex-1 flex flex-col items-center justify-center px-6 py-6 relative overflow-hidden min-h-screen">
             {/* Dynamic Background */}
             <motion.div
                 initial={{opacity: 0}}
