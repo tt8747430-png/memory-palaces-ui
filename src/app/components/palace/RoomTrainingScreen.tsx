@@ -169,15 +169,13 @@ export function RoomTrainingScreen({
         if (!usingSample && roomId && palaceId) {
             actions.reviewLocus(palaceId, roomId, currentId, grade);
         }
-        setReviewQueue((prev) => {
-            const [head, ...rest] = prev;
-            // "Again" sends the card to the back of the queue this session.
-            const next = grade === "again" ? [...rest, head] : rest;
-            if (next.length === 0) finish();
-            return next;
-        });
+        const rest = reviewQueue.slice(1);
+        // "Again" sends the card to the back of the queue this session.
+        const next = grade === "again" ? [...rest, currentId] : rest;
+        setReviewQueue(next);
         if (grade !== "again") setGraded((g) => g + 1);
         resetCardView();
+        if (next.length === 0) finish();
     };
 
     const handleBrowseNav = (delta: number) => {
@@ -214,12 +212,39 @@ export function RoomTrainingScreen({
         browseIds.length > 0 ? ((browsePos + 1) / browseIds.length) * 100 : 0;
     const progress = mode === "review" ? reviewProgress : browseProgress;
 
+    // Review queue emptied: show the success overlay (finish() is mid-flight),
+    // or a caught-up state with a way back if the session was already done.
     if (!current) {
-        // Review queue emptied before the success overlay swaps in.
         return (
-            <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex items-center justify-center">
-                {showSuccess ? null : (
-                    <p className="text-body text-[#091A7A]">All caught up.</p>
+            <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
+                {showSuccess ? (
+                    <SuccessOverlay/>
+                ) : (
+                    <>
+                        <Sparkles className="w-12 h-12 text-[#FFC71E]"/>
+                        <div>
+                            <h2 className="text-2xl font-bold text-[#091A7A] mb-1">
+                                All caught up
+                            </h2>
+                            <p className="text-[14px] text-[#475569] max-w-[32ch]">
+                                Nothing is due right now. Come back later, or browse the cards.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => switchMode("browse")}
+                                className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#091A7A] border border-[#091A7A]/12"
+                            >
+                                Browse cards
+                            </button>
+                            <button
+                                onClick={onBack}
+                                className="rounded-full bg-[#091A7A] px-5 py-2.5 text-sm font-semibold text-white"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </>
                 )}
             </div>
         );
@@ -465,41 +490,43 @@ export function RoomTrainingScreen({
                 )}
             </div>
 
-            <AnimatePresence>
-                {showSuccess && (
-                    <motion.div
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
-                        className="absolute inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center"
-                    >
-                        <div className="w-56 h-56 mb-6">
-                            <RiveAnimation
-                                src="https://cdn.rive.app/animations/vehicles.riv"
-                                className="w-full h-full"
-                            />
-                        </div>
-                        <motion.h2
-                            initial={{y: 16, opacity: 0}}
-                            animate={{y: 0, opacity: 1}}
-                            transition={{delay: 0.4}}
-                            className="text-3xl font-bold text-[#091A7A] mb-2"
-                        >
-                            Session complete
-                        </motion.h2>
-                        <motion.p
-                            initial={{y: 16, opacity: 0}}
-                            animate={{y: 0, opacity: 1}}
-                            transition={{delay: 0.55}}
-                            className="text-xl text-[#10B981] font-semibold flex items-center gap-2"
-                        >
-                            <Sparkles className="w-5 h-5"/>
-                            +100 XP
-                        </motion.p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <AnimatePresence>{showSuccess && <SuccessOverlay/>}</AnimatePresence>
         </div>
+    );
+}
+
+function SuccessOverlay() {
+    return (
+        <motion.div
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            exit={{opacity: 0}}
+            className="absolute inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center"
+        >
+            <div className="w-56 h-56 mb-6">
+                <RiveAnimation
+                    src="https://cdn.rive.app/animations/vehicles.riv"
+                    className="w-full h-full"
+                />
+            </div>
+            <motion.h2
+                initial={{y: 16, opacity: 0}}
+                animate={{y: 0, opacity: 1}}
+                transition={{delay: 0.4}}
+                className="text-3xl font-bold text-[#091A7A] mb-2"
+            >
+                Session complete
+            </motion.h2>
+            <motion.p
+                initial={{y: 16, opacity: 0}}
+                animate={{y: 0, opacity: 1}}
+                transition={{delay: 0.55}}
+                className="text-xl text-[#10B981] font-semibold flex items-center gap-2"
+            >
+                <Sparkles className="w-5 h-5"/>
+                +100 XP
+            </motion.p>
+        </motion.div>
     );
 }
 

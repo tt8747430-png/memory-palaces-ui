@@ -1,7 +1,24 @@
 import {useEffect, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
-import {ArrowLeft, Brain, CheckCircle, Clock, XCircle,} from "lucide-react";
+import {
+    ArrowLeft,
+    Brain,
+    CheckCircle,
+    Clock,
+    MoreVertical,
+    RotateCcw,
+    SkipForward,
+    X,
+    XCircle,
+} from "lucide-react";
 import {type Palace, palaceSettings, useProgressState} from "../../hooks/useProgressState";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface PalaceQuizScreenProps {
     palaceId: string;
@@ -44,7 +61,7 @@ export function PalaceQuizScreen({
     const [timeLeft, setTimeLeft] = useState(30);
     const [startTime] = useState(Date.now());
     const [questions] = useState<QuizQuestion[]>(() =>
-        buildQuizQuestions(palace),
+        buildQuizQuestions(palace, palaceSettings(palace).shuffleQuestions),
     );
     // Per-palace "Quiz timer" setting; when off, learners answer at their pace.
     const [timerEnabled] = useState(() => palaceSettings(palace).quizTimer);
@@ -126,6 +143,20 @@ export function PalaceQuizScreen({
         });
     };
 
+    const restartQuiz = () => {
+        setCurrentQuestion(0);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        setScore(0);
+        setTimeLeft(30);
+    };
+
+    // Skip advances without scoring (counts as not answered).
+    const skipQuestion = () => {
+        setShowFeedback(false);
+        handleNextQuestion();
+    };
+
     if (!palace) return null;
 
     return (
@@ -148,37 +179,75 @@ export function PalaceQuizScreen({
                     </h1>
                 </div>
 
-                {timerEnabled ? (
-                    <motion.div
-                        animate={{
-                            scale: timeLeft <= 5 ? [1, 1.1, 1] : 1,
-                            backgroundColor:
-                                timeLeft <= 5
-                                    ? [
-                                        "rgba(255,255,255,0.95)",
-                                        "rgba(239,68,68,0.2)",
-                                        "rgba(255,255,255,0.95)",
-                                    ]
-                                    : "rgba(255,255,255,0.95)",
-                        }}
-                        transition={{
-                            duration: timeLeft <= 5 ? 0.5 : 0,
-                            repeat: timeLeft <= 5 ? Infinity : 0,
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-xl rounded-full border border-white/40 shadow-md"
-                    >
-                        <Clock
-                            className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
-                        />
-                        <span
-                            className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                <div className="flex items-center gap-2">
+                    {timerEnabled && (
+                        <motion.div
+                            animate={{
+                                scale: timeLeft <= 5 ? [1, 1.1, 1] : 1,
+                                backgroundColor:
+                                    timeLeft <= 5
+                                        ? [
+                                            "rgba(255,255,255,0.95)",
+                                            "rgba(239,68,68,0.2)",
+                                            "rgba(255,255,255,0.95)",
+                                        ]
+                                        : "rgba(255,255,255,0.95)",
+                            }}
+                            transition={{
+                                duration: timeLeft <= 5 ? 0.5 : 0,
+                                repeat: timeLeft <= 5 ? Infinity : 0,
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-xl rounded-full border border-white/40 shadow-md"
                         >
-            {timeLeft}s
-          </span>
-                    </motion.div>
-                ) : (
-                    <div className="w-12"/>
-                )}
+                            <Clock
+                                className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                            />
+                            <span
+                                className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                            >
+                                {timeLeft}s
+                            </span>
+                        </motion.div>
+                    )}
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            render={
+                                <motion.button
+                                    whileTap={{scale: 0.92}}
+                                    aria-label="Quiz options"
+                                    className="w-12 h-12 bg-white/95 backdrop-blur-xl rounded-full flex items-center justify-center shadow-lg border border-white/40 text-[#091A7A] outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    <MoreVertical className="w-5 h-5"/>
+                                </motion.button>
+                            }
+                        />
+                        <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
+                            <DropdownMenuItem
+                                onClick={skipQuestion}
+                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
+                            >
+                                <SkipForward size={16} className="text-[#091A7A]"/>
+                                Skip question
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={restartQuiz}
+                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
+                            >
+                                <RotateCcw size={16} className="text-[#091A7A]"/>
+                                Restart quiz
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator/>
+                            <DropdownMenuItem
+                                onClick={onBack}
+                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
+                            >
+                                <X size={16} className="text-red-600"/>
+                                End quiz
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             {/* Progress */}
@@ -373,7 +442,10 @@ export function PalaceQuizScreen({
  * sample bank only when the user hasn't authored any questions yet, so a fresh
  * palace still has something to quiz against.
  */
-function buildQuizQuestions(palace: Palace | undefined): QuizQuestion[] {
+function buildQuizQuestions(
+    palace: Palace | undefined,
+    shuffleQuestions: boolean,
+): QuizQuestion[] {
     const authored = (palace?.rooms || []).flatMap((room) =>
         (room.questions || []).map((q) => ({
             id: q.id,
@@ -384,8 +456,19 @@ function buildQuizQuestions(palace: Palace | undefined): QuizQuestion[] {
             explanation: q.explanation,
         })),
     );
-    if (authored.length > 0) return authored;
-    return generateQuizQuestions(palace?.id || "default");
+    const built =
+        authored.length > 0
+            ? authored
+            : generateQuizQuestions(palace?.id || "default");
+    if (shuffleQuestions && built.length > 1) {
+        const a = [...built];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+    return built;
 }
 
 // Generate quiz questions from palace content

@@ -2,7 +2,7 @@ import {useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
 import {
     ArrowLeft,
-    BarChart3,
+    ArrowLeftRight,
     Brain,
     CheckCircle,
     ChevronDown,
@@ -13,14 +13,15 @@ import {
     DownloadCloud,
     Edit2,
     HelpCircle,
+    Layers,
     Lock,
     MapPin,
+    MoreVertical,
     Play,
     Plus,
     RotateCcw,
     Settings2,
     Shuffle,
-    Sparkles,
     Target,
     Timer,
     Trash2,
@@ -50,6 +51,13 @@ import {
 } from "../ui/alert-dialog";
 import {EmptyState} from "../ui/EmptyState";
 import {Switch} from "../ui/switch";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {Drawer} from "vaul";
@@ -305,6 +313,72 @@ function SwipeableRoomCard({
                 </motion.button>
             </motion.div>
         </motion.div>
+    );
+}
+
+/** Discoverable ⋯ menu on each room card, mirroring the swipe actions. */
+function RoomCardMenu({
+                          canMoveUp,
+                          canMoveDown,
+                          onManage,
+                          onEdit,
+                          onMove,
+                          onDelete,
+                      }: {
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    onManage: () => void;
+    onEdit: () => void;
+    onMove: (direction: "up" | "down") => void;
+    onDelete: () => void;
+}) {
+    const item =
+        "rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]";
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <motion.button
+                        whileTap={{scale: 0.9}}
+                        aria-label="Room actions"
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A] hover:bg-[#EAF4FF] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                    >
+                        <MoreVertical size={16}/>
+                    </motion.button>
+                }
+            />
+            <DropdownMenuContent align="end" className="w-[190px] rounded-[16px] p-1.5">
+                <DropdownMenuItem onClick={onManage} className={item}>
+                    <Layers size={16} className="text-[#091A7A]"/>
+                    Cards & questions
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onEdit} className={item}>
+                    <Edit2 size={16} className="text-[#091A7A]"/>
+                    Edit room
+                </DropdownMenuItem>
+                {canMoveUp && (
+                    <DropdownMenuItem onClick={() => onMove("up")} className={item}>
+                        <ChevronUp size={16} className="text-[#091A7A]"/>
+                        Move up
+                    </DropdownMenuItem>
+                )}
+                {canMoveDown && (
+                    <DropdownMenuItem onClick={() => onMove("down")} className={item}>
+                        <ChevronDown size={16} className="text-[#091A7A]"/>
+                        Move down
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem
+                    onClick={onDelete}
+                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
+                >
+                    <Trash2 size={16} className="text-red-600"/>
+                    Delete room
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
