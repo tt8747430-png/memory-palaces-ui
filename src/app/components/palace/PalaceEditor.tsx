@@ -2,7 +2,6 @@ import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {motion} from "motion/react";
 import {ArrowLeft, Check, Save, Sparkles} from "lucide-react";
-import {StatusBar} from "../ui/StatusBar";
 import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
 import {Input} from "../ui/input";
@@ -20,8 +19,8 @@ interface PalaceEditorProps {
     initial: PalaceFormData;
     onSubmit: (data: PalaceFormData) => void;
     onClose: () => void;
-    /** Edit renders full-screen (needs the status bar); create lives in a drawer. */
-    showStatusBar?: boolean;
+    /** Edit renders full-screen (needs notch clearance); create lives in a drawer. */
+    safeTop?: boolean;
 }
 
 const FORM_ID = "palace-form";
@@ -36,7 +35,7 @@ export function PalaceEditor({
                                  initial,
                                  onSubmit,
                                  onClose,
-                                 showStatusBar = false,
+                                 safeTop = false,
                              }: PalaceEditorProps) {
     const {
         register,
@@ -69,7 +68,7 @@ export function PalaceEditor({
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.12),transparent_55%)]"/>
 
                     <div className="relative z-10">
-                        {showStatusBar && <StatusBar textColor="white"/>}
+                        {safeTop && <div className="h-safe-top"/>}
 
                         <div className="px-6 flex items-center justify-between mt-3 mb-5">
                             <motion.button

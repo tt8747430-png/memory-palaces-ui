@@ -17,7 +17,6 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import {StatusBar} from "./ui";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {Folder, Palace} from "../hooks/useProgressState";
@@ -293,11 +292,9 @@ export function PalacesPage({
                 <div className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]"/>
 
-                    <div className="relative z-10">
-                        <StatusBar textColor="white"/>
-                    </div>
+                    <div className="h-safe-top relative z-10"/>
 
-                    <div className="px-[20px] pt-[12px] pb-[20px] relative z-10">
+                    <div className="px-[20px] pt-[16px] pb-[20px] relative z-10">
                         <div className="flex items-center justify-between mb-[16px]">
                             <h1 className="text-[32px] font-bold text-white">Palaces</h1>
                             <div className="flex items-center gap-3">

@@ -19,4 +19,6 @@ premium, clean, and intentional.
 Completeness: Provide fully realized code blocks. Avoid placeholders, truncated code (`// ...`), or leaving "implement
 later" comments unless explicitly requested.
 
-📋 Task: 
+📋 Task:
+
+/impeccable craft check that all the controls are mobile friendly and all the os components frientdly. also improve the ui by add collapsible headers with animation like in the profile page. and improve also the profile header and its animation. and also look so that the buttons that are needed the most stay at the top like the bottomnav and improve the ux in the app overall.

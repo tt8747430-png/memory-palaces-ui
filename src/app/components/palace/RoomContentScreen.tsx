@@ -19,7 +19,6 @@ import {
     X,
 } from "lucide-react";
 import {toast} from "sonner";
-import {StatusBar} from "../ui/StatusBar";
 import {
     type Locus,
     type Question,
@@ -172,9 +171,7 @@ export function RoomContentScreen({
                 {/* Header */}
                 <div className="bg-gradient-to-b from-[#091A7A] to-[#3D6FE0] relative flex-shrink-0 pb-5 pt-2">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.12),transparent_55%)]"/>
-                    <div className="relative z-10">
-                        <StatusBar textColor="white"/>
-                    </div>
+                    <div className="h-safe-top relative z-10"/>
                     <div className="px-5 relative z-10">
                         <div className="flex items-center justify-between mb-4 mt-3">
                             <motion.button

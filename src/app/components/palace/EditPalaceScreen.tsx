@@ -45,7 +45,7 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
             initial={initial}
             onSubmit={handleSubmit}
             onClose={onBack}
-            showStatusBar
+            safeTop
         />
     );
 }

@@ -3,14 +3,29 @@
 <head>
 
     <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <!-- Lock the scale: no pinch-zoom, no focus-zoom; cover the notch so safe-area insets resolve. -->
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+          name="viewport"/>
     <title>Memory Palaces — Master Your Memory</title>
     <meta content="Memory Palaces — Master your memory through interactive mental landscapes. Build, explore, and train with spatial memory techniques."
           name="description"/>
     <meta content="noindex, nofollow" name="robots"/>
+    <meta content="#091A7A" name="theme-color"/>
+    <!-- Standalone iOS PWA: no Safari chrome, and "default" reserves the status-bar
+         strip so our content never sits under the clock/battery. -->
+    <meta content="yes" name="mobile-web-app-capable"/>
+    <meta content="yes" name="apple-mobile-web-app-capable"/>
+    <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
+    <meta content="Mindscape" name="apple-mobile-web-app-title"/>
     <style>html, body {
         height: 100%;
         margin: 0;
+        /* Kill the iOS double-tap-to-zoom delay and the grey tap highlight. */
+        touch-action: manipulation;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
     }
 
     #root {

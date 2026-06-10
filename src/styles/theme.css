@@ -291,6 +291,20 @@
     display: none;
 }
 
+/* Safe-area (iOS notch / home indicator) helpers. Resolve to 0 in the browser,
+   to the real inset inside the installed PWA (needs viewport-fit=cover). */
+.pt-safe {
+    padding-top: env(safe-area-inset-top);
+}
+
+.h-safe-top {
+    height: env(safe-area-inset-top);
+}
+
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Learning App Utility Classes */
 @layer utilities {
     .text-main-heading {

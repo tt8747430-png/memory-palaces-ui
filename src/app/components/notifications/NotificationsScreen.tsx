@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import type {LucideIcon} from "lucide-react";
 import type {AppNotification, NotificationType} from "../../hooks/useProgressState";
-import {StatusBar} from "../ui/StatusBar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -99,7 +98,7 @@ export function NotificationsScreen({
         <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col">
             {/* Header */}
             <div className="flex-shrink-0">
-                <StatusBar textColor="black"/>
+                <div className="h-safe-top"/>
                 <div className="flex items-center justify-between gap-3 px-5 pt-2 pb-4">
                     <div className="flex items-center gap-3 min-w-0">
                         <motion.button

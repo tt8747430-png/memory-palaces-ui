@@ -74,6 +74,35 @@ export function schedule(prev: SrsState | undefined, grade: Grade): SrsState {
     };
 }
 
+export type SrsStatus = "new" | "due" | "learning" | "known";
+
+/** Interval (days) at/above which a card counts as mastered ("known"). */
+const MATURE_INTERVAL = 21;
+
+/** Bucket a card's schedule into a coarse status for list badges. */
+export function srsStatus(
+    srs: SrsState | undefined,
+    now: number = Date.now(),
+): SrsStatus {
+    if (!srs || srs.reps === 0) return "new";
+    if (isDue(srs, now)) return "due";
+    if (srs.interval >= MATURE_INTERVAL) return "known";
+    return "learning";
+}
+
+/** Force a card into a long-interval "known" schedule (manual mastery). */
+export function markKnown(prev: SrsState | undefined): SrsState {
+    const interval = 180;
+    return {
+        ease: Math.max(prev?.ease ?? DEFAULT_EASE, DEFAULT_EASE),
+        reps: Math.max(prev?.reps ?? 0, 3) + 1,
+        lapses: prev?.lapses ?? 0,
+        interval,
+        due: isoInDays(interval),
+        lastReviewed: new Date().toISOString(),
+    };
+}
+
 /** Human-friendly preview of when a grade would schedule the card next. */
 export function nextIntervalLabel(prev: SrsState | undefined, grade: Grade): string {
     const next = schedule(prev, grade);

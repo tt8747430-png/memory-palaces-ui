@@ -8,11 +8,14 @@ import {
     ChevronLeft,
     ChevronRight,
     Eye,
+    Flag,
     Lightbulb,
     MapPin,
     MoreHorizontal,
+    Pencil,
     RotateCcw,
     Shuffle,
+    SkipForward,
     Sparkles,
     Zap,
 } from "lucide-react";
@@ -33,6 +36,9 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {RiveAnimation} from "../ui/RiveAnimation";
+import {Dialog, DialogContent, DialogTitle} from "../ui/dialog";
+import {Input} from "../ui/input";
+import {Textarea} from "../ui/textarea";
 
 interface RoomTrainingScreenProps {
     onBack: () => void;
@@ -129,6 +135,10 @@ export function RoomTrainingScreen({
     const [flipped, setFlipped] = useState(false);
     const [peek, setPeek] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [editing, setEditing] = useState(false);
+
+    // In-study editing only works for real authored loci, not the sample deck.
+    const canEditCard = !usingSample && !!roomId && !!palaceId;
 
     // Review session: a queue of locus ids. New/due cards lead; "Again" requeues.
     const [reviewQueue, setReviewQueue] = useState<string[]>(() => {
@@ -182,6 +192,33 @@ export function RoomTrainingScreen({
     const handleBrowseNav = (delta: number) => {
         setBrowsePos((p) => Math.min(browseIds.length - 1, Math.max(0, p + delta)));
         resetCardView();
+    };
+
+    // Move past the current card without grading it (review) or just advance (browse).
+    const handleSkip = () => {
+        if (mode === "review") {
+            if (reviewQueue.length <= 1) {
+                resetCardView();
+                return;
+            }
+            const [first, ...rest] = reviewQueue;
+            setReviewQueue([...rest, first]);
+            resetCardView();
+        } else if (browsePos < browseIds.length - 1) {
+            handleBrowseNav(1);
+        }
+    };
+
+    const handleFlag = () => {
+        if (!canEditCard || !currentId) return;
+        actions.toggleLocusFlag(palaceId!, roomId!, currentId);
+    };
+
+    const handleSaveEdit = (data: Omit<Locus, "id" | "srs" | "flagged">) => {
+        if (canEditCard && currentId) {
+            actions.updateLocus(palaceId!, roomId!, currentId, data);
+        }
+        setEditing(false);
     };
 
     const restartSession = (nextOrder: CardOrder = order) => {

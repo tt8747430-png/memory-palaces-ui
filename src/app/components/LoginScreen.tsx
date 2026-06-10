@@ -1,7 +1,7 @@
 import {motion} from "motion/react";
 import {useState} from "react";
 import {ArrowLeft, Eye, EyeOff, Lock, Mail, Sparkles,} from "lucide-react";
-import {AppIcon, StatusBar} from "./ui";
+import {AppIcon} from "./ui";
 import {AuthBackground, AuthInput, SocialLogin, ValidCheckmark} from "./auth";
 
 export default function LoginScreen({
@@ -47,10 +47,8 @@ export default function LoginScreen({
             {/* Floating Background Elements */}
             <AuthBackground/>
 
-            {/* Status Bar */}
-            <div className="pt-[21px]">
-                <StatusBar theme="light"/>
-            </div>
+            {/* Clear the iOS notch / status-bar strip */}
+            <div className="h-safe-top"/>
 
             {/* Header */}
             <motion.div

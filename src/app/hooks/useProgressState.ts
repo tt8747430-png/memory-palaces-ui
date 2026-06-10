@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import {useLocalStorage} from "./useLocalStorage";
 import {calculateLevel} from "./useSaveStatus";
-import {type Grade, schedule, type SrsState} from "../utils/srs";
+import {type Grade, markKnown, schedule, type SrsState} from "../utils/srs";
 
 /** Stable, collision-resistant id with a readable prefix. */
 function genId(prefix: string): string {
@@ -21,6 +21,8 @@ export interface Locus {
     hint?: string;
     tip?: string;
     srs?: SrsState;
+    /** User-flagged for follow-up (e.g., marked tricky during study). */
+    flagged?: boolean;
 }
 
 /** A multiple-choice recall question scoped to a room. */
@@ -973,6 +975,56 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         }));
     };
 
+    /** Toggle a locus's "flagged" marker (used by in-study tools). */
+    const toggleLocusFlag = (palaceId: string, roomId: string, locusId: string) => {
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).map((l) =>
+                l.id === locusId ? {...l, flagged: !l.flagged} : l,
+            ),
+        }));
+    };
+
+    /** Delete many loci at once (bulk select). */
+    const deleteLoci = (palaceId: string, roomId: string, ids: string[]) => {
+        const remove = new Set(ids);
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).filter((l) => !remove.has(l.id)),
+        }));
+    };
+
+    /** Delete many questions at once (bulk select). */
+    const deleteQuestions = (palaceId: string, roomId: string, ids: string[]) => {
+        const remove = new Set(ids);
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            questions: (room.questions || []).filter((q) => !remove.has(q.id)),
+        }));
+    };
+
+    /** Clear the spaced-repetition schedule for the given loci (back to "new"). */
+    const resetLociSrs = (palaceId: string, roomId: string, ids: string[]) => {
+        const target = new Set(ids);
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).map((l) =>
+                target.has(l.id) ? {...l, srs: undefined} : l,
+            ),
+        }));
+    };
+
+    /** Force the given loci into a long-interval "known" schedule. */
+    const markLociKnown = (palaceId: string, roomId: string, ids: string[]) => {
+        const target = new Set(ids);
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).map((l) =>
+                target.has(l.id) ? {...l, srs: markKnown(l.srs)} : l,
+            ),
+        }));
+    };
+
     /** Insert a copy of a locus right after the original, unscheduled. */
     const duplicateLocus = (palaceId: string, roomId: string, locusId: string) => {
         mutateRoom(palaceId, roomId, (room) => {
@@ -1146,6 +1198,11 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             duplicateLocus,
             moveLocus,
             reviewLocus,
+            toggleLocusFlag,
+            deleteLoci,
+            deleteQuestions,
+            resetLociSrs,
+            markLociKnown,
             createQuestion,
             updateQuestion,
             deleteQuestion,

@@ -2,7 +2,6 @@ import {AnimatePresence, motion} from "motion/react";
 import {ImageWithFallback} from "../ui/ImageWithFallback";
 import {BellRing, Brain, Plus, Zap} from "lucide-react";
 import {useEffect, useState} from "react";
-import {StatusBar} from "../ui/StatusBar";
 
 interface ProgressHeaderProps {
     profileImage: string;
@@ -80,8 +79,8 @@ export function ProgressHeader({
 
     return (
         <div>
-            {/* Status Bar */}
-            <StatusBar textColor="black"/>
+            {/* Clear the iOS notch / status-bar strip */}
+            <div className="h-safe-top"/>
 
             {/* Header Content */}
             <div className="flex items-start justify-between gap-3 px-6 py-4">

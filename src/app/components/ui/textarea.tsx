@@ -1,20 +1,26 @@
 import * as React from "react"
 
-import {cn} from "./utils"
+import {cn, keepInViewOnFocus} from "./utils"
 
 /**
  * Must forward refs (React 18): react-hook-form's `register` attaches a ref to
  * track field mount state. Without forwardRef the ref is dropped, RHF treats
  * the field as unmounted, and its value validates as `undefined`.
+ *
+ * 16px font on touch + `keepInViewOnFocus` keep it clear of the iOS keyboard.
  */
 const Textarea = React.forwardRef<
     HTMLTextAreaElement,
     React.ComponentProps<"textarea">
->(function Textarea({className, ...props}, ref) {
+>(function Textarea({className, onFocus, ...props}, ref) {
     return (
         <textarea
             ref={ref}
             data-slot="textarea"
+            onFocus={(e) => {
+                onFocus?.(e)
+                keepInViewOnFocus(e.currentTarget)
+            }}
             className={cn(
                 "flex field-sizing-content min-h-16 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
                 className
