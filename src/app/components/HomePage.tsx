@@ -106,12 +106,26 @@ export default function HomePage() {
 
     // --- Handlers -----------------------------------------------------------
 
+    // Jump into the most recently touched palace: straight into its flashcards
+    // if it has any, otherwise its detail so the user can build/pick.
     const handleStartTraining = () => {
-        actions.recordTrainingDay();
-        const xpGain = 50;
-        setRecentXPGain(xpGain);
-        setShowXPAnimation(true);
-        actions.addXP(xpGain);
+        const active = state.palaces.filter((p) => !p.archived);
+        if (active.length === 0) {
+            setShowCreatePalace(true);
+            return;
+        }
+        const recent = [...active].sort(
+            (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+        );
+        const target =
+            recent.find((p) =>
+                (p.rooms ?? []).some((r) => (r.loci?.length ?? 0) > 0),
+            ) ?? recent[0];
+        setSelectedPalaceId(target.id);
+        const room = (target.rooms ?? []).find(
+            (r) => (r.loci?.length ?? 0) > 0,
+        );
+        if (room) setSelectedRoomTitle(room.title);
     };
 
     // Finishing a room returns to the palace detail (keep the palace selected)

@@ -359,8 +359,34 @@ export function RoomTrainingScreen({
                 </div>
             </div>
 
-            {/* Flip card */}
-            <div className="flex-1 px-6 flex flex-col items-center justify-center min-h-0">
+            {/* In-study tools */}
+            <div className="px-6 flex items-center justify-center gap-2">
+                <StudyToolButton
+                    onClick={handleFlag}
+                    disabled={!canEditCard}
+                    active={!!current.flagged}
+                    icon={
+                        <Flag
+                            className={`w-4 h-4 ${current.flagged ? "fill-[#FFC71E] text-[#B8860B]" : ""}`}
+                        />
+                    }
+                    label={current.flagged ? "Flagged" : "Flag"}
+                />
+                <StudyToolButton
+                    onClick={() => setEditing(true)}
+                    disabled={!canEditCard}
+                    icon={<Pencil className="w-4 h-4"/>}
+                    label="Edit"
+                />
+                <StudyToolButton
+                    onClick={handleSkip}
+                    icon={<SkipForward className="w-4 h-4"/>}
+                    label="Skip"
+                />
+            </div>
+
+            {/* Flip card — fixed height so long text scrolls instead of bloating */}
+            <div className="flex-1 px-6 flex flex-col items-center justify-center min-h-0 py-3">
                 <div className="w-full max-w-md [perspective:1200px]">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -369,53 +395,62 @@ export function RoomTrainingScreen({
                             animate={{opacity: 1, scale: 1}}
                             exit={{opacity: 0, scale: 0.94}}
                             transition={{duration: 0.25, ease: [0.16, 1, 0.3, 1]}}
+                            className="h-[clamp(300px,52vh,440px)]"
                         >
                             <motion.div
                                 onClick={() => setFlipped((f) => !f)}
                                 animate={{rotateY: flipped ? 180 : 0}}
                                 transition={{duration: 0.5, ease: [0.16, 1, 0.3, 1]}}
                                 style={{transformStyle: "preserve-3d"}}
-                                className="relative w-full cursor-pointer"
+                                className="relative w-full h-full cursor-pointer"
                             >
                                 {/* Front face */}
                                 <div
                                     style={{backfaceVisibility: "hidden"}}
-                                    className="relative bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-elevated border border-white/60 min-h-[360px] flex flex-col items-center justify-center text-center"
+                                    className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
                                 >
-                                    <span className="absolute top-5 left-5 inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
-                                        <MapPin className="w-3 h-3"/>
-                                        {direction === "front" ? "Recall" : "Term"}
-                                    </span>
-                                    <h2 className="text-3xl font-bold text-[#091A7A] mb-3 text-balance">
-                                        {prompt}
-                                    </h2>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
+                                            <MapPin className="w-3 h-3"/>
+                                            {direction === "front" ? "Recall" : "Term"}
+                                        </span>
+                                        {current.flagged && (
+                                            <Flag className="w-4 h-4 fill-[#FFC71E] text-[#B8860B]"/>
+                                        )}
+                                    </div>
 
-                                    {current.tip && (
-                                        <div className="mt-1 min-h-[44px] flex items-center justify-center">
-                                            {peek ? (
-                                                <motion.p
-                                                    initial={{opacity: 0, y: 4}}
-                                                    animate={{opacity: 1, y: 0}}
-                                                    className="text-[13px] text-[#3D6FE0] italic max-w-[36ch]"
-                                                >
-                                                    {current.tip}
-                                                </motion.p>
-                                            ) : (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setPeek(true);
-                                                    }}
-                                                    className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7E0] px-3 py-1.5 text-[12px] font-semibold text-[#B8860B] hover:bg-[#FFEFBF] transition-colors"
-                                                >
-                                                    <Lightbulb className="w-3.5 h-3.5"/>
-                                                    Peek a hint
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
+                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center py-2">
+                                        <h2 className="text-[clamp(22px,6vw,30px)] font-bold text-[#091A7A] mb-3 text-balance break-words">
+                                            {prompt}
+                                        </h2>
 
-                                    <p className="absolute bottom-5 text-[12px] text-[#94a3b8]">
+                                        {current.tip && (
+                                            <div className="mt-1 min-h-[44px] flex items-center justify-center">
+                                                {peek ? (
+                                                    <motion.p
+                                                        initial={{opacity: 0, y: 4}}
+                                                        animate={{opacity: 1, y: 0}}
+                                                        className="text-[13px] text-[#3D6FE0] italic max-w-[36ch]"
+                                                    >
+                                                        {current.tip}
+                                                    </motion.p>
+                                                ) : (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setPeek(true);
+                                                        }}
+                                                        className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7E0] px-3 py-1.5 text-[12px] font-semibold text-[#B8860B] hover:bg-[#FFEFBF] transition-colors"
+                                                    >
+                                                        <Lightbulb className="w-3.5 h-3.5"/>
+                                                        Peek a hint
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <p className="text-center text-[12px] text-[#94a3b8]">
                                         Tap to flip
                                     </p>
                                 </div>
@@ -426,30 +461,42 @@ export function RoomTrainingScreen({
                                         backfaceVisibility: "hidden",
                                         transform: "rotateY(180deg)",
                                     }}
-                                    className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-elevated border border-white/60 flex flex-col items-center justify-center text-center overflow-y-auto scrollbar-hide"
+                                    className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
                                 >
-                                    <p className="text-[20px] font-semibold text-[#091A7A] leading-snug text-balance">
-                                        {answer}
-                                    </p>
-                                    {current.hint && (
-                                        <div className="mt-5 w-full rounded-2xl bg-[#ADC8FF]/20 p-4 border border-[#ADC8FF]/30 text-left">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <MapPin className="w-4 h-4 text-[#091A7A] flex-shrink-0"/>
-                                                <p className="text-[12px] font-semibold text-[#091A7A]">
-                                                    Where to picture it
+                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center">
+                                        <p className="text-[clamp(17px,4.5vw,20px)] font-semibold text-[#091A7A] leading-snug text-balance break-words">
+                                            {answer}
+                                        </p>
+                                        {current.hint && (
+                                            <div className="mt-5 w-full rounded-2xl bg-[#ADC8FF]/20 p-4 border border-[#ADC8FF]/30 text-left">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <MapPin className="w-4 h-4 text-[#091A7A] flex-shrink-0"/>
+                                                    <p className="text-[12px] font-semibold text-[#091A7A]">
+                                                        Where to picture it
+                                                    </p>
+                                                </div>
+                                                <p className="text-[13px] text-[#475569] italic leading-relaxed">
+                                                    {current.hint}
                                                 </p>
                                             </div>
-                                            <p className="text-[13px] text-[#475569] italic leading-relaxed">
-                                                {current.hint}
-                                            </p>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
                         </motion.div>
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* In-study card editor */}
+            {canEditCard && (
+                <InStudyEditor
+                    open={editing}
+                    locus={current}
+                    onClose={() => setEditing(false)}
+                    onSave={handleSaveEdit}
+                />
+            )}
 
             {/* Footer: grading (review) or navigation (browse) */}
             <div className="px-6 pb-7 pt-2">
@@ -679,5 +726,180 @@ function StudyOptionsMenu({
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+    );
+}
+
+// --- In-study tools ---------------------------------------------------------
+
+function StudyToolButton({
+                             icon,
+                             label,
+                             onClick,
+                             disabled,
+                             active,
+                         }: {
+    icon: React.ReactNode;
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    active?: boolean;
+}) {
+    return (
+        <motion.button
+            whileTap={{scale: disabled ? 1 : 0.94}}
+            onClick={onClick}
+            disabled={disabled}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold border transition-colors ${
+                disabled
+                    ? "bg-white/40 border-transparent text-[#94a3b8]"
+                    : active
+                        ? "bg-[#FFF7E0] border-[#FFE08A] text-[#B8860B]"
+                        : "bg-white/90 border-white/60 text-[#091A7A]"
+            }`}
+        >
+            {icon}
+            {label}
+        </motion.button>
+    );
+}
+
+function InStudyEditor({
+                           open,
+                           locus,
+                           onClose,
+                           onSave,
+                       }: {
+    open: boolean;
+    locus: Locus;
+    onClose: () => void;
+    onSave: (data: Omit<Locus, "id" | "srs" | "flagged">) => void;
+}) {
+    return (
+        <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
+            >
+                <DialogTitle className="sr-only">Edit card</DialogTitle>
+                {open && (
+                    <InStudyEditorBody
+                        key={locus.id}
+                        locus={locus}
+                        onClose={onClose}
+                        onSave={onSave}
+                    />
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+const studyField =
+    "w-full bg-[#F4F8FF] rounded-xl text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 outline-none border-2 border-transparent focus:border-[#4F8EFF]/60 focus:bg-white transition-all";
+
+function InStudyEditorBody({
+                               locus,
+                               onClose,
+                               onSave,
+                           }: {
+    locus: Locus;
+    onClose: () => void;
+    onSave: (data: Omit<Locus, "id" | "srs" | "flagged">) => void;
+}) {
+    const [front, setFront] = useState(locus.front);
+    const [back, setBack] = useState(locus.back);
+    const [hint, setHint] = useState(locus.hint ?? "");
+    const [tip, setTip] = useState(locus.tip ?? "");
+    const valid = front.trim().length > 0 && back.trim().length > 0;
+
+    const save = () => {
+        if (!valid) return;
+        onSave({
+            front: front.trim(),
+            back: back.trim(),
+            ...(hint.trim() ? {hint: hint.trim()} : {}),
+            ...(tip.trim() ? {tip: tip.trim()} : {}),
+        });
+    };
+
+    return (
+        <div className="flex flex-col max-h-[85dvh]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#091A7A]/[0.07]">
+                <h2 className="text-[17px] font-bold text-[#091A7A]">Edit card</h2>
+                <motion.button
+                    whileTap={{scale: 0.9}}
+                    onClick={onClose}
+                    aria-label="Close"
+                    className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A] text-[18px] leading-none"
+                >
+                    ×
+                </motion.button>
+            </div>
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5 space-y-4">
+                <div>
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Front (what to recall)
+                    </label>
+                    <Input
+                        value={front}
+                        onChange={(e) => setFront(e.target.value)}
+                        placeholder="e.g., Zeus"
+                        className={`${studyField} px-4 h-12`}
+                        autoFocus
+                    />
+                </div>
+                <div>
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Back (what it means)
+                    </label>
+                    <Textarea
+                        value={back}
+                        onChange={(e) => setBack(e.target.value)}
+                        placeholder="King of the gods, god of sky and thunder."
+                        rows={3}
+                        className={`${studyField} px-4 py-3 resize-none`}
+                    />
+                </div>
+                <div>
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Place / image cue (optional)
+                    </label>
+                    <Textarea
+                        value={hint}
+                        onChange={(e) => setHint(e.target.value)}
+                        placeholder="Where you picture it."
+                        rows={2}
+                        className={`${studyField} px-4 py-3 resize-none`}
+                    />
+                </div>
+                <div>
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Hint / tip (optional)
+                    </label>
+                    <Textarea
+                        value={tip}
+                        onChange={(e) => setTip(e.target.value)}
+                        placeholder="A short nudge you can peek at before flipping."
+                        rows={2}
+                        className={`${studyField} px-4 py-3 resize-none`}
+                    />
+                </div>
+            </div>
+            <div className="px-5 py-4 border-t border-[#091A7A]/[0.07]">
+                <motion.button
+                    whileTap={{scale: valid ? 0.98 : 1}}
+                    onClick={save}
+                    disabled={!valid}
+                    className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
+                        valid
+                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
+                            : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                    }`}
+                >
+                    <Check size={18}/>
+                    Save card
+                </motion.button>
+            </div>
+        </div>
     );
 }
