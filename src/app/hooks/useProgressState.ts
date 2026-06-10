@@ -115,6 +115,47 @@ export interface Folder {
     createdAt: string;
 }
 
+/** The kinds of milestone a notification can record. */
+export type NotificationType =
+    | "xp-gain"
+    | "level-up"
+    | "streak"
+    | "room-complete"
+    | "palace-complete"
+    | "quiz-complete"
+    | "info";
+
+/** One entry in the persistent notification log shown on the bell screen. */
+export interface AppNotification {
+    id: string;
+    type: NotificationType;
+    title: string;
+    subtitle?: string;
+    xpGain?: number;
+    createdAt: string;
+    read: boolean;
+}
+
+/** Newest entries first; the log is capped so it never grows unbounded. */
+const NOTIFICATION_CAP = 40;
+
+type NotificationDraft = Omit<AppNotification, "id" | "createdAt" | "read">;
+
+function appendNotifications(
+    log: AppNotification[],
+    drafts: NotificationDraft[],
+): AppNotification[] {
+    if (drafts.length === 0) return log;
+    const now = new Date().toISOString();
+    const created: AppNotification[] = drafts.map((draft) => ({
+        ...draft,
+        id: genId("ntf"),
+        createdAt: now,
+        read: false,
+    }));
+    return [...created, ...log].slice(0, NOTIFICATION_CAP);
+}
+
 export interface ProgressState {
     userXP: number;
     currentLevel: number;
@@ -125,7 +166,7 @@ export interface ProgressState {
     trainingDays: string[];
     currentProgress: number;
     totalRoomsCompleted: number;
-    hasNotifications: boolean;
+    notifications: AppNotification[];
 }
 
 /**
@@ -169,8 +210,44 @@ function migrateRoom(room: Room | LegacyRoom): Room {
     return room as Room;
 }
 
+/** A small starter log so the bell screen is alive on first run. */
+function seedNotifications(): AppNotification[] {
+    const now = Date.now();
+    const at = (minutesAgo: number) =>
+        new Date(now - minutesAgo * 60_000).toISOString();
+    const make = (
+        minutesAgo: number,
+        draft: NotificationDraft,
+    ): AppNotification => ({
+        ...draft,
+        id: genId("ntf"),
+        createdAt: at(minutesAgo),
+        read: false,
+    });
+    return [
+        make(7, {
+            type: "streak",
+            title: "5-day streak",
+            subtitle: "You're on a roll — keep the chain alive.",
+        }),
+        make(95, {
+            type: "level-up",
+            title: "Level 12 reached",
+            subtitle: "Fresh rooms are ready to explore.",
+            xpGain: 100,
+        }),
+        make(1440, {
+            type: "room-complete",
+            title: "Room complete",
+            subtitle: "World Capitals",
+            xpGain: 50,
+        }),
+    ];
+}
+
 function isLegacy(state: ProgressState): boolean {
     if (state.folders === undefined) return true;
+    if (state.notifications === undefined) return true;
     return state.palaces.some((p) => {
         const lp = p as LegacyPalace;
         if (lp.floors !== undefined && lp.rooms === undefined) return true;
@@ -198,7 +275,12 @@ function migrateState(state: ProgressState): ProgressState {
         }
         return palace;
     });
-    return {...state, palaces, folders: state.folders ?? []};
+    return {
+        ...state,
+        palaces,
+        folders: state.folders ?? [],
+        notifications: state.notifications ?? seedNotifications(),
+    };
 }
 
 const DEFAULT_STATE: ProgressState = {
@@ -296,7 +378,7 @@ const DEFAULT_STATE: ProgressState = {
     trainingDays: [],
     currentProgress: 65,
     totalRoomsCompleted: 87,
-    hasNotifications: true,
+    notifications: seedNotifications(),
 };
 
 export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
@@ -321,11 +403,26 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             const {currentLevel: newLevel} = calculateLevel(newXP);
 
             onEvent?.({type: "xp-gain", data: {xpGain: amount}});
-            if (newLevel > oldLevel) {
+            const leveledUp = newLevel > oldLevel;
+            if (leveledUp) {
                 onEvent?.({type: "level-up", data: {newLevel, xpGain: amount}});
             }
 
-            return {...prev, userXP: newXP, currentLevel: newLevel};
+            return {
+                ...prev,
+                userXP: newXP,
+                currentLevel: newLevel,
+                notifications: leveledUp
+                    ? appendNotifications(prev.notifications, [
+                        {
+                            type: "level-up",
+                            title: `Level ${newLevel} reached`,
+                            subtitle: "New rooms are ready to explore.",
+                            xpGain: amount,
+                        },
+                    ])
+                    : prev.notifications,
+            };
         });
     };
 
@@ -367,10 +464,27 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
                 return {...stats, updatedAt: new Date().toISOString()};
             });
 
+            const drafts: NotificationDraft[] = [
+                {
+                    type: "room-complete",
+                    title: "Room complete",
+                    subtitle: palaceName,
+                    xpGain: 50,
+                },
+            ];
+            if (isPalaceComplete) {
+                drafts.unshift({
+                    type: "palace-complete",
+                    title: "Palace mastered",
+                    subtitle: `You completed ${palaceName}.`,
+                });
+            }
+
             return {
                 ...prev,
                 palaces: updatedPalaces,
                 ...recomputeTotals(updatedPalaces),
+                notifications: appendNotifications(prev.notifications, drafts),
             };
         });
 
@@ -399,12 +513,22 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
                 prev.lastTrainingDate === today;
             newStreakCount = isConsecutive ? prev.streakCount + 1 : 1;
             isNewStreak = isConsecutive && newStreakCount > prev.streakCount;
+            const isMilestone = isNewStreak && newStreakCount % 7 === 0;
 
             return {
                 ...prev,
                 trainingDays: newTrainingDays,
                 lastTrainingDate: today,
                 streakCount: newStreakCount,
+                notifications: isMilestone
+                    ? appendNotifications(prev.notifications, [
+                        {
+                            type: "streak",
+                            title: "Streak milestone",
+                            subtitle: `${newStreakCount}-day streak — incredible focus.`,
+                        },
+                    ])
+                    : prev.notifications,
             };
         });
 
@@ -422,12 +546,74 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         }));
     };
 
+    // --- Notifications ------------------------------------------------------
+
+    /** Append a notification to the persistent log (newest first, capped). */
+    const pushNotification = (draft: NotificationDraft) => {
+        setState((prev) => ({
+            ...prev,
+            notifications: appendNotifications(prev.notifications, [draft]),
+        }));
+    };
+
+    const markAllNotificationsRead = () => {
+        setState((prev) =>
+            prev.notifications.every((n) => n.read)
+                ? prev
+                : {
+                    ...prev,
+                    notifications: prev.notifications.map((n) => ({
+                        ...n,
+                        read: true,
+                    })),
+                },
+        );
+    };
+
+    const removeNotification = (id: string) => {
+        setState((prev) => ({
+            ...prev,
+            notifications: prev.notifications.filter((n) => n.id !== id),
+        }));
+    };
+
+    /** Empty the entire notification log. */
     const clearNotifications = () => {
-        setState((prev) => ({...prev, hasNotifications: false}));
+        setState((prev) => ({...prev, notifications: []}));
     };
 
     const resetProgress = () => {
         setState(DEFAULT_STATE);
+    };
+
+    // --- Developer tools ----------------------------------------------------
+
+    /** Set XP directly and recompute the derived level. */
+    const setUserXP = (xp: number) => {
+        const safe = Math.max(0, Math.round(xp));
+        setState((prev) => ({
+            ...prev,
+            userXP: safe,
+            currentLevel: calculateLevel(safe).currentLevel,
+        }));
+    };
+
+    const setStreak = (count: number) => {
+        setState((prev) => ({...prev, streakCount: Math.max(0, Math.round(count))}));
+    };
+
+    const clearTrainingDays = () => {
+        setState((prev) => ({
+            ...prev,
+            trainingDays: [],
+            lastTrainingDate: null,
+            streakCount: 0,
+        }));
+    };
+
+    /** Replace the whole persisted state (used by the debug import tool). */
+    const replaceState = (next: ProgressState) => {
+        setState(migrateState(next));
     };
 
     // --- Palaces ------------------------------------------------------------
@@ -932,8 +1118,15 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             completeRoom,
             recordTrainingDay,
             updatePalaceProgress,
+            pushNotification,
+            markAllNotificationsRead,
+            removeNotification,
             clearNotifications,
             resetProgress,
+            setUserXP,
+            setStreak,
+            clearTrainingDays,
+            replaceState,
             createPalace,
             updatePalace,
             updatePalaceSettings,

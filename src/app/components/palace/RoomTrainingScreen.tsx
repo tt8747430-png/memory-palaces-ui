@@ -7,6 +7,7 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    Eye,
     Lightbulb,
     MapPin,
     MoreHorizontal,
@@ -416,35 +417,43 @@ export function RoomTrainingScreen({
             {/* Footer: grading (review) or navigation (browse) */}
             <div className="px-6 pb-7 pt-2">
                 {mode === "review" ? (
-                    <div>
-                        <p className="text-center text-[12px] font-medium text-[#475569] mb-2.5">
-                            {flipped
-                                ? "How well did you recall it?"
-                                : "Flip to grade your recall"}
-                        </p>
-                        <div className="grid grid-cols-4 gap-2.5">
-                            {GRADES.map(({grade, label, classes}) => (
-                                <motion.button
-                                    key={grade}
-                                    whileTap={{scale: flipped ? 0.94 : 1}}
-                                    onClick={() => handleGrade(grade)}
-                                    disabled={!flipped}
-                                    className={`flex flex-col items-center gap-0.5 rounded-2xl border py-2.5 transition-all ${
-                                        flipped
-                                            ? classes
-                                            : "bg-[#F1F5F9] text-[#94a3b8] border-transparent cursor-not-allowed"
-                                    }`}
-                                >
-                                    <span className="text-[14px] font-bold">{label}</span>
-                                    <span className="text-[10px] font-medium opacity-70">
-                                        {flipped
-                                            ? nextIntervalLabel(current.srs, grade)
-                                            : "—"}
-                                    </span>
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
+                    // Grades only appear once the answer is revealed; before that
+                    // the front shows a single "Show answer" action.
+                    flipped ? (
+                        <motion.div
+                            initial={{opacity: 0, y: 8}}
+                            animate={{opacity: 1, y: 0}}
+                            transition={{duration: 0.2}}
+                        >
+                            <p className="text-center text-[12px] font-medium text-[#475569] mb-2.5">
+                                How well did you recall it?
+                            </p>
+                            <div className="grid grid-cols-4 gap-2.5">
+                                {GRADES.map(({grade, label, classes}) => (
+                                    <motion.button
+                                        key={grade}
+                                        whileTap={{scale: 0.94}}
+                                        onClick={() => handleGrade(grade)}
+                                        className={`flex flex-col items-center gap-0.5 rounded-2xl border py-2.5 transition-all ${classes}`}
+                                    >
+                                        <span className="text-[14px] font-bold">{label}</span>
+                                        <span className="text-[10px] font-medium opacity-70">
+                                            {nextIntervalLabel(current.srs, grade)}
+                                        </span>
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.button
+                            whileTap={{scale: 0.98}}
+                            onClick={() => setFlipped(true)}
+                            className="w-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white rounded-2xl py-4 shadow-interactive flex items-center justify-center gap-2 font-semibold"
+                        >
+                            <Eye className="w-5 h-5"/>
+                            Show answer
+                        </motion.button>
+                    )
                 ) : (
                     <div className="space-y-3">
                         <div className="flex items-center justify-center gap-4">

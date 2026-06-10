@@ -1,35 +1,35 @@
 import {useState} from "react";
+import {toast} from "sonner";
 import {LiquidGlassBottomNav} from "./LiquidGlassBottomNav";
 import {SearchPopup} from "./SearchPopup";
-import {DynamicBackground} from "./DynamicBackground";
-import {AmbientParticles} from "./AmbientParticles";
+import {HomeFeed} from "./HomeFeed";
 import {PalacesPage} from "./PalacesPage";
 import {ProfilePage} from "./ProfilePage";
 import {SettingsScreen} from "./SettingsScreen";
-import {ProgressHeader} from "./progress/ProgressHeader";
-import {PalaceProgressCard} from "./progress/PalaceProgressCard";
-import {TrainingStreak} from "./progress/TrainingStreak";
-import {TrainingCalendar} from "./progress/TrainingCalendar";
-import {PalacesOverview} from "./progress/PalacesOverview";
 import {ProgressDebugPanel} from "./progress/ProgressDebugPanel";
 import {PalaceDetailScreen} from "./palace/PalaceDetailScreen";
 import {RoomContentScreen} from "./palace/RoomContentScreen";
 import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
 import {EditPalaceScreen} from "./palace/EditPalaceScreen";
-import {toast} from "sonner";
-import {PalaceQuizScreen, QuizResults,} from "./quiz/PalaceQuizScreen";
+import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
 import {PalaceQuizCompletionScreen} from "./quiz/PalaceQuizCompletionScreen";
 import {ProgressNotification} from "./notifications/ProgressNotification";
+import {NotificationsScreen} from "./notifications/NotificationsScreen";
 import {SaveIndicator} from "./notifications/SaveIndicator";
-import {ProgressEvent, useProgressState,} from "../hooks/useProgressState";
+import {ProgressEvent, useProgressState} from "../hooks/useProgressState";
 import {useNotifications} from "../hooks/useNotifications";
 import {useSaveStatus} from "../hooks/useSaveStatus";
+
+type Tab = "home" | "palaces" | "profile";
 
 export default function HomePage() {
     const notifications = useNotifications();
     const saveStatus = useSaveStatus();
 
+    // Transient toast/celebration UI. The persistent notification log is written
+    // inside the store actions themselves (see useProgressState), so here we only
+    // mirror milestones into the in-the-moment toast queue.
     const handleProgressEvent = (event: ProgressEvent) => {
         saveStatus.triggerSave();
 
@@ -51,10 +51,7 @@ export default function HomePage() {
                 break;
 
             case "streak":
-                if (
-                    event.data.streakCount &&
-                    event.data.streakCount % 7 === 0
-                ) {
+                if (event.data.streakCount && event.data.streakCount % 7 === 0) {
                     notifications.showNotification({
                         type: "streak",
                         title: "Streak Milestone!",
@@ -82,34 +79,33 @@ export default function HomePage() {
         }
     };
 
-    const {state, actions} = useProgressState(
-        handleProgressEvent,
-    );
+    const {state, actions} = useProgressState(handleProgressEvent);
+
+    const [activeTab, setActiveTab] = useState<Tab>("home");
     const [searchOpen, setSearchOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("home");
     const [showXPAnimation, setShowXPAnimation] = useState(false);
     const [recentXPGain, setRecentXPGain] = useState(0);
-    // Dev-only: the debug panel exposes a destructive "Reset All" and fake-XP
-    // controls. Gate on import.meta.env.DEV so it never ships in a production build.
-    const showDebug = import.meta.env.DEV;
-    const [selectedPalaceId, setSelectedPalaceId] = useState<
-        string | null
-    >(null);
-    const [selectedRoomTitle, setSelectedRoomTitle] = useState<
-        string | null
-    >(null);
+
+    // Full-screen flows, overlaid on top of the tab shell.
+    const [selectedPalaceId, setSelectedPalaceId] = useState<string | null>(null);
+    const [selectedRoomTitle, setSelectedRoomTitle] = useState<string | null>(null);
     const [showQuiz, setShowQuiz] = useState(false);
-    const [quizResults, setQuizResults] =
-        useState<QuizResults | null>(null);
+    const [quizResults, setQuizResults] = useState<QuizResults | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
-    const [managingContent, setManagingContent] = useState<{
-        roomId: string;
-    } | null>(null);
+    const [managingContent, setManagingContent] = useState<{roomId: string} | null>(
+        null,
+    );
 
+    const unreadCount = state.notifications.filter((n) => !n.read).length;
+    // Dev-only: floating debug widget with destructive controls. Gate on DEV so
+    // it never ships in production.
+    const showDebug = import.meta.env.DEV;
 
-    // Handler functions - declared before conditional returns
+    // --- Handlers -----------------------------------------------------------
+
     const handleStartTraining = () => {
         actions.recordTrainingDay();
         const xpGain = 50;
@@ -118,28 +114,21 @@ export default function HomePage() {
         actions.addXP(xpGain);
     };
 
-    const handlePalaceClick = (palaceId: string) => {
-        setSelectedPalaceId(palaceId);
-    };
-
-    const handleRoomClick = (roomTitle: string) => {
-        setSelectedRoomTitle(roomTitle);
-    };
-
+    // Finishing a room returns to the palace detail (keep the palace selected)
+    // rather than dropping the user back out to the list.
     const handleRoomComplete = () => {
         setSelectedRoomTitle(null);
-        setSelectedPalaceId(null);
-    };
-
-    const handleQuizClick = () => {
-        setShowQuiz(true);
     };
 
     const handleQuizComplete = (results: QuizResults) => {
         setShowQuiz(false);
         setQuizResults(results);
-
-        // Show quiz completion notification
+        actions.pushNotification({
+            type: "quiz-complete",
+            title: "Quiz complete",
+            subtitle: `${results.accuracy}% accuracy`,
+            xpGain: results.xpGained,
+        });
         notifications.showNotification({
             type: "quiz-complete",
             title: "Quiz Complete!",
@@ -153,26 +142,30 @@ export default function HomePage() {
         setShowQuiz(true);
     };
 
-    const handleQuizExit = () => {
-        setShowQuiz(false);
+    // "Continue learning" keeps the palace open so the user stays in flow.
+    const handleQuizContinue = () => {
         setQuizResults(null);
+    };
+
+    // "Home" leaves the palace entirely.
+    const handleQuizHome = () => {
+        setQuizResults(null);
+        setShowQuiz(false);
         setSelectedPalaceId(null);
+        setActiveTab("home");
     };
 
-    const handleNotificationClick = () => {
-        actions.clearNotifications();
+    const handleOpenNotifications = () => setShowNotifications(true);
+
+    const handleCloseNotifications = () => {
+        actions.markAllNotificationsRead();
+        setShowNotifications(false);
     };
 
-    const handleXPAnimationComplete = () => {
-        setShowXPAnimation(false);
-    };
-
-    // Land inside the new palace: it has no floors yet, and the detail screen's
-    // empty state carries the "Add floor" action that continues the flow.
     const handleCreatePalaceSuccess = (palaceId: string) => {
         setShowCreatePalace(false);
         setSelectedPalaceId(palaceId);
-        toast.success("Palace created. Add a floor to start building.");
+        toast.success("Palace created. Add a room to start building.");
     };
 
     const handleEditPalaceSuccess = () => {
@@ -180,6 +173,19 @@ export default function HomePage() {
         toast.success("Changes saved");
     };
 
+    // --- Full-screen flow router -------------------------------------------
+
+    if (showNotifications) {
+        return (
+            <NotificationsScreen
+                notifications={state.notifications}
+                onBack={handleCloseNotifications}
+                onMarkAllRead={actions.markAllNotificationsRead}
+                onRemove={actions.removeNotification}
+                onClear={actions.clearNotifications}
+            />
+        );
+    }
 
     if (editingPalaceId) {
         return (
@@ -199,8 +205,8 @@ export default function HomePage() {
                 palaceId={selectedPalaceId ?? undefined}
                 roomTitle={selectedRoomTitle}
                 palaceTitle={
-                    state.palaces.find((p) => p.id === selectedPalaceId)
-                        ?.name || "Memory Palace"
+                    state.palaces.find((p) => p.id === selectedPalaceId)?.name ||
+                    "Memory Palace"
                 }
             />
         );
@@ -210,9 +216,9 @@ export default function HomePage() {
         return (
             <PalaceQuizCompletionScreen
                 results={quizResults}
-                onBack={handleQuizExit}
+                onBack={handleQuizHome}
                 onRetake={handleQuizRetake}
-                onNextPalace={handleQuizExit}
+                onNextPalace={handleQuizContinue}
             />
         );
     }
@@ -242,13 +248,15 @@ export default function HomePage() {
             <PalaceDetailScreen
                 palaceId={selectedPalaceId}
                 onBack={() => setSelectedPalaceId(null)}
-                onRoomClick={handleRoomClick}
-                onQuizClick={handleQuizClick}
+                onRoomClick={(roomTitle) => setSelectedRoomTitle(roomTitle)}
+                onQuizClick={() => setShowQuiz(true)}
                 onManageContent={(roomId) => setManagingContent({roomId})}
-                onEditPalace={() => selectedPalaceId && setEditingPalaceId(selectedPalaceId)}
+                onEditPalace={() => setEditingPalaceId(selectedPalaceId)}
             />
         );
     }
+
+    // --- Tab shell ----------------------------------------------------------
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -258,10 +266,12 @@ export default function HomePage() {
                         palaces={state.palaces}
                         folders={state.folders ?? []}
                         onSearch={() => setSearchOpen(true)}
-                        onPalaceClick={handlePalaceClick}
+                        onPalaceClick={(id) => setSelectedPalaceId(id)}
                         onCreatePalace={() => setShowCreatePalace(true)}
                         onDeletePalace={(palaceId) => actions.deletePalace(palaceId)}
-                        onToggleFavorite={(palaceId) => actions.togglePalaceFavorite(palaceId)}
+                        onToggleFavorite={(palaceId) =>
+                            actions.togglePalaceFavorite(palaceId)
+                        }
                         onToggleArchive={(palaceId) => {
                             const palace = state.palaces.find((p) => p.id === palaceId);
                             actions.togglePalaceArchived(palaceId);
@@ -271,7 +281,9 @@ export default function HomePage() {
                         }}
                         onSetPalaceFolder={(palaceId, folderId) => {
                             actions.setPalaceFolder(palaceId, folderId);
-                            toast.success(folderId ? "Moved to folder" : "Removed from folder");
+                            toast.success(
+                                folderId ? "Moved to folder" : "Removed from folder",
+                            );
                         }}
                         onCreateFolder={(data) => {
                             actions.createFolder(data);
@@ -285,60 +297,28 @@ export default function HomePage() {
                 );
 
             case "profile":
-                return (
-                    <ProfilePage
-                        onOpenSettings={() => setShowSettings(true)}
-                    />
-                );
+                return <ProfilePage onOpenSettings={() => setShowSettings(true)}/>;
 
             default:
                 return (
-                    <div className="size-full flex flex-col relative">
-                        <DynamicBackground/>
-                        <AmbientParticles/>
-
-                        <div className="relative z-10 flex-1 flex flex-col">
-                            <ProgressHeader
-                                profileImage="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
-                                userName="Memory Master"
-                                userXP={state.userXP}
-                                recentXPGain={recentXPGain}
-                                showXPAnimation={showXPAnimation}
-                                onXPAnimationComplete={
-                                    handleXPAnimationComplete
-                                }
-                                levelProgress={{
-                                    currentLevel: state.currentLevel,
-                                    xpForNextLevel:
-                                        (state.currentLevel + 1) * 250,
-                                    xpInCurrentLevel: state.userXP % 250,
-                                }}
-                                onNotificationClick={handleNotificationClick}
-                                onProfileClick={() => setActiveTab("profile")}
-                                hasNotifications={state.hasNotifications}
-                            />
-
-                            <div className="flex-1 overflow-y-auto pb-[128px] scrollbar-hide">
-                                <div className="space-y-6 px-6 pt-4">
-                                    <PalaceProgressCard
-                                        onStartTraining={handleStartTraining}
-                                        currentProgress={state.currentProgress}
-                                        hasPalaces={state.palaces.length > 0}
-                                        onCreatePalace={() => setShowCreatePalace(true)}
-                                    />
-                                    <TrainingStreak
-                                        streakCount={state.streakCount}
-                                    />
-                                    <TrainingCalendar/>
-                                    <PalacesOverview
-                                        onPalaceClick={handlePalaceClick}
-                                        onCreatePalace={() => setShowCreatePalace(true)}
-                                    />
-                                    {showDebug && <ProgressDebugPanel/>}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <HomeFeed
+                        userName="Memory Master"
+                        profileImage="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
+                        userXP={state.userXP}
+                        currentLevel={state.currentLevel}
+                        currentProgress={state.currentProgress}
+                        streakCount={state.streakCount}
+                        hasPalaces={state.palaces.length > 0}
+                        unreadCount={unreadCount}
+                        recentXPGain={recentXPGain}
+                        showXPAnimation={showXPAnimation}
+                        onXPAnimationComplete={() => setShowXPAnimation(false)}
+                        onNotificationClick={handleOpenNotifications}
+                        onProfileClick={() => setActiveTab("profile")}
+                        onStartTraining={handleStartTraining}
+                        onCreatePalace={() => setShowCreatePalace(true)}
+                        onPalaceClick={(id) => setSelectedPalaceId(id)}
+                    />
                 );
         }
     };
@@ -348,15 +328,15 @@ export default function HomePage() {
             {renderTabContent()}
 
             <LiquidGlassBottomNav
-                activeTab={activeTab as "home" | "palaces" | "profile"}
-                onTabChange={setActiveTab}
+                activeTab={activeTab}
+                onTabChange={(tab) => setActiveTab(tab as Tab)}
             />
 
             <SearchPopup
                 isOpen={searchOpen}
                 onClose={() => setSearchOpen(false)}
                 palaces={state.palaces}
-                onSelectPalace={handlePalaceClick}
+                onSelectPalace={(id) => setSelectedPalaceId(id)}
             />
 
             <ProgressNotification
@@ -368,10 +348,7 @@ export default function HomePage() {
                 status={saveStatus.saveStatus}
             />
 
-            <SettingsScreen
-                open={showSettings}
-                onOpenChange={setShowSettings}
-            />
+            <SettingsScreen open={showSettings} onOpenChange={setShowSettings}/>
 
             {showCreatePalace && (
                 <CreatePalaceScreen
@@ -379,6 +356,8 @@ export default function HomePage() {
                     onSuccess={handleCreatePalaceSuccess}
                 />
             )}
+
+            {showDebug && <ProgressDebugPanel/>}
         </div>
     );
 }

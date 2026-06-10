@@ -18,7 +18,7 @@ interface ProgressHeaderProps {
     };
     onNotificationClick?: () => void;
     onProfileClick?: () => void;
-    hasNotifications?: boolean;
+    unreadCount?: number;
 }
 
 export function ProgressHeader({
@@ -31,7 +31,7 @@ export function ProgressHeader({
                                    levelProgress,
                                    onNotificationClick,
                                    onProfileClick,
-                                   hasNotifications = true,
+                                   unreadCount = 0,
                                }: ProgressHeaderProps) {
     const [animatedXP, setAnimatedXP] = useState(userXP);
     const [showFloatingXP, setShowFloatingXP] = useState(false);
@@ -196,10 +196,12 @@ export function ProgressHeader({
                     className="relative w-12 h-12 bg-card-glass backdrop-blur-lg rounded-full flex items-center justify-center shadow-card border border-white/20 flex-shrink-0"
                 >
                     <BellRing className="w-5 h-5 text-[#091A7A] stroke-[1.5]"/>
-                    {hasNotifications && (
+                    {unreadCount > 0 && (
                         <div
-                            className="absolute -top-1 -right-1 w-3 h-3 bg-[#EF4444] rounded-full border-2 border-white shadow-sm"
-                        />
+                            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#EF4444] rounded-full border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-bold text-white leading-none"
+                        >
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                        </div>
                     )}
                 </motion.button>
             </div>

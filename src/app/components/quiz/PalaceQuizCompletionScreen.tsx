@@ -121,8 +121,8 @@ export function PalaceQuizCompletionScreen({
                 />
             </div>
 
-            {/* Content */}
-            <div className="relative z-10 flex-1 flex flex-col px-6 py-8">
+            {/* Content — scrolls when it outgrows short screens */}
+            <div className="relative z-10 flex-1 overflow-y-auto px-6 py-8">
                 {/* Trophy Section */}
                 <div className="text-center mb-8">
                     <motion.div
@@ -306,7 +306,7 @@ export function PalaceQuizCompletionScreen({
                 </motion.div>
 
                 {/* Action Buttons */}
-                <div className="mt-auto space-y-3">
+                <div className="mt-8 space-y-3">
                     <motion.button
                         initial={{opacity: 0, y: 30}}
                         animate={{opacity: 1, y: 0}}
