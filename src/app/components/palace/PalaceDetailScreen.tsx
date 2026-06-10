@@ -2,16 +2,23 @@ import {useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
 import {
   ArrowLeft,
+  BarChart3,
   Brain,
   CheckCircle,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Clock,
   Edit2,
+  HelpCircle,
+  Layers,
   Lock,
   MoreVertical,
   Play,
   Plus,
   Save,
+  Sparkles,
+  Target,
   Trash2,
   Unlock,
   X,
@@ -38,6 +45,8 @@ interface PalaceDetailScreenProps {
     onBack: () => void;
     onRoomClick?: (roomTitle: string) => void;
     onQuizClick?: () => void;
+    /** Open the flashcards & questions manager for a specific room. */
+    onManageContent?: (floorId: string, roomId: string) => void;
 }
 
 const getCurrentRoom = (floors: StateFloor[]) => {
@@ -68,12 +77,27 @@ interface SwipeableRoomCardProps {
     room: StateRoom;
     roomIndex: number;
     floor: StateFloor;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
     onEditRoom: (floorId: string, room: StateRoom) => void;
     onDeleteRoom: (floorId: string, roomId: string) => void;
     onRoomClick?: (roomTitle: string) => void;
+    onManageContent?: (floorId: string, roomId: string) => void;
+    onMoveRoom: (floorId: string, roomId: string, direction: "up" | "down") => void;
 }
 
-function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, onRoomClick}: SwipeableRoomCardProps) {
+function SwipeableRoomCard({
+                               room,
+                               roomIndex,
+                               floor,
+                               canMoveUp,
+                               canMoveDown,
+                               onEditRoom,
+                               onDeleteRoom,
+                               onRoomClick,
+                               onManageContent,
+                               onMoveRoom,
+                           }: SwipeableRoomCardProps) {
     const x = useMotionValue(0);
 
     const bind = useDrag(({down, movement: [mx], velocity: [vx], direction: [dx]}) => {
@@ -84,12 +108,15 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
             x.set(boundedX);
         } else {
             if (boundedX < -60 || (vx > 0.5 && dx < 0)) {
-                animate(x, -140, {type: "spring", stiffness: 400, damping: 30});
+                animate(x, -208, {type: "spring", stiffness: 400, damping: 30});
             } else {
                 animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
             }
         }
     }, {axis: 'x', filterTaps: true});
+
+    const cardCount = room.flashcards?.length ?? 0;
+    const questionCount = room.questions?.length ?? 0;
 
     return (
         <motion.div
@@ -104,7 +131,31 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
         >
             {/* Hidden Action Buttons behind the card */}
             <div
-                className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 gap-3 bg-[#EAF4FF]/70 rounded-2xl w-full">
+                className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 gap-2 bg-[#EAF4FF]/70 rounded-2xl w-full">
+                <motion.button
+                    whileTap={{scale: 0.9}}
+                    aria-label={`Move ${room.title} up`}
+                    disabled={!canMoveUp}
+                    onClick={() => {
+                        animate(x, 0);
+                        onMoveRoom(floor.id, room.id, "up");
+                    }}
+                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A] disabled:opacity-35"
+                >
+                    <ChevronUp size={18}/>
+                </motion.button>
+                <motion.button
+                    whileTap={{scale: 0.9}}
+                    aria-label={`Move ${room.title} down`}
+                    disabled={!canMoveDown}
+                    onClick={() => {
+                        animate(x, 0);
+                        onMoveRoom(floor.id, room.id, "down");
+                    }}
+                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A] disabled:opacity-35"
+                >
+                    <ChevronDown size={18}/>
+                </motion.button>
                 <motion.button
                     whileTap={{scale: 0.9}}
                     aria-label={`Edit ${room.title}`}
@@ -112,7 +163,7 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
                         animate(x, 0);
                         onEditRoom(floor.id, room);
                     }}
-                    className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A]"
+                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A]"
                 >
                     <Edit2 size={18}/>
                 </motion.button>
@@ -123,7 +174,7 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
                         animate(x, 0);
                         onDeleteRoom(floor.id, room.id);
                     }}
-                    className="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shadow-md text-red-600"
+                    className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shadow-md text-red-600"
                 >
                     <Trash2 size={18}/>
                 </motion.button>
@@ -223,8 +274,109 @@ function SwipeableRoomCard({room, roomIndex, floor, onEditRoom, onDeleteRoom, on
                         </div>
                     </div>
                 )}
+
+                {/* Content manager entry: counts double as the affordance. */}
+                <motion.button
+                    whileTap={{scale: 0.97}}
+                    onClick={() => onManageContent?.(floor.id, room.id)}
+                    className="mt-3 w-full flex items-center justify-between rounded-xl bg-[#F4F8FF] px-3.5 py-2.5 text-left transition-colors hover:bg-[#EAF4FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/30"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
+                            <Layers size={14} className="text-[#3D8FEF]"/>
+                            {cardCount} {cardCount === 1 ? "card" : "cards"}
+                        </span>
+                        <span className="h-3 w-px bg-[#091A7A]/15"/>
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
+                            <HelpCircle size={14} className="text-[#3D8FEF]"/>
+                            {questionCount} {questionCount === 1 ? "question" : "questions"}
+                        </span>
+                    </div>
+                    <span className="flex items-center gap-1 text-[12px] font-semibold text-[#3D8FEF]">
+                        {cardCount + questionCount === 0 ? "Add" : "Manage"}
+                        <ChevronRight size={14}/>
+                    </span>
+                </motion.button>
             </motion.div>
         </motion.div>
+    );
+}
+
+/** Compact, honest per-palace stats. No fabricated numbers: every tile is
+ *  derived from the palace's real structure and content. */
+function PalaceInsights({
+                            floors,
+                            roomsCompleted,
+                            totalRooms,
+                            progress,
+                            updatedAt,
+                        }: {
+    floors: StateFloor[];
+    roomsCompleted: number;
+    totalRooms: number;
+    progress: number;
+    updatedAt: string;
+}) {
+    const allRooms = floors.flatMap((f) => f.rooms);
+    const totalCards = allRooms.reduce(
+        (sum, r) => sum + (r.flashcards?.length ?? 0),
+        0,
+    );
+    const totalQuestions = allRooms.reduce(
+        (sum, r) => sum + (r.questions?.length ?? 0),
+        0,
+    );
+    const lastReviewed = (() => {
+        const d = new Date(updatedAt);
+        if (Number.isNaN(d.getTime())) return "—";
+        const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+        if (days <= 0) return "Today";
+        if (days === 1) return "Yesterday";
+        if (days < 7) return `${days} days ago`;
+        return d.toLocaleDateString(undefined, {month: "short", day: "numeric"});
+    })();
+
+    const tiles = [
+        {icon: Layers, label: "Flashcards", value: String(totalCards)},
+        {icon: HelpCircle, label: "Questions", value: String(totalQuestions)},
+        {
+            icon: CheckCircle,
+            label: "Rooms done",
+            value: `${roomsCompleted}/${totalRooms}`,
+        },
+        {icon: Target, label: "Mastery", value: `${progress}%`},
+    ];
+
+    return (
+        <div className="mt-3 rounded-2xl bg-white/90 backdrop-blur-md p-5 shadow-card border border-white/50">
+            <div className="grid grid-cols-2 gap-3">
+                {tiles.map((tile) => (
+                    <div
+                        key={tile.label}
+                        className="rounded-xl bg-[#F4F8FF] px-4 py-3.5"
+                    >
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <tile.icon className="w-4 h-4 text-[#3D8FEF]"/>
+                            <span className="text-[12px] font-medium text-[#475569]">
+                                {tile.label}
+                            </span>
+                        </div>
+                        <p className="text-[22px] font-bold text-[#091A7A] leading-none">
+                            {tile.value}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-[#EAF4FF] px-4 py-3">
+                <Sparkles className="w-4 h-4 text-[#3D8FEF] flex-shrink-0"/>
+                <p className="text-[13px] text-[#3D6FE0] leading-snug">
+                    {totalCards + totalQuestions === 0
+                        ? "Add flashcards and questions to a room to start tracking recall here."
+                        : `Last updated ${lastReviewed}. Keep reviewing to lift your mastery.`}
+                </p>
+            </div>
+        </div>
     );
 }
 
@@ -233,9 +385,11 @@ export function PalaceDetailScreen({
                                        onBack,
                                        onRoomClick,
                                        onQuizClick,
+                                       onManageContent,
                                    }: PalaceDetailScreenProps) {
     const {state, actions} = useProgressState();
     const [expandedFloors, setExpandedFloors] = useState<string[]>([]);
+    const [showInsights, setShowInsights] = useState(false);
     const [editingFloorId, setEditingFloorId] = useState<string | null>(null);
     const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
     const [showAddFloor, setShowAddFloor] = useState(false);
@@ -551,6 +705,52 @@ export function PalaceDetailScreen({
                 </motion.button>
             </div>
 
+            {/* Insights */}
+            <div className="px-6 mb-6">
+                <motion.button
+                    whileTap={{scale: 0.98}}
+                    onClick={() => setShowInsights((v) => !v)}
+                    aria-expanded={showInsights}
+                    className="w-full flex items-center justify-between rounded-2xl bg-white/90 backdrop-blur-md px-5 py-4 shadow-card border border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#EAF4FF] flex items-center justify-center">
+                            <BarChart3 className="w-5 h-5 text-[#091A7A]"/>
+                        </div>
+                        <span className="text-subheading font-semibold text-[#091A7A]">
+                            Insights
+                        </span>
+                    </div>
+                    <motion.span
+                        animate={{rotate: showInsights ? 180 : 0}}
+                        transition={{duration: 0.25}}
+                        className="text-[#091A7A]/50"
+                    >
+                        <ChevronDown className="w-5 h-5"/>
+                    </motion.span>
+                </motion.button>
+
+                <AnimatePresence initial={false}>
+                    {showInsights && (
+                        <motion.div
+                            initial={{height: 0, opacity: 0}}
+                            animate={{height: "auto", opacity: 1}}
+                            exit={{height: 0, opacity: 0}}
+                            transition={{duration: 0.3, ease: [0.16, 1, 0.3, 1]}}
+                            className="overflow-hidden"
+                        >
+                            <PalaceInsights
+                                floors={floors}
+                                roomsCompleted={palace.roomsCompleted}
+                                totalRooms={palace.totalRooms}
+                                progress={palace.progress}
+                                updatedAt={palace.updatedAt}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
             {/* Floors & Rooms */}
             <div className="px-6 pb-6">
                 {floors.length === 0 ? (
@@ -742,6 +942,26 @@ export function PalaceDetailScreen({
                                                                 <span
                                                                     className="text-[14px] font-medium text-[#2C2C2C]">Edit floor</span>
                                                             </DropdownMenuItem>
+                                                            {floorIndex > 0 && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => actions.moveFloor(palaceId, floor.id, "up")}
+                                                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                                                                >
+                                                                    <ChevronUp size={16} className="text-[#091A7A]"/>
+                                                                    <span
+                                                                        className="text-[14px] font-medium text-[#2C2C2C]">Move up</span>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {floorIndex < floors.length - 1 && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => actions.moveFloor(palaceId, floor.id, "down")}
+                                                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                                                                >
+                                                                    <ChevronDown size={16} className="text-[#091A7A]"/>
+                                                                    <span
+                                                                        className="text-[14px] font-medium text-[#2C2C2C]">Move down</span>
+                                                                </DropdownMenuItem>
+                                                            )}
                                                             <DropdownMenuItem
                                                                 onClick={() => setShowDeleteFloorConfirm(floor.id)}
                                                                 className="rounded-[10px] px-3 py-2.5 hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
@@ -785,12 +1005,16 @@ export function PalaceDetailScreen({
                                                     room={room}
                                                     roomIndex={roomIndex}
                                                     floor={floor}
+                                                    canMoveUp={roomIndex > 0}
+                                                    canMoveDown={roomIndex < floor.rooms.length - 1}
                                                     onEditRoom={handleEditRoom}
                                                     onDeleteRoom={(fId, rId) => setShowDeleteRoomConfirm({
                                                         floorId: fId,
                                                         roomId: rId
                                                     })}
                                                     onRoomClick={onRoomClick}
+                                                    onManageContent={onManageContent}
+                                                    onMoveRoom={(fId, rId, dir) => actions.moveRoom(palaceId, fId, rId, dir)}
                                                 />
                                             ))}
                                         </div>

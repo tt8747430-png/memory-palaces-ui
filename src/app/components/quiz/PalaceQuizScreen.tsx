@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {ArrowLeft, Brain, CheckCircle, Clock, XCircle,} from "lucide-react";
-import {useProgressState} from "../../hooks/useProgressState";
+import {type Palace, useProgressState} from "../../hooks/useProgressState";
 
 interface PalaceQuizScreenProps {
     palaceId: string;
@@ -24,6 +24,7 @@ interface QuizQuestion {
     options: string[];
     correctAnswer: number;
     roomTitle: string;
+    explanation?: string;
 }
 
 export function PalaceQuizScreen({
@@ -42,15 +43,25 @@ export function PalaceQuizScreen({
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(30);
     const [startTime] = useState(Date.now());
-    const [questions] = useState<QuizQuestion[]>(
-        generateQuizQuestions(palaceId),
+    const [questions] = useState<QuizQuestion[]>(() =>
+        buildQuizQuestions(palace),
     );
+    // Honors the "Quiz Timer" setting; when off, learners answer at their pace.
+    const [timerEnabled] = useState(() => {
+        try {
+            return JSON.parse(
+                localStorage.getItem("mindscape:quizTimer") ?? "true",
+            ) as boolean;
+        } catch {
+            return true;
+        }
+    });
 
     const currentQ = questions[currentQuestion];
 
     // Timer
     useEffect(() => {
-        if (showFeedback) return;
+        if (showFeedback || !timerEnabled) return;
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
@@ -145,33 +156,37 @@ export function PalaceQuizScreen({
                     </h1>
                 </div>
 
-                <motion.div
-                    animate={{
-                        scale: timeLeft <= 5 ? [1, 1.1, 1] : 1,
-                        backgroundColor:
-                            timeLeft <= 5
-                                ? [
-                                    "rgba(255,255,255,0.95)",
-                                    "rgba(239,68,68,0.2)",
-                                    "rgba(255,255,255,0.95)",
-                                ]
-                                : "rgba(255,255,255,0.95)",
-                    }}
-                    transition={{
-                        duration: timeLeft <= 5 ? 0.5 : 0,
-                        repeat: timeLeft <= 5 ? Infinity : 0,
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-xl rounded-full border border-white/40 shadow-md"
-                >
-                    <Clock
-                        className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
-                    />
-                    <span
-                        className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                {timerEnabled ? (
+                    <motion.div
+                        animate={{
+                            scale: timeLeft <= 5 ? [1, 1.1, 1] : 1,
+                            backgroundColor:
+                                timeLeft <= 5
+                                    ? [
+                                        "rgba(255,255,255,0.95)",
+                                        "rgba(239,68,68,0.2)",
+                                        "rgba(255,255,255,0.95)",
+                                    ]
+                                    : "rgba(255,255,255,0.95)",
+                        }}
+                        transition={{
+                            duration: timeLeft <= 5 ? 0.5 : 0,
+                            repeat: timeLeft <= 5 ? Infinity : 0,
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-xl rounded-full border border-white/40 shadow-md"
                     >
+                        <Clock
+                            className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                        />
+                        <span
+                            className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                        >
             {timeLeft}s
           </span>
-                </motion.div>
+                    </motion.div>
+                ) : (
+                    <div className="w-12"/>
+                )}
             </div>
 
             {/* Progress */}
@@ -309,7 +324,7 @@ export function PalaceQuizScreen({
                                                 Correct! +20 XP
                                             </p>
                                             <p className="text-sm text-emerald-600">
-                                                Great job!
+                                                {currentQ.explanation || "Great job!"}
                                             </p>
                                         </div>
                                     </>
@@ -321,7 +336,8 @@ export function PalaceQuizScreen({
                                                 Not quite
                                             </p>
                                             <p className="text-sm text-red-600">
-                                                Try again next time!
+                                                {currentQ.explanation ||
+                                                    "Try again next time!"}
                                             </p>
                                         </div>
                                     </>
@@ -358,6 +374,28 @@ export function PalaceQuizScreen({
             </div>
         </div>
     );
+}
+
+/**
+ * Build the quiz from the palace's own room questions. Falls back to the
+ * sample bank only when the user hasn't authored any questions yet, so a fresh
+ * palace still has something to quiz against.
+ */
+function buildQuizQuestions(palace: Palace | undefined): QuizQuestion[] {
+    const authored = (palace?.floors || []).flatMap((floor) =>
+        floor.rooms.flatMap((room) =>
+            (room.questions || []).map((q) => ({
+                id: q.id,
+                question: q.prompt,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+                roomTitle: room.title,
+                explanation: q.explanation,
+            })),
+        ),
+    );
+    if (authored.length > 0) return authored;
+    return generateQuizQuestions(palace?.id || "default");
 }
 
 // Generate quiz questions from palace content

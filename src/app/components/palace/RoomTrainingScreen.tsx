@@ -17,13 +17,9 @@ import {RiveAnimation} from "../ui/RiveAnimation";
 interface RoomTrainingScreenProps {
     onBack: () => void;
     onComplete: () => void;
+    palaceId?: string;
     roomTitle?: string;
     palaceTitle?: string;
-    roomContent?: {
-        technique: string;
-        items: string[];
-        visualCue: string;
-    };
 }
 
 interface FlashCard {
@@ -34,52 +30,72 @@ interface FlashCard {
     isFlipped: boolean;
 }
 
+const SAMPLE_CARDS: FlashCard[] = [
+    {
+        id: 1,
+        front: "Zeus",
+        back: "King of the gods, god of sky and thunder. Symbol: Lightning bolt",
+        visualCue:
+            "Imagine Zeus on a throne made of clouds, holding a glowing lightning bolt",
+        isFlipped: false,
+    },
+    {
+        id: 2,
+        front: "Poseidon",
+        back: "God of the sea, earthquakes, and horses. Symbol: Trident",
+        visualCue:
+            "Picture Poseidon riding a massive wave with a golden trident in hand",
+        isFlipped: false,
+    },
+    {
+        id: 3,
+        front: "Athena",
+        back: "Goddess of wisdom, warfare, and crafts. Symbol: Owl",
+        visualCue:
+            "See Athena in gleaming armor with an owl perched on her shoulder",
+        isFlipped: false,
+    },
+    {
+        id: 4,
+        front: "Apollo",
+        back: "God of music, poetry, sun, and prophecy. Symbol: Lyre",
+        visualCue:
+            "Apollo playing a golden lyre while the sun rises behind him",
+        isFlipped: false,
+    },
+];
+
 export function RoomTrainingScreen({
                                        onBack,
                                        onComplete,
+                                       palaceId,
                                        roomTitle = "Ancient Greek Gods",
                                        palaceTitle = "Greek Mythology Palace",
                                    }: RoomTrainingScreenProps) {
-    const {actions} = useProgressState();
+    const {state, actions} = useProgressState();
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const [flashCards, setFlashCards] = useState<FlashCard[]>([
-        {
-            id: 1,
-            front: "Zeus",
-            back: "King of the gods, god of sky and thunder. Symbol: Lightning bolt",
-            visualCue:
-                "Imagine Zeus on a throne made of clouds, holding a glowing lightning bolt",
-            isFlipped: false,
-        },
-        {
-            id: 2,
-            front: "Poseidon",
-            back: "God of the sea, earthquakes, and horses. Symbol: Trident",
-            visualCue:
-                "Picture Poseidon riding a massive wave with a golden trident in hand",
-            isFlipped: false,
-        },
-        {
-            id: 3,
-            front: "Athena",
-            back: "Goddess of wisdom, warfare, and crafts. Symbol: Owl",
-            visualCue:
-                "See Athena in gleaming armor with an owl perched on her shoulder",
-            isFlipped: false,
-        },
-        {
-            id: 4,
-            front: "Apollo",
-            back: "God of music, poetry, sun, and prophecy. Symbol: Lyre",
-            visualCue:
-                "Apollo playing a golden lyre while the sun rises behind him",
-            isFlipped: false,
-        },
-    ]);
+    // Load the room's authored flashcards; fall back to the sample deck so an
+    // empty room still has something to train against.
+    const [flashCards, setFlashCards] = useState<FlashCard[]>(() => {
+        const palace = state.palaces.find((p) => p.id === palaceId);
+        const authored = (palace?.floors || [])
+            .flatMap((f) => f.rooms)
+            .find((r) => r.title === roomTitle)?.flashcards;
+        if (authored && authored.length > 0) {
+            return authored.map((c, i) => ({
+                id: i + 1,
+                front: c.front,
+                back: c.back,
+                visualCue: c.hint || "",
+                isFlipped: false,
+            }));
+        }
+        return SAMPLE_CARDS;
+    });
 
     const currentCard = flashCards[currentCardIndex];
     const progress =
@@ -229,17 +245,19 @@ export function RoomTrainingScreen({
                                         <p className="text-body text-[#091A7A] mb-6 leading-relaxed">
                                             {currentCard.back}
                                         </p>
-                                        <div className="bg-[#ADC8FF]/20 rounded-2xl p-4 border border-[#ADC8FF]/30">
-                                            <div className="flex items-start gap-2 mb-2">
-                                                <Brain className="w-4 h-4 text-[#091A7A] mt-0.5 flex-shrink-0"/>
-                                                <p className="text-small font-medium text-[#091A7A]">
-                                                    Memory Technique:
+                                        {currentCard.visualCue && (
+                                            <div className="bg-[#ADC8FF]/20 rounded-2xl p-4 border border-[#ADC8FF]/30">
+                                                <div className="flex items-start gap-2 mb-2">
+                                                    <Brain className="w-4 h-4 text-[#091A7A] mt-0.5 flex-shrink-0"/>
+                                                    <p className="text-small font-medium text-[#091A7A]">
+                                                        Memory Technique:
+                                                    </p>
+                                                </div>
+                                                <p className="text-small text-[#6B7280] italic">
+                                                    {currentCard.visualCue}
                                                 </p>
                                             </div>
-                                            <p className="text-small text-[#6B7280] italic">
-                                                {currentCard.visualCue}
-                                            </p>
-                                        </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

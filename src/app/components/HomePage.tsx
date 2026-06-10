@@ -13,6 +13,7 @@ import {TrainingCalendar} from "./progress/TrainingCalendar";
 import {PalacesOverview} from "./progress/PalacesOverview";
 import {ProgressDebugPanel} from "./progress/ProgressDebugPanel";
 import {PalaceDetailScreen} from "./palace/PalaceDetailScreen";
+import {RoomContentScreen} from "./palace/RoomContentScreen";
 import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
 import {EditPalaceScreen} from "./palace/EditPalaceScreen";
@@ -103,6 +104,10 @@ export default function HomePage() {
     const [showSettings, setShowSettings] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
+    const [managingContent, setManagingContent] = useState<{
+        floorId: string;
+        roomId: string;
+    } | null>(null);
 
 
     // Handler functions - declared before conditional returns
@@ -192,6 +197,7 @@ export default function HomePage() {
             <RoomTrainingScreen
                 onBack={() => setSelectedRoomTitle(null)}
                 onComplete={handleRoomComplete}
+                palaceId={selectedPalaceId ?? undefined}
                 roomTitle={selectedRoomTitle}
                 palaceTitle={
                     state.palaces.find((p) => p.id === selectedPalaceId)
@@ -222,6 +228,17 @@ export default function HomePage() {
         );
     }
 
+    if (managingContent && selectedPalaceId) {
+        return (
+            <RoomContentScreen
+                palaceId={selectedPalaceId}
+                floorId={managingContent.floorId}
+                roomId={managingContent.roomId}
+                onBack={() => setManagingContent(null)}
+            />
+        );
+    }
+
     if (selectedPalaceId) {
         return (
             <PalaceDetailScreen
@@ -229,6 +246,9 @@ export default function HomePage() {
                 onBack={() => setSelectedPalaceId(null)}
                 onRoomClick={handleRoomClick}
                 onQuizClick={handleQuizClick}
+                onManageContent={(floorId, roomId) =>
+                    setManagingContent({floorId, roomId})
+                }
             />
         );
     }
@@ -239,11 +259,36 @@ export default function HomePage() {
                 return (
                     <PalacesPage
                         palaces={state.palaces}
+                        folders={state.folders ?? []}
                         onSearch={() => setSearchOpen(true)}
                         onPalaceClick={handlePalaceClick}
                         onCreatePalace={() => setShowCreatePalace(true)}
                         onEditPalace={(palaceId) => setEditingPalaceId(palaceId)}
                         onDeletePalace={(palaceId) => actions.deletePalace(palaceId)}
+                        onToggleFavorite={(palaceId) => actions.togglePalaceFavorite(palaceId)}
+                        onDuplicatePalace={(palaceId) => {
+                            actions.duplicatePalace(palaceId);
+                            toast.success("Palace duplicated");
+                        }}
+                        onToggleArchive={(palaceId) => {
+                            const palace = state.palaces.find((p) => p.id === palaceId);
+                            actions.togglePalaceArchived(palaceId);
+                            toast.success(
+                                palace?.archived ? "Palace restored" : "Palace archived",
+                            );
+                        }}
+                        onSetPalaceFolder={(palaceId, folderId) => {
+                            actions.setPalaceFolder(palaceId, folderId);
+                            toast.success(folderId ? "Moved to folder" : "Removed from folder");
+                        }}
+                        onCreateFolder={(data) => {
+                            actions.createFolder(data);
+                            toast.success("Folder created");
+                        }}
+                        onDeleteFolder={(folderId) => {
+                            actions.deleteFolder(folderId);
+                            toast.success("Folder deleted");
+                        }}
                     />
                 );
 

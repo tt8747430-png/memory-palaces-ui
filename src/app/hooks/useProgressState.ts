@@ -1,6 +1,30 @@
 import {useLocalStorage} from "./useLocalStorage";
 import {calculateLevel} from "./useSaveStatus";
 
+/** Stable, collision-resistant id with a readable prefix. */
+function genId(prefix: string): string {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/** A single study card: a prompt (front) and what it should recall (back). */
+export interface Flashcard {
+    id: string;
+    front: string;
+    back: string;
+    /** Optional method-of-loci cue: the image to picture in the room. */
+    hint?: string;
+}
+
+/** A multiple-choice recall question scoped to a room. */
+export interface Question {
+    id: string;
+    prompt: string;
+    options: string[];
+    /** Index into `options` of the correct choice. */
+    correctAnswer: number;
+    explanation?: string;
+}
+
 export interface Room {
     id: string;
     title: string;
@@ -11,6 +35,8 @@ export interface Room {
     isCompleted: boolean;
     progress: number;
     order: number;
+    flashcards?: Flashcard[];
+    questions?: Question[];
 }
 
 export interface Floor {
@@ -34,6 +60,22 @@ export interface Palace {
     floors?: Floor[];
     createdAt: string;
     updatedAt: string;
+    /** Pinned to the top of the list. */
+    favorite?: boolean;
+    /** Hidden from the main list without being deleted. */
+    archived?: boolean;
+    /** The collection this palace belongs to, or null/undefined for none. */
+    folderId?: string | null;
+}
+
+/** A user-defined collection that groups palaces (like folders). */
+export interface Folder {
+    id: string;
+    name: string;
+    /** Tailwind gradient string, e.g. "from-blue-500 to-cyan-500". */
+    color: string;
+    icon: string;
+    createdAt: string;
 }
 
 export interface ProgressState {
@@ -42,6 +84,7 @@ export interface ProgressState {
     streakCount: number;
     lastTrainingDate: string | null;
     palaces: Palace[];
+    folders: Folder[];
     trainingDays: string[];
     currentProgress: number;
     totalRoomsCompleted: number;
@@ -174,6 +217,7 @@ const DEFAULT_STATE: ProgressState = {
             floors: [],
         },
     ],
+    folders: [],
     trainingDays: [],
     currentProgress: 65,
     totalRoomsCompleted: 87,
@@ -499,6 +543,323 @@ export function useProgressState(
         }));
     };
 
+    // --- Room content: flashcards & questions ------------------------------
+
+    /** Apply `fn` to a single room, bumping the palace's updatedAt. */
+    const mutateRoom = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        fn: (room: Room) => Room,
+    ) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((palace) =>
+                palace.id === palaceId
+                    ? {
+                        ...palace,
+                        floors: (palace.floors || []).map((floor) =>
+                            floor.id === floorId
+                                ? {
+                                    ...floor,
+                                    rooms: floor.rooms.map((room) =>
+                                        room.id === roomId ? fn(room) : room,
+                                    ),
+                                }
+                                : floor,
+                        ),
+                        updatedAt: new Date().toISOString(),
+                    }
+                    : palace,
+            ),
+        }));
+    };
+
+    const createFlashcard = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        data: Omit<Flashcard, "id">,
+    ) => {
+        const card: Flashcard = {...data, id: genId("card")};
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            flashcards: [...(room.flashcards || []), card],
+        }));
+        return card.id;
+    };
+
+    const updateFlashcard = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        cardId: string,
+        updates: Partial<Omit<Flashcard, "id">>,
+    ) => {
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            flashcards: (room.flashcards || []).map((c) =>
+                c.id === cardId ? {...c, ...updates} : c,
+            ),
+        }));
+    };
+
+    const deleteFlashcard = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        cardId: string,
+    ) => {
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            flashcards: (room.flashcards || []).filter((c) => c.id !== cardId),
+        }));
+    };
+
+    const createQuestion = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        data: Omit<Question, "id">,
+    ) => {
+        const question: Question = {...data, id: genId("q")};
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            questions: [...(room.questions || []), question],
+        }));
+        return question.id;
+    };
+
+    const updateQuestion = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        questionId: string,
+        updates: Partial<Omit<Question, "id">>,
+    ) => {
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            questions: (room.questions || []).map((q) =>
+                q.id === questionId ? {...q, ...updates} : q,
+            ),
+        }));
+    };
+
+    const deleteQuestion = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        questionId: string,
+    ) => {
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            questions: (room.questions || []).filter((q) => q.id !== questionId),
+        }));
+    };
+
+    /**
+     * Bulk-add imported content to a room. `merge` appends, `replace` swaps the
+     * whole set. Incoming items always get fresh ids so imports never collide
+     * with existing content or with each other.
+     */
+    const importRoomContent = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        content: {flashcards?: Flashcard[]; questions?: Question[]},
+        mode: "merge" | "replace",
+    ) => {
+        const incomingCards = (content.flashcards || []).map((c) => ({
+            ...c,
+            id: genId("card"),
+        }));
+        const incomingQuestions = (content.questions || []).map((q) => ({
+            ...q,
+            id: genId("q"),
+        }));
+        mutateRoom(palaceId, floorId, roomId, (room) => ({
+            ...room,
+            flashcards:
+                mode === "replace"
+                    ? incomingCards
+                    : [...(room.flashcards || []), ...incomingCards],
+            questions:
+                mode === "replace"
+                    ? incomingQuestions
+                    : [...(room.questions || []), ...incomingQuestions],
+        }));
+        return {
+            cards: incomingCards.length,
+            questions: incomingQuestions.length,
+        };
+    };
+
+    // --- Palace management --------------------------------------------------
+
+    /** Deep-clone a palace (floors, rooms, cards, questions) with fresh ids and
+     *  reset completion, appending it to the list. Returns the new palace id. */
+    const duplicatePalace = (palaceId: string) => {
+        let newId = "";
+        setState((prev) => {
+            const original = prev.palaces.find((p) => p.id === palaceId);
+            if (!original) return prev;
+            newId = genId("palace");
+            const now = new Date().toISOString();
+            const clone: Palace = withRoomStats({
+                ...original,
+                id: newId,
+                name: `${original.name} (Copy)`,
+                favorite: false,
+                archived: false,
+                createdAt: now,
+                updatedAt: now,
+                floors: (original.floors || []).map((floor) => ({
+                    ...floor,
+                    id: genId("floor"),
+                    rooms: floor.rooms.map((room, idx) => ({
+                        ...room,
+                        id: genId("room"),
+                        isCompleted: false,
+                        isUnlocked: idx === 0,
+                        progress: 0,
+                        flashcards: (room.flashcards || []).map((c) => ({
+                            ...c,
+                            id: genId("card"),
+                        })),
+                        questions: (room.questions || []).map((q) => ({
+                            ...q,
+                            id: genId("q"),
+                        })),
+                    })),
+                })),
+            });
+            return {...prev, palaces: [...prev.palaces, clone]};
+        });
+        return newId;
+    };
+
+    const togglePalaceFavorite = (palaceId: string) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((p) =>
+                p.id === palaceId ? {...p, favorite: !p.favorite} : p,
+            ),
+        }));
+    };
+
+    const togglePalaceArchived = (palaceId: string) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((p) =>
+                p.id === palaceId
+                    ? {...p, archived: !p.archived, favorite: false}
+                    : p,
+            ),
+        }));
+    };
+
+    const setPalaceFolder = (palaceId: string, folderId: string | null) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((p) =>
+                p.id === palaceId ? {...p, folderId} : p,
+            ),
+        }));
+    };
+
+    /** Move a floor one slot up or down, keeping `order` fields in sync. */
+    const moveFloor = (
+        palaceId: string,
+        floorId: string,
+        direction: "up" | "down",
+    ) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((palace) => {
+                if (palace.id !== palaceId) return palace;
+                const floors = [...(palace.floors || [])];
+                const i = floors.findIndex((f) => f.id === floorId);
+                const j = direction === "up" ? i - 1 : i + 1;
+                if (i < 0 || j < 0 || j >= floors.length) return palace;
+                [floors[i], floors[j]] = [floors[j], floors[i]];
+                return {
+                    ...palace,
+                    floors: floors.map((f, idx) => ({...f, order: idx + 1})),
+                    updatedAt: new Date().toISOString(),
+                };
+            }),
+        }));
+    };
+
+    /** Move a room one slot up or down within its floor. */
+    const moveRoom = (
+        palaceId: string,
+        floorId: string,
+        roomId: string,
+        direction: "up" | "down",
+    ) => {
+        setState((prev) => ({
+            ...prev,
+            palaces: prev.palaces.map((palace) => {
+                if (palace.id !== palaceId) return palace;
+                return {
+                    ...palace,
+                    floors: (palace.floors || []).map((floor) => {
+                        if (floor.id !== floorId) return floor;
+                        const rooms = [...floor.rooms];
+                        const i = rooms.findIndex((r) => r.id === roomId);
+                        const j = direction === "up" ? i - 1 : i + 1;
+                        if (i < 0 || j < 0 || j >= rooms.length) return floor;
+                        [rooms[i], rooms[j]] = [rooms[j], rooms[i]];
+                        return {
+                            ...floor,
+                            rooms: rooms.map((r, idx) => ({...r, order: idx + 1})),
+                        };
+                    }),
+                    updatedAt: new Date().toISOString(),
+                };
+            }),
+        }));
+    };
+
+    // --- Folders ------------------------------------------------------------
+
+    const createFolder = (data: Omit<Folder, "id" | "createdAt">) => {
+        const folder: Folder = {
+            ...data,
+            id: genId("folder"),
+            createdAt: new Date().toISOString(),
+        };
+        setState((prev) => ({
+            ...prev,
+            folders: [...(prev.folders || []), folder],
+        }));
+        return folder.id;
+    };
+
+    const updateFolder = (
+        folderId: string,
+        updates: Partial<Omit<Folder, "id" | "createdAt">>,
+    ) => {
+        setState((prev) => ({
+            ...prev,
+            folders: (prev.folders || []).map((f) =>
+                f.id === folderId ? {...f, ...updates} : f,
+            ),
+        }));
+    };
+
+    /** Delete a folder and detach (do not delete) any palaces inside it. */
+    const deleteFolder = (folderId: string) => {
+        setState((prev) => ({
+            ...prev,
+            folders: (prev.folders || []).filter((f) => f.id !== folderId),
+            palaces: prev.palaces.map((p) =>
+                p.folderId === folderId ? {...p, folderId: null} : p,
+            ),
+        }));
+    };
+
     return {
         state,
         actions: {
@@ -517,6 +878,22 @@ export function useProgressState(
             createRoom,
             updateRoom,
             deleteRoom,
+            createFlashcard,
+            updateFlashcard,
+            deleteFlashcard,
+            createQuestion,
+            updateQuestion,
+            deleteQuestion,
+            importRoomContent,
+            duplicatePalace,
+            togglePalaceFavorite,
+            togglePalaceArchived,
+            setPalaceFolder,
+            moveFloor,
+            moveRoom,
+            createFolder,
+            updateFolder,
+            deleteFolder,
         },
     };
 }

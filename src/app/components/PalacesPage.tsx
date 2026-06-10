@@ -1,21 +1,27 @@
-import {useState} from "react";
+import {useMemo, useState} from "react";
 import {motion} from "motion/react";
 import {
+  Archive,
+  ArchiveRestore,
   ChevronRight,
+  Copy,
   Edit2,
+  Folder as FolderIcon,
+  FolderPlus,
   Grid,
   List,
   MoreVertical,
   Plus,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Trash2,
 } from "lucide-react";
 import {StatusBar} from "./ui";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
-import {Palace} from "../hooks/useProgressState";
+import {Folder, Palace} from "../hooks/useProgressState";
 import {PalaceCard} from "./cards/PalaceCard";
 import {PalaceCardSkeleton} from "./cards/PalaceCardSkeleton";
 import {EmptyState} from "./ui/EmptyState";
@@ -29,22 +35,52 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "./ui/alert-dialog";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "./ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "./ui/dropdown-menu";
 import {Tabs, TabsList, TabsTrigger} from "./ui/tabs";
+import {Dialog, DialogContent, DialogTitle} from "./ui/dialog";
+import {Input} from "./ui/input";
+
+const FOLDER_COLORS = [
+    "from-blue-500 to-cyan-500",
+    "from-purple-500 to-pink-500",
+    "from-amber-500 to-orange-500",
+    "from-emerald-500 to-teal-500",
+    "from-rose-500 to-red-500",
+    "from-indigo-500 to-violet-500",
+];
 
 /**
- * Per-palace edit/delete menu. Shared by the grid and list views so the two
- * never drift; only the trigger's position/elevation differs per view.
+ * Per-palace action menu. One source of truth for grid and list so the two
+ * never drift. Switches to a restore/delete-only set for archived palaces.
  */
 function PalaceActionsMenu({
                                triggerClassName,
+                               palace,
+                               hasFolders,
+                               onToggleFavorite,
+                               onDuplicate,
+                               onMoveToFolder,
+                               onArchiveToggle,
                                onEdit,
                                onDelete,
                            }: {
     triggerClassName: string;
+    palace: Palace;
+    hasFolders: boolean;
+    onToggleFavorite: () => void;
+    onDuplicate: () => void;
+    onMoveToFolder: () => void;
+    onArchiveToggle: () => void;
     onEdit: () => void;
     onDelete: () => void;
 }) {
+    const archived = !!palace.archived;
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
@@ -59,13 +95,66 @@ function PalaceActionsMenu({
                     </motion.button>
                 }
             />
-            <DropdownMenuContent align="end" className="w-[160px] rounded-[16px] p-1.5">
+            <DropdownMenuContent align="end" className="w-[190px] rounded-[16px] p-1.5">
+                {!archived && (
+                    <>
+                        <DropdownMenuItem
+                            onClick={onToggleFavorite}
+                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                        >
+                            <Star
+                                size={16}
+                                className={
+                                    palace.favorite
+                                        ? "text-[#FFC71E] fill-[#FFC71E]"
+                                        : "text-[#091A7A]"
+                                }
+                            />
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">
+                                {palace.favorite ? "Unfavorite" : "Favorite"}
+                            </span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={onMoveToFolder}
+                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                        >
+                            <FolderIcon size={16} className="text-[#091A7A]"/>
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">
+                                {hasFolders ? "Move to folder" : "Add to folder"}
+                            </span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={onDuplicate}
+                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                        >
+                            <Copy size={16} className="text-[#091A7A]"/>
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">Duplicate</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={onEdit}
+                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
+                        >
+                            <Edit2 size={16} className="text-[#091A7A]"/>
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">Edit palace</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator/>
+                    </>
+                )}
                 <DropdownMenuItem
-                    onClick={onEdit}
+                    onClick={onArchiveToggle}
                     className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
                 >
-                    <Edit2 size={16} className="text-[#091A7A]"/>
-                    <span className="text-[14px] font-medium text-[#2C2C2C]">Edit palace</span>
+                    {archived ? (
+                        <>
+                            <ArchiveRestore size={16} className="text-[#091A7A]"/>
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">Restore</span>
+                        </>
+                    ) : (
+                        <>
+                            <Archive size={16} className="text-[#091A7A]"/>
+                            <span className="text-[14px] font-medium text-[#2C2C2C]">Archive</span>
+                        </>
+                    )}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={onDelete}
@@ -81,93 +170,161 @@ function PalaceActionsMenu({
 
 interface PalacesPageProps {
     palaces: Palace[];
+    folders: Folder[];
     onSearch: () => void;
     onPalaceClick: (palaceId: string) => void;
     onCreatePalace: () => void;
     onEditPalace: (palaceId: string) => void;
     onDeletePalace: (palaceId: string) => void;
+    onToggleFavorite: (palaceId: string) => void;
+    onDuplicatePalace: (palaceId: string) => void;
+    onToggleArchive: (palaceId: string) => void;
+    onSetPalaceFolder: (palaceId: string, folderId: string | null) => void;
+    onCreateFolder: (data: {name: string; color: string; icon: string}) => void;
+    onDeleteFolder: (folderId: string) => void;
     /** Render skeletons instead of content while palaces resolve. */
     loading?: boolean;
 }
 
+// Pseudo-folder ids for the filter rail.
+const ALL = "__all__";
+const FAVORITES = "__favorites__";
+const UNFILED = "__unfiled__";
+const ARCHIVED = "__archived__";
+
 export function PalacesPage({
                                 palaces,
+                                folders,
                                 onSearch,
                                 onPalaceClick,
                                 onCreatePalace,
                                 onEditPalace,
                                 onDeletePalace,
+                                onToggleFavorite,
+                                onDuplicatePalace,
+                                onToggleArchive,
+                                onSetPalaceFolder,
+                                onCreateFolder,
+                                onDeleteFolder,
                                 loading = false,
                             }: PalacesPageProps) {
-    const [viewMode, setViewMode] = useState<"grid" | "list">(
-        "grid",
-    );
-    const [selectedCategory, setSelectedCategory] =
-        useState("All");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [activeFilter, setActiveFilter] = useState<string>(ALL);
     const [sortBy, setSortBy] = useState("Recent");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+    const [movingPalaceId, setMovingPalaceId] = useState<string | null>(null);
+    const [showNewFolder, setShowNewFolder] = useState(false);
+    const [newFolderName, setNewFolderName] = useState("");
+    const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
-    // Derive filter chips from the palaces that exist, so every palace is
-    // always reachable through the filter (creation offers more categories
-    // than the old hardcoded list showed).
-    const categories = [
-        "All",
-        ...Array.from(new Set(palaces.map((p) => p.category))).sort(),
-    ];
-    const sortOptions = [
-        "Recent",
-        "Progress",
-        "Name",
-        "Category",
-    ];
+    const safeFolders = folders ?? [];
+    const archivedCount = palaces.filter((p) => p.archived).length;
+    const favoriteCount = palaces.filter((p) => p.favorite && !p.archived).length;
 
-    const filteredPalaces =
-        selectedCategory === "All"
-            ? palaces
-            : palaces.filter((p) => p.category === selectedCategory);
+    const sortOptions = ["Recent", "Progress", "Name", "Category"];
 
-    const sortedPalaces = [...filteredPalaces].sort((a, b) => {
-        switch (sortBy) {
-            case "Progress":
-                return b.progress - a.progress;
-            case "Name":
-                return a.name.localeCompare(b.name);
-            case "Category":
-                return a.category.localeCompare(b.category);
-            default:
-                return 0;
+    // Filter rail: pseudo-folders + real folders. Counts exclude archived,
+    // except the Archived chip itself.
+    const activeNonArchived = palaces.filter((p) => !p.archived);
+    const rail = useMemo(() => {
+        const base = [
+            {id: ALL, label: "All", count: activeNonArchived.length},
+            ...(favoriteCount > 0
+                ? [{id: FAVORITES, label: "Favorites", count: favoriteCount}]
+                : []),
+            ...safeFolders.map((f) => ({
+                id: f.id,
+                label: f.name,
+                count: activeNonArchived.filter((p) => p.folderId === f.id).length,
+                folder: f,
+            })),
+        ];
+        const unfiledCount = activeNonArchived.filter(
+            (p) => !p.folderId,
+        ).length;
+        if (safeFolders.length > 0 && unfiledCount > 0) {
+            base.push({id: UNFILED, label: "Unfiled", count: unfiledCount});
         }
-    });
+        return base;
+    }, [activeNonArchived, favoriteCount, safeFolders]);
+
+    const visiblePalaces = useMemo(() => {
+        let list = palaces.filter((p) =>
+            activeFilter === ARCHIVED ? p.archived : !p.archived,
+        );
+        if (activeFilter === FAVORITES) list = list.filter((p) => p.favorite);
+        else if (activeFilter === UNFILED) list = list.filter((p) => !p.folderId);
+        else if (
+            activeFilter !== ALL &&
+            activeFilter !== ARCHIVED
+        )
+            list = list.filter((p) => p.folderId === activeFilter);
+
+        return [...list].sort((a, b) => {
+            // Favorites always float up (except in plain sorts that override).
+            if (sortBy === "Recent" && !!a.favorite !== !!b.favorite)
+                return a.favorite ? -1 : 1;
+            switch (sortBy) {
+                case "Progress":
+                    return b.progress - a.progress;
+                case "Name":
+                    return a.name.localeCompare(b.name);
+                case "Category":
+                    return a.category.localeCompare(b.category);
+                default:
+                    return (
+                        new Date(b.updatedAt).getTime() -
+                        new Date(a.updatedAt).getTime()
+                    );
+            }
+        });
+    }, [palaces, activeFilter, sortBy]);
 
     const palaceToDelete = palaces.find((p) => p.id === showDeleteConfirm);
+    const movingPalace = palaces.find((p) => p.id === movingPalaceId);
+    const deletingFolder = safeFolders.find((f) => f.id === folderToDelete);
+    const isArchivedView = activeFilter === ARCHIVED;
+
+    const menuProps = (palace: Palace) => ({
+        palace,
+        hasFolders: safeFolders.length > 0,
+        onToggleFavorite: () => onToggleFavorite(palace.id),
+        onDuplicate: () => onDuplicatePalace(palace.id),
+        onMoveToFolder: () => setMovingPalaceId(palace.id),
+        onArchiveToggle: () => onToggleArchive(palace.id),
+        onEdit: () => onEditPalace(palace.id),
+        onDelete: () => setShowDeleteConfirm(palace.id),
+    });
+
+    const handleCreateFolder = () => {
+        const name = newFolderName.trim();
+        if (!name) return;
+        onCreateFolder({
+            name,
+            color: FOLDER_COLORS[safeFolders.length % FOLDER_COLORS.length],
+            icon: "📁",
+        });
+        setNewFolderName("");
+        setShowNewFolder(false);
+    };
 
     return (
         <div className="size-full flex flex-col relative">
-            {/* Dynamic Background */}
             <DynamicBackground/>
-
-            {/* Ambient Particles */}
             <AmbientParticles/>
 
-            {/* Content */}
             <div className="relative z-10 flex-1 flex flex-col">
                 {/* Header */}
-                <div
-                    className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md">
-                    <div
-                        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]"/>
+                <div className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]"/>
 
-                    {/* Status Bar */}
                     <div className="relative z-10">
                         <StatusBar textColor="white"/>
                     </div>
 
-                    {/* Header Content */}
                     <div className="px-[20px] pt-[12px] pb-[20px] relative z-10">
                         <div className="flex items-center justify-between mb-[16px]">
-                            <h1 className="text-[32px] font-bold text-white">
-                                Palaces
-                            </h1>
+                            <h1 className="text-[32px] font-bold text-white">Palaces</h1>
                             <div className="flex items-center gap-3">
                                 <motion.button
                                     whileTap={{scale: 0.92}}
@@ -221,9 +378,7 @@ export function PalacesPage({
                                     }
                                 />
                                 <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
-                                    <p className="text-[12px] font-medium text-[#4b5563] px-3 py-2">
-                                        Sort by
-                                    </p>
+                                    <p className="text-[12px] font-medium text-[#4b5563] px-3 py-2">Sort by</p>
                                     {sortOptions.map((option) => (
                                         <DropdownMenuItem
                                             key={option}
@@ -244,80 +399,120 @@ export function PalacesPage({
                     </div>
                 </div>
 
-
                 {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto scrollbar-hide">
-                    {/* Category Filter */}
-                    <div
-                        className="px-[20px] py-[16px] border-b border-[#E5E5EA] sticky top-0 bg-white/95 backdrop-blur-md z-10 shadow-sm">
+                    {/* Folder / collection rail */}
+                    <div className="px-[20px] py-[14px] border-b border-[#E5E5EA] sticky top-0 bg-white/95 backdrop-blur-md z-10 shadow-sm">
                         <div className="flex gap-[8px] overflow-x-auto scrollbar-hide pb-1">
-                            {categories.map((category, index) => {
-                                const count = category === "All"
-                                    ? palaces.length
-                                    : palaces.filter(p => p.category === category).length;
-
+                            {rail.map((chip) => {
+                                const active = activeFilter === chip.id;
+                                const isFav = chip.id === FAVORITES;
+                                const isFolder = "folder" in chip;
                                 return (
                                     <motion.button
-                                        key={category}
-                                        onClick={() => setSelectedCategory(category)}
-                                        initial={{opacity: 0, y: -10}}
-                                        animate={{opacity: 1, y: 0}}
-                                        transition={{delay: index * 0.05}}
+                                        key={chip.id}
+                                        onClick={() => setActiveFilter(chip.id)}
                                         whileTap={{scale: 0.96}}
-                                        className={`flex-shrink-0 px-[18px] py-[10px] rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
-                                            selectedCategory === category
+                                        className={`flex-shrink-0 px-[16px] py-[10px] rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
+                                            active
                                                 ? "bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white shadow-md"
                                                 : "bg-white text-[#4b5563] border-2 border-[#E5E5EA]"
                                         }`}
                                     >
                                         <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-semibold">
-                        {category}
-                      </span>
+                                            {isFav && (
+                                                <Star
+                                                    size={14}
+                                                    className={
+                                                        active
+                                                            ? "text-white fill-white"
+                                                            : "text-[#FFC71E] fill-[#FFC71E]"
+                                                    }
+                                                />
+                                            )}
+                                            {isFolder && (
+                                                <FolderIcon
+                                                    size={14}
+                                                    className={active ? "text-white" : "text-[#3D8FEF]"}
+                                                />
+                                            )}
+                                            <span className="text-[14px] font-semibold whitespace-nowrap">
+                                                {chip.label}
+                                            </span>
                                             <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
-                                                selectedCategory === category
-                                                    ? "bg-white/25 text-white"
-                                                    : "bg-[#F5F5F7] text-[#4b5563]"
+                                                active ? "bg-white/25 text-white" : "bg-[#F5F5F7] text-[#4b5563]"
                                             }`}>
-                        {count}
-                      </span>
+                                                {chip.count}
+                                            </span>
                                         </div>
                                     </motion.button>
                                 );
                             })}
+
+                            {/* New folder */}
+                            <motion.button
+                                onClick={() => setShowNewFolder(true)}
+                                whileTap={{scale: 0.96}}
+                                aria-label="New folder"
+                                className="flex-shrink-0 px-[14px] py-[10px] rounded-full bg-[#EAF4FF] text-[#091A7A] flex items-center gap-1.5 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                            >
+                                <FolderPlus size={15} strokeWidth={2.4}/>
+                                <span className="text-[14px] font-semibold whitespace-nowrap">Folder</span>
+                            </motion.button>
+
+                            {/* Archived */}
+                            {archivedCount > 0 && (
+                                <motion.button
+                                    onClick={() => setActiveFilter(ARCHIVED)}
+                                    whileTap={{scale: 0.96}}
+                                    className={`flex-shrink-0 px-[16px] py-[10px] rounded-full transition-all shadow-sm flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
+                                        isArchivedView
+                                            ? "bg-[#091A7A] text-white shadow-md"
+                                            : "bg-white text-[#4b5563] border-2 border-[#E5E5EA]"
+                                    }`}
+                                >
+                                    <Archive size={14}/>
+                                    <span className="text-[14px] font-semibold whitespace-nowrap">Archived</span>
+                                    <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
+                                        isArchivedView ? "bg-white/25 text-white" : "bg-[#F5F5F7] text-[#4b5563]"
+                                    }`}>
+                                        {archivedCount}
+                                    </span>
+                                </motion.button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Result count + active sort */}
-                    <div className="px-[20px] pt-[16px] pb-[10px] flex items-baseline justify-between">
+                    {/* Result count + folder actions */}
+                    <div className="px-[20px] pt-[16px] pb-[10px] flex items-center justify-between">
                         <p className="text-[15px] font-medium text-[#2C2C2C]">
-                            {sortedPalaces.length}{" "}
-                            {sortedPalaces.length === 1 ? "Palace" : "Palaces"}
+                            {visiblePalaces.length}{" "}
+                            {visiblePalaces.length === 1 ? "Palace" : "Palaces"}
                         </p>
-                        {sortBy !== "Recent" && (
-                            <p className="text-[13px] text-[#4b5563]">
-                                Sorted by {sortBy}
-                            </p>
-                        )}
+                        <div className="flex items-center gap-3">
+                            {sortBy !== "Recent" && (
+                                <p className="text-[13px] text-[#4b5563]">Sorted by {sortBy}</p>
+                            )}
+                            {safeFolders.some((f) => f.id === activeFilter) && (
+                                <button
+                                    onClick={() => setFolderToDelete(activeFilter)}
+                                    className="text-[13px] font-medium text-red-500 hover:text-red-600"
+                                >
+                                    Delete folder
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Grid View */}
                     {viewMode === "grid" && (
-                        <motion.div
-                            initial={{opacity: 0}}
-                            animate={{opacity: 1}}
-                            exit={{opacity: 0}}
-                            className="px-[20px] pb-[128px]"
-                        >
-                            {/* Palace Cards Grid */}
+                        <div className="px-[20px] pb-[128px]">
                             <div className="grid grid-cols-2 gap-4">
                                 {loading &&
                                     Array.from({length: 4}).map((_, i) => (
-                                        <PalaceCardSkeleton
-                                            key={`palace-skeleton-${i}`}
-                                        />
+                                        <PalaceCardSkeleton key={`palace-skeleton-${i}`}/>
                                     ))}
-                                {!loading && sortedPalaces.map((palace, index) => (
+                                {!loading && visiblePalaces.map((palace, index) => (
                                     <motion.div
                                         key={palace.id}
                                         initial={{opacity: 0, scale: 0.9, y: 20}}
@@ -328,7 +523,7 @@ export function PalacesPage({
                                             stiffness: 300,
                                             damping: 25
                                         }}
-                                        className="relative"
+                                        className={`relative ${palace.archived ? "opacity-75" : ""}`}
                                     >
                                         <div onClick={() => onPalaceClick(palace.id)}>
                                             <PalaceCard
@@ -352,68 +547,41 @@ export function PalacesPage({
                                             />
                                         </div>
 
-                                        {/* Menu (portaled so it can't clip in the scroll area) */}
+                                        {palace.favorite && !palace.archived && (
+                                            <div className="absolute top-3 left-3 w-7 h-7 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md z-10">
+                                                <Star size={14} className="text-[#FFC71E] fill-[#FFC71E]"/>
+                                            </div>
+                                        )}
+
                                         <PalaceActionsMenu
                                             triggerClassName="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg z-10 outline-none"
-                                            onEdit={() => onEditPalace(palace.id)}
-                                            onDelete={() => setShowDeleteConfirm(palace.id)}
+                                            {...menuProps(palace)}
                                         />
                                     </motion.div>
                                 ))}
                             </div>
 
-                            {/* Empty State */}
-                            {!loading && sortedPalaces.length === 0 && (
-                                palaces.length === 0 ? (
-                                    <EmptyState
-                                        emoji="🏛️"
-                                        title="Build your first palace"
-                                        description="A memory palace is a familiar place you fill with what you want to remember. Create one to start training."
-                                        action={
-                                            <button
-                                                onClick={onCreatePalace}
-                                                className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
-                                            >
-                                                <Plus className="h-4 w-4"/>
-                                                Create palace
-                                            </button>
-                                        }
-                                    />
-                                ) : (
-                                    <EmptyState
-                                        emoji="🔍"
-                                        title="No palaces match"
-                                        description="Nothing fits the selected filters. Try another category or clear your filters."
-                                        action={
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedCategory("All");
-                                                    setSortBy("Recent");
-                                                }}
-                                                className="rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
-                                            >
-                                                Clear filters
-                                            </button>
-                                        }
-                                    />
-                                )
+                            {!loading && visiblePalaces.length === 0 && (
+                                <PalacesEmptyState
+                                    isArchivedView={isArchivedView}
+                                    hasAnyPalaces={activeNonArchived.length > 0}
+                                    onCreatePalace={onCreatePalace}
+                                    onClear={() => setActiveFilter(ALL)}
+                                />
                             )}
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* List View */}
                     {viewMode === "list" && (
-                        <motion.div
-                            initial={{opacity: 0}}
-                            animate={{opacity: 1}}
-                            exit={{opacity: 0}}
-                            className="pb-[128px]"
-                        >
-                            {sortedPalaces.length > 0 ? (
-                                sortedPalaces.map((palace, index) => (
+                        <div className="pb-[128px]">
+                            {visiblePalaces.length > 0 ? (
+                                visiblePalaces.map((palace, index) => (
                                     <motion.div
                                         key={palace.id}
-                                        className="px-[20px] py-[16px] border-b border-[#E5E5EA] cursor-pointer hover:bg-[#F5F5F7] transition-colors active:bg-[#E5E5EA]"
+                                        className={`px-[20px] py-[16px] border-b border-[#E5E5EA] cursor-pointer hover:bg-[#F5F5F7] transition-colors active:bg-[#E5E5EA] ${
+                                            palace.archived ? "opacity-75" : ""
+                                        }`}
                                         initial={{opacity: 0, x: -20}}
                                         animate={{opacity: 1, x: 0}}
                                         transition={{delay: index * 0.03}}
@@ -421,34 +589,28 @@ export function PalacesPage({
                                         onClick={() => onPalaceClick(palace.id)}
                                     >
                                         <div className="flex items-center gap-[16px] relative">
-                                            {/* Icon with gradient background */}
                                             <div
                                                 className={`w-[72px] h-[72px] rounded-[16px] bg-gradient-to-br ${palace.color} flex items-center justify-center flex-shrink-0`}
                                             >
-                      <span className="text-[40px]">
-                        {palace.icon}
-                      </span>
+                                                <span className="text-[40px]">{palace.icon}</span>
                                             </div>
 
-                                            {/* Menu - List View (portaled so it can't clip in the scroll area) */}
                                             <PalaceActionsMenu
                                                 triggerClassName="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md outline-none"
-                                                onEdit={() => onEditPalace(palace.id)}
-                                                onDelete={() => setShowDeleteConfirm(palace.id)}
+                                                {...menuProps(palace)}
                                             />
 
-                                            {/* Content */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-[8px] mb-[4px]">
-                                                    <h3 className="text-[17px] font-semibold text-[#2C2C2C] line-clamp-1">
-                                                        {palace.name}
-                                                    </h3>
-                                                    {palace.progress === 100 && (
+                                                    {palace.favorite && !palace.archived && (
                                                         <Star
-                                                            size={16}
+                                                            size={15}
                                                             className="text-[#FFC71E] fill-[#FFC71E] flex-shrink-0"
                                                         />
                                                     )}
+                                                    <h3 className="text-[17px] font-semibold text-[#2C2C2C] line-clamp-1">
+                                                        {palace.name}
+                                                    </h3>
                                                 </div>
 
                                                 <p className="text-[14px] text-[#4b5563] mb-[8px] line-clamp-1">
@@ -456,82 +618,46 @@ export function PalacesPage({
                                                 </p>
 
                                                 <div className="flex items-center gap-[12px] mb-[8px]">
-                        <span className="text-[13px] text-[#4b5563]">
-                          {palace.totalRooms} rooms
-                        </span>
                                                     <span className="text-[13px] text-[#4b5563]">
-                          •
-                        </span>
-                                                    <span
-                                                        className="inline-block px-[8px] py-[2px] bg-[#F5F5F7] rounded-full text-[11px] text-[#4b5563] font-medium">
-                          {palace.category}
-                        </span>
+                                                        {palace.totalRooms} rooms
+                                                    </span>
+                                                    <span className="text-[13px] text-[#4b5563]">•</span>
+                                                    <span className="inline-block px-[8px] py-[2px] bg-[#F5F5F7] rounded-full text-[11px] text-[#4b5563] font-medium">
+                                                        {palace.category}
+                                                    </span>
                                                 </div>
 
-                                                {/* Progress Bar */}
                                                 <div className="flex items-center gap-[8px]">
-                                                    <div
-                                                        className="flex-1 h-[4px] bg-[#F5F5F7] rounded-full overflow-hidden">
+                                                    <div className="flex-1 h-[4px] bg-[#F5F5F7] rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-[#091A7A] rounded-full"
-                                                            style={{
-                                                                width: `${palace.progress}%`,
-                                                            }}
+                                                            style={{width: `${palace.progress}%`}}
                                                         />
                                                     </div>
-                                                    <span
-                                                        className="text-[13px] font-medium text-[#091A7A] min-w-[40px] text-right">
-                          {palace.progress}%
-                        </span>
+                                                    <span className="text-[13px] font-medium text-[#091A7A] min-w-[40px] text-right">
+                                                        {palace.progress}%
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            {/* Arrow */}
-                                            <ChevronRight
-                                                size={20}
-                                                className="text-[#C7C7CC] flex-shrink-0"
-                                            />
+                                            <ChevronRight size={20} className="text-[#C7C7CC] flex-shrink-0"/>
                                         </div>
                                     </motion.div>
                                 ))
-                            ) : palaces.length === 0 ? (
-                                <EmptyState
-                                    emoji="🏛️"
-                                    title="Build your first palace"
-                                    description="A memory palace is a familiar place you fill with what you want to remember. Create one to start training."
-                                    action={
-                                        <button
-                                            onClick={onCreatePalace}
-                                            className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
-                                        >
-                                            <Plus className="h-4 w-4"/>
-                                            Create palace
-                                        </button>
-                                    }
-                                />
                             ) : (
-                                <EmptyState
-                                    emoji="🔍"
-                                    title="No palaces match"
-                                    description="Nothing fits the selected filters. Try another category or clear your filters."
-                                    action={
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCategory("All");
-                                                setSortBy("Recent");
-                                            }}
-                                            className="rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
-                                        >
-                                            Clear filters
-                                        </button>
-                                    }
+                                <PalacesEmptyState
+                                    isArchivedView={isArchivedView}
+                                    hasAnyPalaces={activeNonArchived.length > 0}
+                                    onCreatePalace={onCreatePalace}
+                                    onClear={() => setActiveFilter(ALL)}
                                 />
                             )}
-                        </motion.div>
+                        </div>
                     )}
                 </div>
             </div>
 
+            {/* Delete palace */}
             <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
                 <AlertDialogContent className="sm:max-w-[400px] rounded-3xl!">
                     <AlertDialogHeader>
@@ -539,9 +665,7 @@ export function PalacesPage({
                             <Trash2 size={32} className="text-red-600"/>
                         </div>
                         <AlertDialogTitle className="text-center text-[#2C2C2C] text-xl">
-                            {palaceToDelete
-                                ? `Delete “${palaceToDelete.name}”?`
-                                : "Delete palace?"}
+                            {palaceToDelete ? `Delete “${palaceToDelete.name}”?` : "Delete palace?"}
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-[#4b5563]">
                             This can’t be undone. Every floor, room, and your training progress in this palace are
@@ -570,6 +694,210 @@ export function PalacesPage({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Delete folder */}
+            <AlertDialog open={!!folderToDelete} onOpenChange={(open) => !open && setFolderToDelete(null)}>
+                <AlertDialogContent className="sm:max-w-[400px] rounded-3xl!">
+                    <AlertDialogHeader>
+                        <div className="w-16 h-16 bg-[#EAF4FF] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FolderIcon size={30} className="text-[#091A7A]"/>
+                        </div>
+                        <AlertDialogTitle className="text-center text-[#2C2C2C] text-xl">
+                            {deletingFolder ? `Delete “${deletingFolder.name}”?` : "Delete folder?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center text-[#4b5563]">
+                            The folder is removed. Palaces inside it stay safe and move back to Unfiled.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">
+                        <AlertDialogCancel
+                            onClick={() => setFolderToDelete(null)}
+                            className="flex-1 py-4 h-auto border-none bg-[#F5F5F7] hover:bg-gray-200 text-[#2C2C2C] font-semibold rounded-2xl"
+                        >
+                            Keep folder
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (folderToDelete) {
+                                    onDeleteFolder(folderToDelete);
+                                    if (activeFilter === folderToDelete) setActiveFilter(ALL);
+                                    setFolderToDelete(null);
+                                }
+                            }}
+                            className="flex-1 py-4 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
+                        >
+                            Delete folder
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* New folder */}
+            <Dialog open={showNewFolder} onOpenChange={(o) => {
+                if (!o) {
+                    setShowNewFolder(false);
+                    setNewFolderName("");
+                }
+            }}>
+                <DialogContent showCloseButton className="max-w-[360px] rounded-3xl p-6">
+                    <DialogTitle className="text-[18px] font-bold text-[#091A7A]">New folder</DialogTitle>
+                    <p className="text-[14px] text-[#475569] -mt-2">
+                        Group related palaces, like “Languages” or “Med school”.
+                    </p>
+                    <Input
+                        value={newFolderName}
+                        onChange={(e) => setNewFolderName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") handleCreateFolder();
+                        }}
+                        placeholder="Folder name"
+                        autoFocus
+                        className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
+                    />
+                    <motion.button
+                        whileTap={{scale: newFolderName.trim() ? 0.98 : 1}}
+                        onClick={handleCreateFolder}
+                        disabled={!newFolderName.trim()}
+                        className={`w-full py-3.5 rounded-2xl font-semibold transition-colors ${
+                            newFolderName.trim()
+                                ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
+                                : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                        }`}
+                    >
+                        Create folder
+                    </motion.button>
+                </DialogContent>
+            </Dialog>
+
+            {/* Move to folder */}
+            <Dialog open={!!movingPalaceId} onOpenChange={(o) => !o && setMovingPalaceId(null)}>
+                <DialogContent showCloseButton className="max-w-[360px] rounded-3xl p-6">
+                    <DialogTitle className="text-[18px] font-bold text-[#091A7A]">
+                        Move to folder
+                    </DialogTitle>
+                    {movingPalace && (
+                        <p className="text-[14px] text-[#475569] -mt-2 line-clamp-1">
+                            {movingPalace.name}
+                        </p>
+                    )}
+                    <div className="space-y-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide -mx-1 px-1">
+                        <FolderOption
+                            label="None (Unfiled)"
+                            icon={<Sparkles size={16} className="text-[#94a3b8]"/>}
+                            selected={!movingPalace?.folderId}
+                            onClick={() => {
+                                if (movingPalaceId) onSetPalaceFolder(movingPalaceId, null);
+                                setMovingPalaceId(null);
+                            }}
+                        />
+                        {safeFolders.map((f) => (
+                            <FolderOption
+                                key={f.id}
+                                label={f.name}
+                                icon={<FolderIcon size={16} className="text-[#3D8FEF]"/>}
+                                selected={movingPalace?.folderId === f.id}
+                                onClick={() => {
+                                    if (movingPalaceId) onSetPalaceFolder(movingPalaceId, f.id);
+                                    setMovingPalaceId(null);
+                                }}
+                            />
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => {
+                            setMovingPalaceId(null);
+                            setShowNewFolder(true);
+                        }}
+                        className="w-full mt-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#EAF4FF] text-[#091A7A] font-semibold"
+                    >
+                        <FolderPlus size={17}/>
+                        New folder
+                    </button>
+                </DialogContent>
+            </Dialog>
         </div>
+    );
+}
+
+function FolderOption({
+                          label,
+                          icon,
+                          selected,
+                          onClick,
+                      }: {
+    label: string;
+    icon: React.ReactNode;
+    selected: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-colors ${
+                selected ? "bg-[#091A7A] text-white" : "bg-[#F4F8FF] text-[#091A7A] hover:bg-[#EAF4FF]"
+            }`}
+        >
+            <span className={selected ? "opacity-90" : ""}>{icon}</span>
+            <span className="flex-1 text-[15px] font-medium line-clamp-1">{label}</span>
+            {selected && (
+                <span className="w-2.5 h-2.5 rounded-full bg-white"/>
+            )}
+        </button>
+    );
+}
+
+function PalacesEmptyState({
+                               isArchivedView,
+                               hasAnyPalaces,
+                               onCreatePalace,
+                               onClear,
+                           }: {
+    isArchivedView: boolean;
+    hasAnyPalaces: boolean;
+    onCreatePalace: () => void;
+    onClear: () => void;
+}) {
+    if (isArchivedView) {
+        return (
+            <EmptyState
+                icon={<Archive className="w-7 h-7"/>}
+                title="Nothing archived"
+                description="Archived palaces land here so your main list stays focused. Archive one from its menu to tuck it away."
+            />
+        );
+    }
+    if (!hasAnyPalaces) {
+        return (
+            <EmptyState
+                emoji="🏛️"
+                title="Build your first palace"
+                description="A memory palace is a familiar place you fill with what you want to remember. Create one to start training."
+                action={
+                    <button
+                        onClick={onCreatePalace}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                    >
+                        <Plus className="h-4 w-4"/>
+                        Create palace
+                    </button>
+                }
+            />
+        );
+    }
+    return (
+        <EmptyState
+            emoji="🔍"
+            title="No palaces here"
+            description="This collection is empty. Move a palace into it from the palace menu, or pick another collection."
+            action={
+                <button
+                    onClick={onClear}
+                    className="rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                >
+                    Show all palaces
+                </button>
+            }
+        />
     );
 }
