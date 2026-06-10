@@ -1,43 +1,54 @@
 import {useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
 import {
-  ArrowLeft,
-  BarChart3,
-  Brain,
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  Clock,
-  Edit2,
-  HelpCircle,
-  Layers,
-  Lock,
-  MoreVertical,
-  Play,
-  Plus,
-  Save,
-  Sparkles,
-  Target,
-  Trash2,
-  Unlock,
-  X,
-  Zap,
+    ArrowLeft,
+    BarChart3,
+    Brain,
+    CheckCircle,
+    ChevronDown,
+    ChevronRight,
+    ChevronUp,
+    Clock,
+    Copy,
+    DownloadCloud,
+    Edit2,
+    HelpCircle,
+    Lock,
+    MapPin,
+    Play,
+    Plus,
+    RotateCcw,
+    Settings2,
+    Shuffle,
+    Sparkles,
+    Target,
+    Timer,
+    Trash2,
+    Unlock,
+    X,
 } from "lucide-react";
-import {Floor as StateFloor, Room as StateRoom, useProgressState} from "../../hooks/useProgressState";
-import {useDrag} from "@use-gesture/react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    Palace,
+    palaceSettings,
+    Room as StateRoom,
+    useProgressState,
+} from "../../hooks/useProgressState";
+import {useDrag} from "@use-gesture/react";
+import {toast} from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "../ui/alert-dialog";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "../ui/dropdown-menu";
 import {EmptyState} from "../ui/EmptyState";
+import {Switch} from "../ui/switch";
+import {Input} from "../ui/input";
+import {Textarea} from "../ui/textarea";
 import {Drawer} from "vaul";
 
 interface PalaceDetailScreenProps {
@@ -45,51 +56,57 @@ interface PalaceDetailScreenProps {
     onBack: () => void;
     onRoomClick?: (roomTitle: string) => void;
     onQuizClick?: () => void;
-    /** Open the flashcards & questions manager for a specific room. */
-    onManageContent?: (floorId: string, roomId: string) => void;
+    /** Open the loci & questions manager for a specific room. */
+    onManageContent?: (roomId: string) => void;
+    /** Open the full edit flow (name, icon, color) for this palace. */
+    onEditPalace?: () => void;
 }
 
-const getCurrentRoom = (floors: StateFloor[]) => {
-    for (const floor of floors) {
-        for (const room of floor.rooms) {
-            if (!room.isCompleted && room.isUnlocked) {
-                return {
-                    floor: floor.title,
-                    room: room.title,
-                    progress: room.progress,
-                };
-            }
-        }
-    }
-
-    if (floors.length > 0 && floors[0].rooms.length > 0) {
-        return {
-            floor: floors[0].title,
-            room: floors[0].rooms[0].title,
-            progress: floors[0].rooms[0].progress,
-        };
-    }
-
-    return null;
+const getCurrentRoom = (rooms: StateRoom[]) => {
+    const next =
+        rooms.find((r) => !r.isCompleted && r.isUnlocked) ?? rooms[0];
+    return next ? {room: next.title, progress: next.progress} : null;
 };
+
+/** Download a single palace as JSON (rooms, loci, questions, settings). */
+function exportPalace(palace: Palace) {
+    const blob = new Blob(
+        [
+            JSON.stringify(
+                {type: "mindscape-palace", version: 1, palace},
+                null,
+                2,
+            ),
+        ],
+        {type: "application/json"},
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const slug =
+        palace.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ||
+        "palace";
+    a.href = url;
+    a.download = `${slug}-palace.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
 interface SwipeableRoomCardProps {
     room: StateRoom;
     roomIndex: number;
-    floor: StateFloor;
+    palaceId: string;
     canMoveUp: boolean;
     canMoveDown: boolean;
-    onEditRoom: (floorId: string, room: StateRoom) => void;
-    onDeleteRoom: (floorId: string, roomId: string) => void;
+    onEditRoom: (room: StateRoom) => void;
+    onDeleteRoom: (roomId: string) => void;
     onRoomClick?: (roomTitle: string) => void;
-    onManageContent?: (floorId: string, roomId: string) => void;
-    onMoveRoom: (floorId: string, roomId: string, direction: "up" | "down") => void;
+    onManageContent?: (roomId: string) => void;
+    onMoveRoom: (roomId: string, direction: "up" | "down") => void;
 }
 
 function SwipeableRoomCard({
                                room,
                                roomIndex,
-                               floor,
                                canMoveUp,
                                canMoveDown,
                                onEditRoom,
@@ -101,9 +118,7 @@ function SwipeableRoomCard({
     const x = useMotionValue(0);
 
     const bind = useDrag(({down, movement: [mx], velocity: [vx], direction: [dx]}) => {
-        // Only allow swiping left
         const boundedX = Math.min(0, mx);
-
         if (down) {
             x.set(boundedX);
         } else {
@@ -113,32 +128,27 @@ function SwipeableRoomCard({
                 animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
             }
         }
-    }, {axis: 'x', filterTaps: true});
+    }, {axis: "x", filterTaps: true});
 
-    const cardCount = room.flashcards?.length ?? 0;
+    const lociCount = room.loci?.length ?? 0;
     const questionCount = room.questions?.length ?? 0;
 
     return (
         <motion.div
             initial={{opacity: 0, y: 12}}
             animate={{opacity: 1, y: 0}}
-            transition={{
-                delay: roomIndex * 0.06,
-                duration: 0.3,
-                ease: [0.16, 1, 0.3, 1],
-            }}
+            transition={{delay: roomIndex * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1]}}
             className="relative overflow-hidden rounded-2xl touch-pan-y"
         >
-            {/* Hidden Action Buttons behind the card */}
-            <div
-                className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 gap-2 bg-[#EAF4FF]/70 rounded-2xl w-full">
+            {/* Hidden actions behind the card */}
+            <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 gap-2 bg-[#EAF4FF]/70 rounded-2xl w-full">
                 <motion.button
                     whileTap={{scale: 0.9}}
                     aria-label={`Move ${room.title} up`}
                     disabled={!canMoveUp}
                     onClick={() => {
                         animate(x, 0);
-                        onMoveRoom(floor.id, room.id, "up");
+                        onMoveRoom(room.id, "up");
                     }}
                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A] disabled:opacity-35"
                 >
@@ -150,7 +160,7 @@ function SwipeableRoomCard({
                     disabled={!canMoveDown}
                     onClick={() => {
                         animate(x, 0);
-                        onMoveRoom(floor.id, room.id, "down");
+                        onMoveRoom(room.id, "down");
                     }}
                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A] disabled:opacity-35"
                 >
@@ -161,7 +171,7 @@ function SwipeableRoomCard({
                     aria-label={`Edit ${room.title}`}
                     onClick={() => {
                         animate(x, 0);
-                        onEditRoom(floor.id, room);
+                        onEditRoom(room);
                     }}
                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md text-[#091A7A]"
                 >
@@ -172,7 +182,7 @@ function SwipeableRoomCard({
                     aria-label={`Delete ${room.title}`}
                     onClick={() => {
                         animate(x, 0);
-                        onDeleteRoom(floor.id, room.id);
+                        onDeleteRoom(room.id);
                     }}
                     className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shadow-md text-red-600"
                 >
@@ -180,62 +190,54 @@ function SwipeableRoomCard({
                 </motion.button>
             </div>
 
-            {/* Foreground Card. Drag offset lives solely in the `x` motion value;
-                entrance animation is on the wrapper so the two never fight.
-                The cast bridges use-gesture's DOM handler types with motion's
-                overloaded event props (onAnimationStart etc.); only pointer
-                handlers are actually produced by bind(). */}
+            {/* Foreground card */}
             <motion.div
                 {...(bind() as unknown as HTMLMotionProps<"div">)}
                 style={{x}}
-                className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-white/70 shadow-card relative z-10 w-full"
+                className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-white/70 shadow-card relative z-10 w-full"
             >
                 <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div
-                            className="w-11 h-11 bg-gradient-to-br from-[#ADC8FF]/40 to-[#ADC8FF]/20 rounded-full flex items-center justify-center border border-white/50">
-              <span className="text-small font-semibold text-[#091A7A]">
-                {roomIndex + 1}
-              </span>
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-11 h-11 bg-gradient-to-br from-[#ADC8FF]/40 to-[#ADC8FF]/20 rounded-full flex items-center justify-center border border-white/50 flex-shrink-0">
+                            <span className="text-small font-semibold text-[#091A7A]">
+                                {roomIndex + 1}
+                            </span>
                         </div>
 
-                        <div className="flex-1">
-                            <h4 className="text-subheading text-[#091A7A] mb-1.5 font-medium">
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-subheading text-[#091A7A] mb-1 font-medium line-clamp-1">
                                 {room.title}
                             </h4>
-                            <p className="text-[12px] text-[#4b5563] mb-2">
+                            <p className="text-[12px] text-[#4b5563] mb-2 line-clamp-1">
                                 {room.description}
                             </p>
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1">
                                     <Clock className="w-3.5 h-3.5 text-[#4b5563]"/>
                                     <span className="text-small font-medium">
-                    {room.duration} min
-                  </span>
+                                        {room.duration} min
+                                    </span>
                                 </div>
                                 {room.isUnlocked ? (
                                     <div className="flex items-center gap-1">
                                         <Unlock className="w-3.5 h-3.5 text-green-700"/>
                                         <span className="text-[11px] text-green-700 font-medium">
-                      Unlocked
-                    </span>
+                                            Unlocked
+                                        </span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-1">
                                         <Lock className="w-3.5 h-3.5 text-[#4b5563]"/>
-                                        <span className="text-[11px] text-[#4b5563]">
-                      Locked
-                    </span>
+                                        <span className="text-[11px] text-[#4b5563]">Locked</span>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                         {room.isCompleted ? (
-                            <div
-                                className="w-9 h-9 bg-green-50 rounded-full flex items-center justify-center border border-green-200">
+                            <div className="w-9 h-9 bg-green-50 rounded-full flex items-center justify-center border border-green-200">
                                 <CheckCircle className="w-4.5 h-4.5 text-green-600"/>
                             </div>
                         ) : room.isUnlocked ? (
@@ -248,8 +250,7 @@ function SwipeableRoomCard({
                                 <Play className="w-4 h-4 text-white"/>
                             </motion.button>
                         ) : (
-                            <div
-                                className="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
+                            <div className="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
                                 <Lock className="w-4 h-4 text-gray-400"/>
                             </div>
                         )}
@@ -261,14 +262,8 @@ function SwipeableRoomCard({
                         <div className="h-2 bg-[#ADC8FF]/25 rounded-full overflow-hidden">
                             <motion.div
                                 initial={{width: 0}}
-                                animate={{
-                                    width: `${room.progress}%`,
-                                }}
-                                transition={{
-                                    delay: 0.3,
-                                    duration: 0.8,
-                                    ease: "easeOut",
-                                }}
+                                animate={{width: `${room.progress}%`}}
+                                transition={{delay: 0.3, duration: 0.8, ease: "easeOut"}}
                                 className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full"
                             />
                         </div>
@@ -278,13 +273,13 @@ function SwipeableRoomCard({
                 {/* Content manager entry: counts double as the affordance. */}
                 <motion.button
                     whileTap={{scale: 0.97}}
-                    onClick={() => onManageContent?.(floor.id, room.id)}
+                    onClick={() => onManageContent?.(room.id)}
                     className="mt-3 w-full flex items-center justify-between rounded-xl bg-[#F4F8FF] px-3.5 py-2.5 text-left transition-colors hover:bg-[#EAF4FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/30"
                 >
                     <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
-                            <Layers size={14} className="text-[#3D8FEF]"/>
-                            {cardCount} {cardCount === 1 ? "card" : "cards"}
+                            <MapPin size={14} className="text-[#3D8FEF]"/>
+                            {lociCount} {lociCount === 1 ? "locus" : "loci"}
                         </span>
                         <span className="h-3 w-px bg-[#091A7A]/15"/>
                         <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
@@ -293,7 +288,7 @@ function SwipeableRoomCard({
                         </span>
                     </div>
                     <span className="flex items-center gap-1 text-[12px] font-semibold text-[#3D8FEF]">
-                        {cardCount + questionCount === 0 ? "Add" : "Manage"}
+                        {lociCount + questionCount === 0 ? "Add" : "Manage"}
                         <ChevronRight size={14}/>
                     </span>
                 </motion.button>
@@ -302,27 +297,22 @@ function SwipeableRoomCard({
     );
 }
 
-/** Compact, honest per-palace stats. No fabricated numbers: every tile is
- *  derived from the palace's real structure and content. */
+/** Compact, honest per-palace stats derived from real structure and content. */
 function PalaceInsights({
-                            floors,
+                            rooms,
                             roomsCompleted,
                             totalRooms,
                             progress,
                             updatedAt,
                         }: {
-    floors: StateFloor[];
+    rooms: StateRoom[];
     roomsCompleted: number;
     totalRooms: number;
     progress: number;
     updatedAt: string;
 }) {
-    const allRooms = floors.flatMap((f) => f.rooms);
-    const totalCards = allRooms.reduce(
-        (sum, r) => sum + (r.flashcards?.length ?? 0),
-        0,
-    );
-    const totalQuestions = allRooms.reduce(
+    const totalLoci = rooms.reduce((sum, r) => sum + (r.loci?.length ?? 0), 0);
+    const totalQuestions = rooms.reduce(
         (sum, r) => sum + (r.questions?.length ?? 0),
         0,
     );
@@ -337,13 +327,9 @@ function PalaceInsights({
     })();
 
     const tiles = [
-        {icon: Layers, label: "Flashcards", value: String(totalCards)},
+        {icon: MapPin, label: "Loci", value: String(totalLoci)},
         {icon: HelpCircle, label: "Questions", value: String(totalQuestions)},
-        {
-            icon: CheckCircle,
-            label: "Rooms done",
-            value: `${roomsCompleted}/${totalRooms}`,
-        },
+        {icon: CheckCircle, label: "Rooms done", value: `${roomsCompleted}/${totalRooms}`},
         {icon: Target, label: "Mastery", value: `${progress}%`},
     ];
 
@@ -351,10 +337,7 @@ function PalaceInsights({
         <div className="mt-3 rounded-2xl bg-white/90 backdrop-blur-md p-5 shadow-card border border-white/50">
             <div className="grid grid-cols-2 gap-3">
                 {tiles.map((tile) => (
-                    <div
-                        key={tile.label}
-                        className="rounded-xl bg-[#F4F8FF] px-4 py-3.5"
-                    >
+                    <div key={tile.label} className="rounded-xl bg-[#F4F8FF] px-4 py-3.5">
                         <div className="flex items-center gap-2 mb-1.5">
                             <tile.icon className="w-4 h-4 text-[#3D8FEF]"/>
                             <span className="text-[12px] font-medium text-[#475569]">
@@ -371,8 +354,8 @@ function PalaceInsights({
             <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-[#EAF4FF] px-4 py-3">
                 <Sparkles className="w-4 h-4 text-[#3D8FEF] flex-shrink-0"/>
                 <p className="text-[13px] text-[#3D6FE0] leading-snug">
-                    {totalCards + totalQuestions === 0
-                        ? "Add flashcards and questions to a room to start tracking recall here."
+                    {totalLoci + totalQuestions === 0
+                        ? "Add loci and questions to a room to start tracking recall here."
                         : `Last updated ${lastReviewed}. Keep reviewing to lift your mastery.`}
                 </p>
             </div>
@@ -386,167 +369,47 @@ export function PalaceDetailScreen({
                                        onRoomClick,
                                        onQuizClick,
                                        onManageContent,
+                                       onEditPalace,
                                    }: PalaceDetailScreenProps) {
     const {state, actions} = useProgressState();
-    const [expandedFloors, setExpandedFloors] = useState<string[]>([]);
-    const [showInsights, setShowInsights] = useState(false);
-    const [editingFloorId, setEditingFloorId] = useState<string | null>(null);
-    const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
-    const [showAddFloor, setShowAddFloor] = useState(false);
-    const [showAddRoom, setShowAddRoom] = useState<string | null>(null);
-    const [showDeleteFloorConfirm, setShowDeleteFloorConfirm] = useState<string | null>(null);
-    const [showDeleteRoomConfirm, setShowDeleteRoomConfirm] = useState<{
-        floorId: string;
-        roomId: string
-    } | null>(null);
-
-    const [floorFormData, setFloorFormData] = useState({title: "", description: ""});
-    const [roomFormData, setRoomFormData] = useState({
-        title: "",
-        description: "",
-        duration: 10,
-        content: "",
-        isUnlocked: true,
-    });
-
     const palace = state.palaces.find((p) => p.id === palaceId);
-    const floors = palace?.floors || [];
-    const currentRoom = floors.length > 0 ? getCurrentRoom(floors) : null;
-    const totalDuration = floors.reduce(
-        (sum, floor) =>
-            sum + floor.rooms.reduce((s, room) => s + room.duration, 0),
-        0,
-    );
-    const floorToDelete = floors.find((f) => f.id === showDeleteFloorConfirm);
-    const roomToDelete = showDeleteRoomConfirm
-        ? floors
-            .find((f) => f.id === showDeleteRoomConfirm.floorId)
-            ?.rooms.find((r) => r.id === showDeleteRoomConfirm.roomId)
-        : undefined;
 
-    const toggleFloor = (floorId: string) => {
-        setExpandedFloors((prev) =>
-            prev.includes(floorId)
-                ? prev.filter((id) => id !== floorId)
-                : [...prev, floorId],
-        );
-    };
-
-    const openAddFloor = () => {
-        // The add-floor modal shares floorFormData with the inline floor editor;
-        // clear both so an in-progress edit never leaks into the new-floor form.
-        setEditingFloorId(null);
-        setFloorFormData({title: "", description: ""});
-        setShowAddFloor(true);
-    };
-
-    const handleAddFloor = () => {
-        if (!floorFormData.title.trim() || !floorFormData.description.trim()) return;
-
-        actions.createFloor(palaceId, {
-            title: floorFormData.title.trim(),
-            description: floorFormData.description.trim(),
-            order: floors.length + 1,
-        });
-
-        setFloorFormData({title: "", description: ""});
-        setShowAddFloor(false);
-    };
-
-    const handleEditFloor = (floor: StateFloor) => {
-        setFloorFormData({title: floor.title, description: floor.description});
-        setEditingFloorId(floor.id);
-    };
-
-    const handleSaveFloor = (floorId: string) => {
-        if (!floorFormData.title.trim() || !floorFormData.description.trim()) return;
-
-        actions.updateFloor(palaceId, floorId, {
-            title: floorFormData.title.trim(),
-            description: floorFormData.description.trim(),
-        });
-
-        setEditingFloorId(null);
-        setFloorFormData({title: "", description: ""});
-    };
-
-    const handleDeleteFloor = (floorId: string) => {
-        actions.deleteFloor(palaceId, floorId);
-        setShowDeleteFloorConfirm(null);
-    };
-
-    const handleAddRoom = (floorId: string) => {
-        if (!roomFormData.title.trim() || !roomFormData.description.trim() || !roomFormData.content.trim()) return;
-
-        const floor = floors.find(f => f.id === floorId);
-        if (!floor) return;
-
-        actions.createRoom(palaceId, floorId, {
-            title: roomFormData.title.trim(),
-            description: roomFormData.description.trim(),
-            duration: roomFormData.duration,
-            content: roomFormData.content.trim(),
-            isUnlocked: roomFormData.isUnlocked,
-            isCompleted: false,
-            progress: 0,
-            order: floor.rooms.length + 1,
-        });
-
-        setRoomFormData({title: "", description: "", duration: 10, content: "", isUnlocked: true});
-        setShowAddRoom(null);
-    };
-
-    const handleEditRoom = (floorId: string, room: StateRoom) => {
-        setRoomFormData({
-            title: room.title,
-            description: room.description,
-            duration: room.duration,
-            content: room.content,
-            isUnlocked: room.isUnlocked,
-        });
-        setEditingRoomId(room.id);
-        setShowAddRoom(floorId);
-    };
-
-    const handleSaveRoom = (floorId: string, roomId: string) => {
-        if (!roomFormData.title.trim() || !roomFormData.description.trim() || !roomFormData.content.trim()) return;
-
-        actions.updateRoom(palaceId, floorId, roomId, {
-            title: roomFormData.title.trim(),
-            description: roomFormData.description.trim(),
-            duration: roomFormData.duration,
-            content: roomFormData.content.trim(),
-            isUnlocked: roomFormData.isUnlocked,
-        });
-
-        setEditingRoomId(null);
-        setShowAddRoom(null);
-        setRoomFormData({title: "", description: "", duration: 10, content: "", isUnlocked: true});
-    };
-
-    const handleDeleteRoom = (floorId: string, roomId: string) => {
-        actions.deleteRoom(palaceId, floorId, roomId);
-        setShowDeleteRoomConfirm(null);
-    };
+    const [showInsights, setShowInsights] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [roomEditor, setRoomEditor] = useState<
+        {mode: "add"} | {mode: "edit"; room: StateRoom} | null
+    >(null);
+    const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
+    const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
 
     if (!palace) {
         return (
             <div className="h-full flex items-center justify-center">
-                <p className="text-body text-[#6B7280]">
-                    Palace not found
-                </p>
+                <p className="text-body text-[#6B7280]">Palace not found</p>
             </div>
         );
     }
 
+    const rooms = palace.rooms || [];
+    const currentRoom = rooms.length > 0 ? getCurrentRoom(rooms) : null;
+    const totalDuration = rooms.reduce((sum, r) => sum + r.duration, 0);
+    const settings = palaceSettings(palace);
+    const roomToDelete = rooms.find((r) => r.id === deleteRoomId);
+
+    const handleArchive = () => {
+        actions.togglePalaceArchived(palaceId);
+        setShowSettings(false);
+        toast.success("Palace archived");
+        onBack();
+    };
+
     return (
         <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto">
-            {/* Header Section */}
+            {/* Header */}
             <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#ADC8FF]/30 via-transparent to-transparent"/>
 
                 <div className="relative px-6 pt-6 pb-6">
-                    {/* Top Navigation */}
                     <div className="flex items-center justify-between mb-6">
                         <motion.button
                             whileTap={{scale: 0.92}}
@@ -557,21 +420,19 @@ export function PalaceDetailScreen({
                             <ArrowLeft className="w-5 h-5 text-[#091A7A]"/>
                         </motion.button>
 
-                        <h1 className="text-section-header text-[#091A7A]">
-                            Palace Details
-                        </h1>
+                        <h1 className="text-section-header text-[#091A7A]">Palace</h1>
 
                         <motion.button
                             whileTap={{scale: 0.92}}
-                            aria-label="Add floor"
-                            onClick={openAddFloor}
+                            aria-label="Palace settings"
+                            onClick={() => setShowSettings(true)}
                             className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
-                            <Plus className="w-5 h-5 text-[#091A7A]"/>
+                            <Settings2 className="w-5 h-5 text-[#091A7A]"/>
                         </motion.button>
                     </div>
 
-                    {/* Palace Banner Card */}
+                    {/* Banner */}
                     <motion.div
                         initial={{opacity: 0, y: 20}}
                         animate={{opacity: 1, y: 0}}
@@ -579,70 +440,54 @@ export function PalaceDetailScreen({
                     >
                         <div className="flex items-start gap-4 mb-4">
                             <div className="text-5xl">{palace.icon}</div>
-
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                                 <h1 className="text-main-heading text-[#091A7A] mb-2">
                                     {palace.name}
                                 </h1>
-                                <p className="text-small mb-3">
-                                    {palace.description}
-                                </p>
-
+                                <p className="text-small mb-3">{palace.description}</p>
                                 {totalDuration > 0 && (
-                                    <div
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#EAF4FF] rounded-full">
+                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#EAF4FF] rounded-full">
                                         <Clock className="w-3.5 h-3.5 text-[#3D8FEF]"/>
                                         <span className="text-[12px] font-medium text-[#3D8FEF]">
-                      {totalDuration >= 60
-                          ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}min`
-                          : `${totalDuration}min`}{" "}
+                                            {totalDuration >= 60
+                                                ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}min`
+                                                : `${totalDuration}min`}{" "}
                                             of training
-                    </span>
+                                        </span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Overall Progress */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                <span className="text-subheading text-[#091A7A]">
-                  Overall Progress
-                </span>
+                                <span className="text-subheading text-[#091A7A]">
+                                    Overall Progress
+                                </span>
                                 <span className="text-subheading font-semibold text-[#091A7A]">
-                  {palace.progress}%
-                </span>
+                                    {palace.progress}%
+                                </span>
                             </div>
-
                             <div className="h-3 bg-[#ADC8FF]/30 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{width: 0}}
                                     animate={{width: `${palace.progress}%`}}
-                                    transition={{
-                                        delay: 0.3,
-                                        duration: 1.2,
-                                        ease: "easeOut",
-                                    }}
+                                    transition={{delay: 0.3, duration: 1.2, ease: "easeOut"}}
                                     className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full shadow-sm"
                                 />
                             </div>
-
                             <div className="flex items-center justify-between">
-                <span className="text-tiny text-[#6B7280]">
-                  Palace Content
-                </span>
+                                <span className="text-tiny text-[#6B7280]">Rooms</span>
                                 <span className="text-tiny text-[#6B7280]">
-                  {palace.roomsCompleted}/{palace.totalRooms}{" "}
-                                    Rooms
-                </span>
+                                    {palace.roomsCompleted}/{palace.totalRooms} Rooms
+                                </span>
                             </div>
                         </div>
                     </motion.div>
-
                 </div>
             </div>
 
-            {/* Continue Exploring Button */}
+            {/* Continue */}
             {currentRoom && (
                 <div className="px-6 mb-4">
                     <motion.button
@@ -657,18 +502,17 @@ export function PalaceDetailScreen({
                                         <Play className="w-4 h-4 text-[#091A7A]"/>
                                     </div>
                                     <span className="text-subheading font-semibold">
-                    Continue exploring
-                  </span>
+                                        Continue exploring
+                                    </span>
                                 </div>
                                 <p className="text-small text-[#091A7A]/80 font-medium">
-                                    {currentRoom.floor}: {currentRoom.room}
+                                    {currentRoom.room}
                                 </p>
                                 <p className="text-small text-[#091A7A]/70 font-medium">
                                     {currentRoom.progress}% completed
                                 </p>
                             </div>
-                            <div
-                                className="w-14 h-14 bg-white backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                            <div className="w-14 h-14 bg-white backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
                                 <Play className="w-6 h-6 text-[#091A7A]"/>
                             </div>
                         </div>
@@ -676,7 +520,7 @@ export function PalaceDetailScreen({
                 </div>
             )}
 
-            {/* Test Your Knowledge Button */}
+            {/* Quiz */}
             <div className="px-6 mb-6">
                 <motion.button
                     whileTap={{scale: 0.98}}
@@ -687,18 +531,17 @@ export function PalaceDetailScreen({
                         <div className="text-left">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                                    <Zap className="w-4 h-4 text-white"/>
+                                    <Brain className="w-4 h-4 text-white"/>
                                 </div>
                                 <span className="text-subheading font-semibold">
-                  Test your knowledge
-                </span>
+                                    Test your knowledge
+                                </span>
                             </div>
                             <p className="text-small text-white/80 font-medium">
                                 Quiz yourself on this palace and earn bonus XP
                             </p>
                         </div>
-                        <div
-                            className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
                             <Brain className="w-6 h-6 text-white"/>
                         </div>
                     </div>
@@ -740,7 +583,7 @@ export function PalaceDetailScreen({
                             className="overflow-hidden"
                         >
                             <PalaceInsights
-                                floors={floors}
+                                rooms={rooms}
                                 roomsCompleted={palace.roomsCompleted}
                                 totalRooms={palace.totalRooms}
                                 progress={palace.progress}
@@ -751,574 +594,564 @@ export function PalaceDetailScreen({
                 </AnimatePresence>
             </div>
 
-            {/* Floors & Rooms */}
-            <div className="px-6 pb-6">
-                {floors.length === 0 ? (
+            {/* Rooms */}
+            <div className="px-6 pb-10">
+                {rooms.length === 0 ? (
                     <EmptyState
-                        emoji="🏛️"
-                        title="No floors yet"
-                        description="Floors group the rooms of your palace by topic or level. Add one to start placing rooms."
+                        emoji="🚪"
+                        title="No rooms yet"
+                        description="Rooms are the places along your palace's route. Add one, then fill it with loci to remember."
                         action={
                             <button
-                                onClick={openAddFloor}
+                                onClick={() => setRoomEditor({mode: "add"})}
                                 className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
                             >
                                 <Plus className="h-4 w-4"/>
-                                Add floor
+                                Add room
                             </button>
                         }
                     />
                 ) : (
-                    <div className="space-y-6">
-                        <div className="flex items-baseline justify-between px-1">
-                            <h2 className="text-section-header text-[#091A7A]">
-                                Floors
-                            </h2>
-                            <span className="text-small">
-                                {floors.length} {floors.length === 1 ? "floor" : "floors"}
-                            </span>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <h2 className="text-section-header text-[#091A7A]">Rooms</h2>
+                            <motion.button
+                                whileTap={{scale: 0.95}}
+                                onClick={() => setRoomEditor({mode: "add"})}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-3.5 py-2 text-[13px] font-semibold text-[#091A7A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                            >
+                                <Plus size={15}/>
+                                Add room
+                            </motion.button>
                         </div>
-                        {floors.map((floor, floorIndex) => {
-                            const isExpanded = expandedFloors.includes(
-                                floor.id,
-                            );
-                            const completedRooms = floor.rooms.filter((r) => r.isCompleted).length;
-                            const floorProgress = floor.rooms.length > 0
-                                ? Math.round((completedRooms / floor.rooms.length) * 100)
-                                : 0;
 
-                            return (
-                                <motion.div
-                                    key={floor.id}
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{
-                                        delay: floorIndex * 0.1,
-                                        duration: 0.3,
-                                        ease: "easeOut",
-                                    }}
-                                    className="bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-elevated border border-white/60"
-                                >
-                                    {/* Floor Header */}
-                                    <div className="p-6">
-                                        {editingFloorId === floor.id ? (
-                                            <div className="space-y-4">
-                                                <input
-                                                    type="text"
-                                                    value={floorFormData.title}
-                                                    onChange={(e) => setFloorFormData({
-                                                        ...floorFormData,
-                                                        title: e.target.value
-                                                    })}
-                                                    placeholder="Floor title"
-                                                    className="w-full px-4 py-3 bg-white rounded-xl border-2 border-[#E5E5EA] focus:border-[#4F8EFF] text-[#2C2C2C] placeholder:text-[#6B7280] outline-none transition-colors"
-                                                />
-                                                <textarea
-                                                    value={floorFormData.description}
-                                                    onChange={(e) => setFloorFormData({
-                                                        ...floorFormData,
-                                                        description: e.target.value
-                                                    })}
-                                                    placeholder="Floor description"
-                                                    rows={2}
-                                                    className="w-full px-4 py-3 bg-white rounded-xl border-2 border-[#E5E5EA] focus:border-[#4F8EFF] text-[#2C2C2C] placeholder:text-[#6B7280] outline-none transition-colors resize-none"
-                                                />
-                                                <div className="flex gap-2">
-                                                    <motion.button
-                                                        whileTap={{scale: 0.95}}
-                                                        onClick={() => handleSaveFloor(floor.id)}
-                                                        disabled={!floorFormData.title.trim() || !floorFormData.description.trim()}
-                                                        className="flex-1 py-3 bg-[#091A7A] disabled:bg-[#091A7A]/40 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
-                                                    >
-                                                        <Save size={16}/>
-                                                        Save floor
-                                                    </motion.button>
-                                                    <motion.button
-                                                        whileTap={{scale: 0.95}}
-                                                        aria-label="Cancel editing"
-                                                        onClick={() => {
-                                                            setEditingFloorId(null);
-                                                            setFloorFormData({title: "", description: ""});
-                                                        }}
-                                                        className="px-4 py-3 bg-[#F5F5F7] text-[#2C2C2C] rounded-xl font-semibold"
-                                                    >
-                                                        <X size={16}/>
-                                                    </motion.button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-start justify-between">
-                                                <motion.button
-                                                    whileTap={{scale: 0.98}}
-                                                    onClick={() => toggleFloor(floor.id)}
-                                                    className="flex-1 text-left"
-                                                >
-                                                    <div className="flex items-center gap-4 mb-3">
-                                                        <div
-                                                            className="w-10 h-10 bg-[#ADC8FF] rounded-full flex items-center justify-center border border-white/30 shadow-lg">
-                            <span className="text-small font-semibold text-[#091A7A]">
-                              {floorIndex + 1}
-                            </span>
-                                                        </div>
-                                                        <span className="text-body font-semibold text-[#091A7A]/80">
-                            Floor {floorIndex + 1}
-                          </span>
-                                                    </div>
-                                                    <h3 className="text-subheading text-[#091A7A] mb-2">
-                                                        {floor.title}
-                                                    </h3>
-                                                    <p className="text-[13px] text-[#4b5563] mb-3">
-                                                        {floor.description}
-                                                    </p>
-                                                    <div className="flex items-center gap-4">
-                                                        <div
-                                                            className="h-2.5 w-24 bg-[#ADC8FF]/30 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{width: 0}}
-                                                                animate={{
-                                                                    width: `${floorProgress}%`,
-                                                                }}
-                                                                transition={{
-                                                                    delay: 0.5,
-                                                                    duration: 1,
-                                                                    ease: "easeOut",
-                                                                }}
-                                                                className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full"
-                                                            />
-                                                        </div>
-                                                        <span className="text-small font-semibold text-[#091A7A]">
-                            {floorProgress}%
-                          </span>
-                                                        <span className="text-[13px] text-[#4b5563]">
-                            {floor.rooms.length} {floor.rooms.length === 1 ? 'room' : 'rooms'}
-                          </span>
-                                                    </div>
-                                                </motion.button>
-
-                                                <div className="flex items-center gap-2">
-                                                    <motion.div
-                                                        animate={{rotate: isExpanded ? 90 : 0}}
-                                                        transition={{
-                                                            duration: 0.3,
-                                                            ease: "easeInOut",
-                                                        }}
-                                                        className="w-10 h-10 bg-[#ADC8FF]/15 rounded-full flex items-center justify-center border border-white/40"
-                                                    >
-                                                        <ChevronRight className="w-5 h-5 text-[#091A7A]/70"/>
-                                                    </motion.div>
-
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger
-                                                            render={
-                                                                <motion.button
-                                                                    whileTap={{scale: 0.9}}
-                                                                    aria-label={`Options for ${floor.title}`}
-                                                                    className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md relative outline-none border-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
-                                                                >
-                                                                    <MoreVertical size={18} className="text-[#2C2C2C]"/>
-                                                                </motion.button>
-                                                            }
-                                                        />
-                                                        <DropdownMenuContent align="end"
-                                                                             className="w-[180px] rounded-[16px] p-1.5">
-                                                            <DropdownMenuItem
-                                                                onClick={() => {
-                                                                    setShowAddRoom(floor.id);
-                                                                    setExpandedFloors((prev) =>
-                                                                        prev.includes(floor.id) ? prev : [...prev, floor.id]
-                                                                    );
-                                                                }}
-                                                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                                                            >
-                                                                <Plus size={16} className="text-[#091A7A]"/>
-                                                                <span
-                                                                    className="text-[14px] font-medium text-[#2C2C2C]">Add room</span>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleEditFloor(floor)}
-                                                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                                                            >
-                                                                <Edit2 size={16} className="text-[#091A7A]"/>
-                                                                <span
-                                                                    className="text-[14px] font-medium text-[#2C2C2C]">Edit floor</span>
-                                                            </DropdownMenuItem>
-                                                            {floorIndex > 0 && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => actions.moveFloor(palaceId, floor.id, "up")}
-                                                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                                                                >
-                                                                    <ChevronUp size={16} className="text-[#091A7A]"/>
-                                                                    <span
-                                                                        className="text-[14px] font-medium text-[#2C2C2C]">Move up</span>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            {floorIndex < floors.length - 1 && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => actions.moveFloor(palaceId, floor.id, "down")}
-                                                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                                                                >
-                                                                    <ChevronDown size={16} className="text-[#091A7A]"/>
-                                                                    <span
-                                                                        className="text-[14px] font-medium text-[#2C2C2C]">Move down</span>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuItem
-                                                                onClick={() => setShowDeleteFloorConfirm(floor.id)}
-                                                                className="rounded-[10px] px-3 py-2.5 hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
-                                                            >
-                                                                <Trash2 size={16} className="text-red-600"/>
-                                                                <span className="text-[14px] font-medium text-red-600">Delete floor</span>
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Floor Rooms */}
-                                    <motion.div
-                                        initial={false}
-                                        animate={{height: isExpanded ? "auto" : 0}}
-                                        transition={{
-                                            duration: 0.4,
-                                            ease: "easeInOut",
-                                        }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="px-6 pb-6 space-y-4">
-                                            <div
-                                                className="h-px bg-gradient-to-r from-transparent via-[#ADC8FF]/30 to-transparent mb-4"/>
-
-
-                                            {floor.rooms.length === 0 && showAddRoom !== floor.id && (
-                                                <p className="text-[14px] text-[#4b5563] text-center py-4">
-                                                    No rooms on this floor yet. Open the floor menu and choose “Add
-                                                    room”.
-                                                </p>
-                                            )}
-
-
-                                            {floor.rooms.map((room, roomIndex) => (
-                                                <SwipeableRoomCard
-                                                    key={room.id}
-                                                    room={room}
-                                                    roomIndex={roomIndex}
-                                                    floor={floor}
-                                                    canMoveUp={roomIndex > 0}
-                                                    canMoveDown={roomIndex < floor.rooms.length - 1}
-                                                    onEditRoom={handleEditRoom}
-                                                    onDeleteRoom={(fId, rId) => setShowDeleteRoomConfirm({
-                                                        floorId: fId,
-                                                        roomId: rId
-                                                    })}
-                                                    onRoomClick={onRoomClick}
-                                                    onManageContent={onManageContent}
-                                                    onMoveRoom={(fId, rId, dir) => actions.moveRoom(palaceId, fId, rId, dir)}
-                                                />
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                </motion.div>
-                            );
-                        })}
+                        {rooms.map((room, roomIndex) => (
+                            <SwipeableRoomCard
+                                key={room.id}
+                                room={room}
+                                roomIndex={roomIndex}
+                                palaceId={palaceId}
+                                canMoveUp={roomIndex > 0}
+                                canMoveDown={roomIndex < rooms.length - 1}
+                                onEditRoom={(r) => setRoomEditor({mode: "edit", room: r})}
+                                onDeleteRoom={(rId) => setDeleteRoomId(rId)}
+                                onRoomClick={onRoomClick}
+                                onManageContent={onManageContent}
+                                onMoveRoom={(rId, dir) => actions.moveRoom(palaceId, rId, dir)}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
 
-            <Drawer.Root open={!!showAddRoom} onOpenChange={(open) => {
-                if (!open) {
-                    setShowAddRoom(null);
-                    setEditingRoomId(null);
-                    setRoomFormData({title: "", description: "", duration: 10, content: "", isUnlocked: true});
-                }
-            }}>
-                <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
-                    <Drawer.Content
-                        aria-describedby={undefined}
-                        className="bg-[#F5F5F7] flex flex-col rounded-t-[10px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none h-auto max-h-[90%]">
-                        <div className="p-4 bg-white rounded-t-[10px] flex-1 overflow-y-auto">
-                            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-6"/>
+            {/* Per-palace settings sheet */}
+            <PalaceSettingsSheet
+                open={showSettings}
+                onOpenChange={setShowSettings}
+                palace={palace}
+                settings={settings}
+                onEditPalace={() => {
+                    setShowSettings(false);
+                    onEditPalace?.();
+                }}
+                onToggleTimer={(v) => actions.updatePalaceSettings(palaceId, {quizTimer: v})}
+                onToggleShuffle={(v) => actions.updatePalaceSettings(palaceId, {shuffle: v})}
+                onDuplicate={() => {
+                    actions.duplicatePalace(palaceId);
+                    setShowSettings(false);
+                    toast.success("Palace duplicated");
+                }}
+                onExport={() => {
+                    exportPalace(palace);
+                    toast.success("Palace exported");
+                }}
+                onReset={() => setConfirm("reset")}
+                onArchive={handleArchive}
+                onDelete={() => setConfirm("delete")}
+            />
 
-                            <div className="px-2 pb-6 space-y-4">
-                                <Drawer.Title
-                                    className="text-[20px] font-bold text-[#091A7A] mb-4 block">
-                                    {editingRoomId ? "Edit room" : "Add a room"}
-                                </Drawer.Title>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label
-                                            className="text-[14px] font-medium text-[#2C2C2C] mb-2 block">Room
-                                            title</label>
-                                        <input
-                                            type="text"
-                                            value={roomFormData.title}
-                                            onChange={(e) => setRoomFormData({...roomFormData, title: e.target.value})}
-                                            placeholder="e.g., The Grand Hall"
-                                            className="w-full px-4 py-3.5 bg-white rounded-2xl border border-[#E5E5EA] shadow-sm text-[#2C2C2C] placeholder:text-[#6B7280] outline-none focus:border-[#4F8EFF] transition-colors"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            className="text-[14px] font-medium text-[#2C2C2C] mb-2 block">Description</label>
-                                        <textarea
-                                            value={roomFormData.description}
-                                            onChange={(e) => setRoomFormData({
-                                                ...roomFormData,
-                                                description: e.target.value
-                                            })}
-                                            placeholder="What is this room about?"
-                                            rows={2}
-                                            className="w-full px-4 py-3.5 bg-white rounded-2xl border border-[#E5E5EA] shadow-sm text-[#2C2C2C] placeholder:text-[#6B7280] outline-none focus:border-[#4F8EFF] transition-colors resize-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label
-                                            className="text-[14px] font-medium text-[#2C2C2C] mb-2 block">Learning
-                                            content</label>
-                                        <textarea
-                                            value={roomFormData.content}
-                                            onChange={(e) => setRoomFormData({
-                                                ...roomFormData,
-                                                content: e.target.value
-                                            })}
-                                            placeholder="The facts or concepts to memorize in this room..."
-                                            rows={4}
-                                            className="w-full px-4 py-3.5 bg-white rounded-2xl border border-[#E5E5EA] shadow-sm text-[#2C2C2C] placeholder:text-[#6B7280] outline-none focus:border-[#4F8EFF] transition-colors resize-none font-mono text-[14px]"
-                                        />
-                                    </div>
+            {/* Room editor */}
+            <RoomEditorDrawer
+                editor={roomEditor}
+                roomCount={rooms.length}
+                onClose={() => setRoomEditor(null)}
+                onCreate={(data) => {
+                    actions.createRoom(palaceId, {
+                        ...data,
+                        content: "",
+                        isCompleted: false,
+                        progress: 0,
+                        order: rooms.length + 1,
+                        loci: [],
+                        questions: [],
+                    });
+                    setRoomEditor(null);
+                    toast.success("Room added");
+                }}
+                onSave={(roomId, data) => {
+                    actions.updateRoom(palaceId, roomId, data);
+                    setRoomEditor(null);
+                    toast.success("Room updated");
+                }}
+            />
 
-                                    <div className="flex gap-4 items-end pt-2">
-                                        <div className="flex-1">
-                                            <label
-                                                className="text-[14px] font-medium text-[#2C2C2C] mb-3 block">Duration</label>
-                                            <input
-                                                type="range"
-                                                min="5"
-                                                max="60"
-                                                step="5"
-                                                value={roomFormData.duration}
-                                                onChange={(e) => setRoomFormData({
-                                                    ...roomFormData,
-                                                    duration: Number(e.target.value)
-                                                })}
-                                                aria-label="Duration in minutes"
-                                                className="w-full accent-[#091A7A]"
-                                            />
-                                            <div className="text-center mt-2">
-                                                <span
-                                                    className="text-[#091A7A] font-bold text-[18px]">{roomFormData.duration}</span>
-                                                <span className="text-[#4b5563] text-[14px] ml-1">min</span>
-                                            </div>
-                                        </div>
-
-                                        <motion.button
-                                            whileTap={{scale: 0.95}}
-                                            onClick={() => setRoomFormData({
-                                                ...roomFormData,
-                                                isUnlocked: !roomFormData.isUnlocked
-                                            })}
-                                            className={`h-[52px] px-5 rounded-2xl font-semibold text-[14px] flex items-center gap-2 border shadow-sm transition-colors ${
-                                                roomFormData.isUnlocked
-                                                    ? 'bg-white border-[#E5E5EA] text-[#091A7A]'
-                                                    : 'bg-[#F5F5F7] border-[#E5E5EA] text-[#4b5563]'
-                                            }`}
-                                        >
-                                            {roomFormData.isUnlocked ? <Unlock size={18} className="text-[#091A7A]"/> :
-                                                <Lock size={18}/>}
-                                            {roomFormData.isUnlocked ? 'Unlocked' : 'Locked'}
-                                        </motion.button>
-                                    </div>
-                                </div>
-
-                                <div className="pt-6">
-                                    <motion.button
-                                        whileTap={{scale: 0.95}}
-                                        onClick={() => {
-                                            if (editingRoomId && showAddRoom) {
-                                                handleSaveRoom(showAddRoom, editingRoomId);
-                                            } else if (showAddRoom) {
-                                                handleAddRoom(showAddRoom);
-                                            }
-                                        }}
-                                        disabled={!roomFormData.title || !roomFormData.description || !roomFormData.content}
-                                        className="w-full py-4 bg-[#091A7A] disabled:bg-[#091A7A]/50 text-white rounded-2xl font-bold shadow-interactive flex items-center justify-center gap-2 transition-colors"
-                                    >
-                                        {editingRoomId ? <Save size={20}/> : <Plus size={20}/>}
-                                        {editingRoomId ? "Save changes" : "Create room"}
-                                    </motion.button>
-                                </div>
-                            </div>
-                        </div>
-                    </Drawer.Content>
-                </Drawer.Portal>
-            </Drawer.Root>
-
-            {/* Add Floor Modal */}
-            <AnimatePresence>
-                {showAddFloor && (
-                    <>
-                        <motion.div
-                            initial={{opacity: 0}}
-                            animate={{opacity: 1}}
-                            exit={{opacity: 0}}
-                            className="fixed inset-0 bg-[#091A7A]/40 z-50"
-                            onClick={() => setShowAddFloor(false)}
-                        />
-
-                        <motion.div
-                            initial={{opacity: 0, y: 40}}
-                            animate={{opacity: 1, y: 0}}
-                            exit={{opacity: 0, y: 40}}
-                            transition={{duration: 0.3, ease: [0.16, 1, 0.3, 1]}}
-                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 shadow-elevated max-h-[80vh] overflow-y-auto"
-                        >
-                            <div className="mb-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-xl font-bold text-[#091A7A]">
-                                        Add a floor
-                                    </h3>
-                                    <motion.button
-                                        whileTap={{scale: 0.9}}
-                                        aria-label="Close"
-                                        onClick={() => setShowAddFloor(false)}
-                                        className="w-11 h-11 bg-[#F5F5F7] rounded-full flex items-center justify-center text-[#2C2C2C]"
-                                    >
-                                        <X size={18}/>
-                                    </motion.button>
-                                </div>
-                                <p className="text-[15px] text-[#4b5563]">
-                                    Floors group the rooms of {palace.name} by topic or level.
-                                </p>
-                            </div>
-
-                            <div className="space-y-4 mb-6">
-                                <div>
-                                    <label className="text-[14px] font-medium text-[#2C2C2C] mb-2 block">
-                                        Floor title
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={floorFormData.title}
-                                        onChange={(e) => setFloorFormData({...floorFormData, title: e.target.value})}
-                                        placeholder="e.g., Introduction Level"
-                                        className="w-full px-5 py-4 bg-white rounded-2xl text-[#2C2C2C] placeholder:text-[#6B7280] outline-none border-2 border-[#E5E5EA] focus:border-[#4F8EFF] transition-colors"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[14px] font-medium text-[#2C2C2C] mb-2 block">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={floorFormData.description}
-                                        onChange={(e) => setFloorFormData({
-                                            ...floorFormData,
-                                            description: e.target.value
-                                        })}
-                                        placeholder="What you'll learn on this floor..."
-                                        rows={4}
-                                        className="w-full px-5 py-4 bg-white rounded-2xl text-[#2C2C2C] placeholder:text-[#6B7280] outline-none border-2 border-[#E5E5EA] focus:border-[#4F8EFF] transition-colors resize-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <motion.button
-                                    whileTap={{scale: 0.98}}
-                                    onClick={() => setShowAddFloor(false)}
-                                    className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#2C2C2C]"
-                                >
-                                    Cancel
-                                </motion.button>
-                                <motion.button
-                                    whileTap={{scale: 0.98}}
-                                    onClick={handleAddFloor}
-                                    disabled={!floorFormData.title.trim() || !floorFormData.description.trim()}
-                                    className="flex-1 py-4 bg-[#091A7A] disabled:bg-[#091A7A]/40 text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2 transition-colors"
-                                >
-                                    <Plus size={20}/>
-                                    Add floor
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-
-            {/* Delete Floor Confirmation */}
-            <AlertDialog
-                open={!!showDeleteFloorConfirm}
-                onOpenChange={(open) => !open && setShowDeleteFloorConfirm(null)}
-            >
-                <AlertDialogContent className="rounded-3xl!">
+            {/* Delete room */}
+            <AlertDialog open={!!deleteRoomId} onOpenChange={(o) => !o && setDeleteRoomId(null)}>
+                <AlertDialogContent className="sm:max-w-[360px] rounded-3xl!">
                     <AlertDialogHeader>
-                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Trash2 size={32} className="text-red-600"/>
+                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Trash2 size={26} className="text-red-600"/>
                         </div>
-                        <AlertDialogTitle className="text-center text-xl font-bold text-[#2C2C2C]">
-                            {floorToDelete
-                                ? `Delete “${floorToDelete.title}”?`
-                                : "Delete floor?"}
+                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
+                            {roomToDelete ? `Delete “${roomToDelete.title}”?` : "Delete room?"}
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[15px] text-[#4b5563]">
-                            {floorToDelete && floorToDelete.rooms.length > 0
-                                ? `This can’t be undone. ${floorToDelete.rooms.length === 1
-                                    ? "Its room and your training progress there are"
-                                    : `Its ${floorToDelete.rooms.length} rooms and your training progress there are`} deleted for good.`
-                                : "This can’t be undone."}
+                        <AlertDialogDescription className="text-center text-[#475569]">
+                            This removes the room and its loci and questions. It can't be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-6">
-                        <AlertDialogCancel
-                            className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#2C2C2C] border-none hover:bg-[#E5E5EA]">
-                            Keep floor
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
+                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
+                            Keep room
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => showDeleteFloorConfirm && handleDeleteFloor(showDeleteFloorConfirm)}
-                            className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white hover:bg-red-700"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (deleteRoomId) {
+                                    actions.deleteRoom(palaceId, deleteRoomId);
+                                    setDeleteRoomId(null);
+                                    toast.success("Room deleted");
+                                }
+                            }}
+                            className="flex-1 py-3.5 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
                         >
-                            Delete floor
+                            Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Delete Room Confirmation */}
-            <AlertDialog
-                open={!!showDeleteRoomConfirm}
-                onOpenChange={(open) => !open && setShowDeleteRoomConfirm(null)}
-            >
-                <AlertDialogContent className="rounded-3xl!">
+            {/* Reset / delete palace confirms */}
+            <AlertDialog open={confirm === "reset"} onOpenChange={(o) => !o && setConfirm(null)}>
+                <AlertDialogContent className="sm:max-w-[380px] rounded-3xl!">
                     <AlertDialogHeader>
-                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Trash2 size={32} className="text-red-600"/>
+                        <div className="w-14 h-14 bg-[#EAF4FF] rounded-full flex items-center justify-center mx-auto mb-3">
+                            <RotateCcw size={26} className="text-[#091A7A]"/>
                         </div>
-                        <AlertDialogTitle className="text-center text-xl font-bold text-[#2C2C2C]">
-                            {roomToDelete
-                                ? `Delete “${roomToDelete.title}”?`
-                                : "Delete room?"}
+                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
+                            Reset this palace's progress?
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[15px] text-[#4b5563]">
-                            This can’t be undone. The room’s content and your training progress in it are deleted for
-                            good.
+                        <AlertDialogDescription className="text-center text-[#475569]">
+                            Every room goes back to not started. Your loci and questions are kept.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-6">
-                        <AlertDialogCancel
-                            className="flex-1 py-4 bg-[#F5F5F7] rounded-2xl font-semibold text-[#2C2C2C] border-none hover:bg-[#E5E5EA]">
-                            Keep room
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
+                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
+                            Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => showDeleteRoomConfirm && handleDeleteRoom(showDeleteRoomConfirm.floorId, showDeleteRoomConfirm.roomId)}
-                            className="flex-1 py-4 bg-red-600 rounded-2xl font-semibold text-white hover:bg-red-700"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                actions.resetPalaceProgress(palaceId);
+                                setConfirm(null);
+                                setShowSettings(false);
+                                toast.success("Progress reset");
+                            }}
+                            className="flex-1 py-3.5 h-auto bg-[#091A7A] hover:bg-[#0a2090] text-white font-semibold rounded-2xl"
                         >
-                            Delete room
+                            Reset
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={confirm === "delete"} onOpenChange={(o) => !o && setConfirm(null)}>
+                <AlertDialogContent className="sm:max-w-[380px] rounded-3xl!">
+                    <AlertDialogHeader>
+                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Trash2 size={26} className="text-red-600"/>
+                        </div>
+                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
+                            Delete “{palace.name}”?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center text-[#475569]">
+                            This can't be undone. Every room, locus, question, and your progress here are
+                            deleted for good.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
+                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
+                            Keep palace
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                actions.deletePalace(palaceId);
+                                setConfirm(null);
+                                onBack();
+                            }}
+                            className="flex-1 py-3.5 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
+                        >
+                            Delete palace
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </div>
+    );
+}
+
+// --- Per-palace settings sheet ----------------------------------------------
+
+function SettingRow({
+                        icon,
+                        label,
+                        sublabel,
+                        onClick,
+                        right,
+                        danger,
+                    }: {
+    icon: React.ReactNode;
+    label: string;
+    sublabel?: string;
+    onClick?: () => void;
+    right?: React.ReactNode;
+    danger?: boolean;
+}) {
+    const Comp = onClick ? motion.button : "div";
+    return (
+        <Comp
+            {...(onClick ? {whileTap: {scale: 0.98}, onClick} : {})}
+            className={`w-full flex items-center gap-3.5 px-4 py-3.5 text-left ${
+                onClick ? "transition-colors hover:bg-[#091A7A]/[0.03]" : ""
+            }`}
+        >
+            <div
+                className={`w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 ${
+                    danger ? "bg-red-50" : "bg-[#EAF4FF]"
+                }`}
+            >
+                {icon}
+            </div>
+            <div className="flex-1 min-w-0">
+                <p
+                    className={`text-[15px] font-semibold ${
+                        danger ? "text-red-500" : "text-[#091A7A]"
+                    }`}
+                >
+                    {label}
+                </p>
+                {sublabel && (
+                    <p className="text-[12px] text-[#64748b] mt-0.5 leading-snug">
+                        {sublabel}
+                    </p>
+                )}
+            </div>
+            {right}
+        </Comp>
+    );
+}
+
+function SettingsGroup({children}: {children: React.ReactNode}) {
+    return (
+        <div className="bg-white rounded-[20px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.05] overflow-hidden divide-y divide-[#091A7A]/[0.06]">
+            {children}
+        </div>
+    );
+}
+
+function PalaceSettingsSheet({
+                                 open,
+                                 onOpenChange,
+                                 palace,
+                                 settings,
+                                 onEditPalace,
+                                 onToggleTimer,
+                                 onToggleShuffle,
+                                 onDuplicate,
+                                 onExport,
+                                 onReset,
+                                 onArchive,
+                                 onDelete,
+                             }: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    palace: Palace;
+    settings: {quizTimer: boolean; shuffle: boolean};
+    onEditPalace: () => void;
+    onToggleTimer: (v: boolean) => void;
+    onToggleShuffle: (v: boolean) => void;
+    onDuplicate: () => void;
+    onExport: () => void;
+    onReset: () => void;
+    onArchive: () => void;
+    onDelete: () => void;
+}) {
+    return (
+        <Drawer.Root open={open} onOpenChange={onOpenChange}>
+            <Drawer.Portal>
+                <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
+                <Drawer.Content
+                    aria-describedby={undefined}
+                    className="bg-[#EEF4FF] flex flex-col rounded-t-[20px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none max-h-[88%]"
+                >
+                    <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-[#091A7A]/15 mt-3 mb-1"/>
+                    <Drawer.Title className="px-5 pt-3 pb-1 text-[20px] font-bold text-[#091A7A]">
+                        Palace settings
+                    </Drawer.Title>
+                    <p className="px-5 pb-4 text-[13px] text-[#475569] line-clamp-1">
+                        {palace.name}
+                    </p>
+
+                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-8 space-y-5">
+                        <div>
+                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
+                                Palace
+                            </h3>
+                            <SettingsGroup>
+                                <SettingRow
+                                    icon={<Edit2 size={18} className="text-[#091A7A]"/>}
+                                    label="Edit name, icon & color"
+                                    sublabel="Rename and restyle this palace"
+                                    onClick={onEditPalace}
+                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
+                                />
+                                <SettingRow
+                                    icon={<Copy size={18} className="text-[#091A7A]"/>}
+                                    label="Duplicate palace"
+                                    sublabel="Copy its rooms, loci, and questions"
+                                    onClick={onDuplicate}
+                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
+                                />
+                            </SettingsGroup>
+                        </div>
+
+                        <div>
+                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
+                                Study
+                            </h3>
+                            <SettingsGroup>
+                                <SettingRow
+                                    icon={<Timer size={18} className="text-[#091A7A]"/>}
+                                    label="Quiz timer"
+                                    sublabel="Count down each quiz question"
+                                    right={
+                                        <Switch
+                                            checked={settings.quizTimer}
+                                            onCheckedChange={onToggleTimer}
+                                        />
+                                    }
+                                />
+                                <SettingRow
+                                    icon={<Shuffle size={18} className="text-[#091A7A]"/>}
+                                    label="Shuffle loci"
+                                    sublabel="Study loci in random order"
+                                    right={
+                                        <Switch
+                                            checked={settings.shuffle}
+                                            onCheckedChange={onToggleShuffle}
+                                        />
+                                    }
+                                />
+                            </SettingsGroup>
+                        </div>
+
+                        <div>
+                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
+                                Manage
+                            </h3>
+                            <SettingsGroup>
+                                <SettingRow
+                                    icon={<DownloadCloud size={18} className="text-[#091A7A]"/>}
+                                    label="Export palace"
+                                    sublabel="Download as JSON"
+                                    onClick={onExport}
+                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
+                                />
+                                <SettingRow
+                                    icon={<RotateCcw size={18} className="text-[#091A7A]"/>}
+                                    label="Reset progress"
+                                    sublabel="Keep content, clear completion"
+                                    onClick={onReset}
+                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
+                                />
+                                <SettingRow
+                                    icon={<X size={18} className="text-[#091A7A]"/>}
+                                    label={palace.archived ? "Unarchive palace" : "Archive palace"}
+                                    sublabel="Hide it from the main list"
+                                    onClick={onArchive}
+                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
+                                />
+                            </SettingsGroup>
+                        </div>
+
+                        <SettingsGroup>
+                            <SettingRow
+                                icon={<Trash2 size={18} className="text-red-500"/>}
+                                label="Delete palace"
+                                sublabel="Remove it and all its content"
+                                onClick={onDelete}
+                                danger
+                                right={<ChevronRight className="w-5 h-5 text-red-300"/>}
+                            />
+                        </SettingsGroup>
+                    </div>
+                </Drawer.Content>
+            </Drawer.Portal>
+        </Drawer.Root>
+    );
+}
+
+// --- Room editor ------------------------------------------------------------
+
+function RoomEditorDrawer({
+                              editor,
+                              roomCount,
+                              onClose,
+                              onCreate,
+                              onSave,
+                          }: {
+    editor: {mode: "add"} | {mode: "edit"; room: StateRoom} | null;
+    roomCount: number;
+    onClose: () => void;
+    onCreate: (data: {
+        title: string;
+        description: string;
+        duration: number;
+        isUnlocked: boolean;
+    }) => void;
+    onSave: (
+        roomId: string,
+        data: {
+            title: string;
+            description: string;
+            duration: number;
+            isUnlocked: boolean;
+        },
+    ) => void;
+}) {
+    const editing = editor?.mode === "edit" ? editor.room : null;
+
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [duration, setDuration] = useState(10);
+    const [isUnlocked, setIsUnlocked] = useState(true);
+    // Re-seed the form whenever a different editor target opens.
+    const [seededFor, setSeededFor] = useState<string | null>(null);
+    const key = editor ? (editing ? editing.id : "add") : null;
+    if (editor && key !== seededFor) {
+        setSeededFor(key);
+        setTitle(editing?.title ?? "");
+        setDescription(editing?.description ?? "");
+        setDuration(editing?.duration ?? 10);
+        setIsUnlocked(editing ? editing.isUnlocked : roomCount === 0 ? true : true);
+    }
+
+    const valid = title.trim().length > 0 && description.trim().length > 0;
+
+    const submit = () => {
+        if (!valid) return;
+        const data = {
+            title: title.trim(),
+            description: description.trim(),
+            duration: Math.max(1, duration || 1),
+            isUnlocked,
+        };
+        if (editing) onSave(editing.id, data);
+        else onCreate(data);
+    };
+
+    return (
+        <Drawer.Root
+            open={!!editor}
+            onOpenChange={(o) => {
+                if (!o) {
+                    setSeededFor(null);
+                    onClose();
+                }
+            }}
+        >
+            <Drawer.Portal>
+                <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
+                <Drawer.Content
+                    aria-describedby={undefined}
+                    className="bg-white flex flex-col rounded-t-[20px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none max-h-[88%]"
+                >
+                    <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-[#091A7A]/15 mt-3 mb-1"/>
+                    <Drawer.Title className="px-5 pt-3 pb-4 text-[20px] font-bold text-[#091A7A]">
+                        {editing ? "Edit room" : "New room"}
+                    </Drawer.Title>
+
+                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 space-y-4">
+                        <div>
+                            <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                                Room name
+                            </label>
+                            <Input
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="e.g., The Entrance Hall"
+                                autoFocus
+                                className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                                Description
+                            </label>
+                            <Textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="What does this room hold?"
+                                rows={3}
+                                className="w-full bg-[#F4F8FF] rounded-xl px-4 py-3 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none resize-none"
+                            />
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                                    Duration (min)
+                                </label>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    value={duration}
+                                    onChange={(e) => setDuration(Number(e.target.value))}
+                                    className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                                    Unlocked
+                                </label>
+                                <div className="h-12 flex items-center justify-between rounded-xl bg-[#F4F8FF] px-4">
+                                    <span className="text-[14px] text-[#475569]">
+                                        {isUnlocked ? "Available" : "Locked"}
+                                    </span>
+                                    <Switch
+                                        checked={isUnlocked}
+                                        onCheckedChange={setIsUnlocked}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-5">
+                        <motion.button
+                            whileTap={{scale: valid ? 0.98 : 1}}
+                            onClick={submit}
+                            disabled={!valid}
+                            className={`w-full py-3.5 rounded-2xl font-semibold transition-colors ${
+                                valid
+                                    ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
+                                    : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                            }`}
+                        >
+                            {editing ? "Save changes" : "Add room"}
+                        </motion.button>
+                    </div>
+                </Drawer.Content>
+            </Drawer.Portal>
+        </Drawer.Root>
     );
 }

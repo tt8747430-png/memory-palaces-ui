@@ -3,9 +3,8 @@ import {motion} from "motion/react";
 import {
   Archive,
   ArchiveRestore,
+  ArrowLeft,
   ChevronRight,
-  Copy,
-  Edit2,
   Folder as FolderIcon,
   FolderPlus,
   Grid,
@@ -64,20 +63,16 @@ function PalaceActionsMenu({
                                palace,
                                hasFolders,
                                onToggleFavorite,
-                               onDuplicate,
                                onMoveToFolder,
                                onArchiveToggle,
-                               onEdit,
                                onDelete,
                            }: {
     triggerClassName: string;
     palace: Palace;
     hasFolders: boolean;
     onToggleFavorite: () => void;
-    onDuplicate: () => void;
     onMoveToFolder: () => void;
     onArchiveToggle: () => void;
-    onEdit: () => void;
     onDelete: () => void;
 }) {
     const archived = !!palace.archived;
@@ -123,20 +118,6 @@ function PalaceActionsMenu({
                                 {hasFolders ? "Move to folder" : "Add to folder"}
                             </span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={onDuplicate}
-                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                        >
-                            <Copy size={16} className="text-[#091A7A]"/>
-                            <span className="text-[14px] font-medium text-[#2C2C2C]">Duplicate</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={onEdit}
-                            className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                        >
-                            <Edit2 size={16} className="text-[#091A7A]"/>
-                            <span className="text-[14px] font-medium text-[#2C2C2C]">Edit palace</span>
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator/>
                     </>
                 )}
@@ -174,10 +155,8 @@ interface PalacesPageProps {
     onSearch: () => void;
     onPalaceClick: (palaceId: string) => void;
     onCreatePalace: () => void;
-    onEditPalace: (palaceId: string) => void;
     onDeletePalace: (palaceId: string) => void;
     onToggleFavorite: (palaceId: string) => void;
-    onDuplicatePalace: (palaceId: string) => void;
     onToggleArchive: (palaceId: string) => void;
     onSetPalaceFolder: (palaceId: string, folderId: string | null) => void;
     onCreateFolder: (data: {name: string; color: string; icon: string}) => void;
@@ -198,10 +177,8 @@ export function PalacesPage({
                                 onSearch,
                                 onPalaceClick,
                                 onCreatePalace,
-                                onEditPalace,
                                 onDeletePalace,
                                 onToggleFavorite,
-                                onDuplicatePalace,
                                 onToggleArchive,
                                 onSetPalaceFolder,
                                 onCreateFolder,
@@ -289,10 +266,8 @@ export function PalacesPage({
         palace,
         hasFolders: safeFolders.length > 0,
         onToggleFavorite: () => onToggleFavorite(palace.id),
-        onDuplicate: () => onDuplicatePalace(palace.id),
         onMoveToFolder: () => setMovingPalaceId(palace.id),
         onArchiveToggle: () => onToggleArchive(palace.id),
-        onEdit: () => onEditPalace(palace.id),
         onDelete: () => setShowDeleteConfirm(palace.id),
     });
 
@@ -459,38 +434,21 @@ export function PalacesPage({
                                 <FolderPlus size={15} strokeWidth={2.4}/>
                                 <span className="text-[14px] font-semibold whitespace-nowrap">Folder</span>
                             </motion.button>
-
-                            {/* Archived */}
-                            {archivedCount > 0 && (
-                                <motion.button
-                                    onClick={() => setActiveFilter(ARCHIVED)}
-                                    whileTap={{scale: 0.96}}
-                                    className={`flex-shrink-0 px-[16px] py-[10px] rounded-full transition-all shadow-sm flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
-                                        isArchivedView
-                                            ? "bg-[#091A7A] text-white shadow-md"
-                                            : "bg-white text-[#4b5563] border-2 border-[#E5E5EA]"
-                                    }`}
-                                >
-                                    <Archive size={14}/>
-                                    <span className="text-[14px] font-semibold whitespace-nowrap">Archived</span>
-                                    <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
-                                        isArchivedView ? "bg-white/25 text-white" : "bg-[#F5F5F7] text-[#4b5563]"
-                                    }`}>
-                                        {archivedCount}
-                                    </span>
-                                </motion.button>
-                            )}
                         </div>
                     </div>
 
                     {/* Result count + folder actions */}
                     <div className="px-[20px] pt-[16px] pb-[10px] flex items-center justify-between">
                         <p className="text-[15px] font-medium text-[#2C2C2C]">
-                            {visiblePalaces.length}{" "}
-                            {visiblePalaces.length === 1 ? "Palace" : "Palaces"}
+                            {isArchivedView ? "Archived" : visiblePalaces.length}{" "}
+                            {isArchivedView
+                                ? ""
+                                : visiblePalaces.length === 1
+                                    ? "Palace"
+                                    : "Palaces"}
                         </p>
                         <div className="flex items-center gap-3">
-                            {sortBy !== "Recent" && (
+                            {!isArchivedView && sortBy !== "Recent" && (
                                 <p className="text-[13px] text-[#4b5563]">Sorted by {sortBy}</p>
                             )}
                             {safeFolders.some((f) => f.id === activeFilter) && (
@@ -500,6 +458,28 @@ export function PalacesPage({
                                 >
                                     Delete folder
                                 </button>
+                            )}
+                            {isArchivedView ? (
+                                <button
+                                    onClick={() => setActiveFilter(ALL)}
+                                    className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A]"
+                                >
+                                    <ArrowLeft size={15}/>
+                                    All palaces
+                                </button>
+                            ) : (
+                                archivedCount > 0 && (
+                                    <button
+                                        onClick={() => setActiveFilter(ARCHIVED)}
+                                        className="flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-3 py-1.5 text-[13px] font-semibold text-[#091A7A]"
+                                    >
+                                        <Archive size={14}/>
+                                        Archived
+                                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-white/70">
+                                            {archivedCount}
+                                        </span>
+                                    </button>
+                                )
                             )}
                         </div>
                     </div>
@@ -668,8 +648,8 @@ export function PalacesPage({
                             {palaceToDelete ? `Delete “${palaceToDelete.name}”?` : "Delete palace?"}
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-[#4b5563]">
-                            This can’t be undone. Every floor, room, and your training progress in this palace are
-                            deleted for good.
+                            This can’t be undone. Every room, locus, question, and your training progress in this
+                            palace are deleted for good.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex gap-3 sm:justify-center mt-4">

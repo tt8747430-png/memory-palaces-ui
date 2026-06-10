@@ -14,8 +14,6 @@ import {
   RefreshCw,
   Shield,
   Smartphone,
-  Target,
-  Timer,
   Trash2,
   UploadCloud,
   User,
@@ -94,21 +92,13 @@ export function SettingsScreen({
         return () => clearTimeout(timer);
     }, []);
     // Preferences persist across sessions so toggling them actually sticks.
+    // Dark mode is stored for a future iteration; it intentionally does not yet
+    // apply a theme (the app is a daylight design), so no surface breaks.
     const [darkMode, setDarkMode] = useLocalStorage("mindscape:darkMode", false);
     const [notifications, setNotifications] = useLocalStorage("mindscape:notifications", true);
     const [language, setLanguage] = useLocalStorage("mindscape:language", "en");
-    const [dailyGoal, setDailyGoal] = useLocalStorage("mindscape:dailyGoal", "2");
-    const [quizTimer, setQuizTimer] = useLocalStorage("mindscape:quizTimer", true);
     const [phoneNumber, setPhoneNumber] = useState("");
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-    // Apply the dark-mode preference to the document root so it persists and
-    // adapts native UI (form controls, scrollbars) via color-scheme.
-    useEffect(() => {
-        const root = document.documentElement;
-        root.classList.toggle("dark", darkMode);
-        root.style.colorScheme = darkMode ? "dark" : "light";
-    }, [darkMode]);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -216,33 +206,6 @@ export function SettingsScreen({
             ],
         },
         {
-            title: "Study",
-            items: [
-                {
-                    icon: Target,
-                    label: "Daily goal",
-                    action: "select",
-                    selectedValue: dailyGoal,
-                    onSelect: (val) => {
-                        setDailyGoal(val || "2");
-                        toast.success("Daily goal updated");
-                    },
-                    options: [
-                        {value: "1", label: "1 room"},
-                        {value: "2", label: "2 rooms"},
-                        {value: "3", label: "3 rooms"},
-                        {value: "5", label: "5 rooms"},
-                    ],
-                },
-                {
-                    icon: Timer,
-                    label: "Quiz Timer",
-                    enabled: quizTimer,
-                    action: "toggle",
-                },
-            ],
-        },
-        {
             title: "Privacy & Security",
             items: [
                 {
@@ -327,8 +290,6 @@ export function SettingsScreen({
             setDarkMode(!darkMode);
         } else if (label === "Notifications") {
             setNotifications(!notifications);
-        } else if (label === "Quiz Timer") {
-            setQuizTimer(!quizTimer);
         }
     };
 

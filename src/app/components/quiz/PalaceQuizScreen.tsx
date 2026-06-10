@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {ArrowLeft, Brain, CheckCircle, Clock, XCircle,} from "lucide-react";
-import {type Palace, useProgressState} from "../../hooks/useProgressState";
+import {type Palace, palaceSettings, useProgressState} from "../../hooks/useProgressState";
 
 interface PalaceQuizScreenProps {
     palaceId: string;
@@ -46,16 +46,8 @@ export function PalaceQuizScreen({
     const [questions] = useState<QuizQuestion[]>(() =>
         buildQuizQuestions(palace),
     );
-    // Honors the "Quiz Timer" setting; when off, learners answer at their pace.
-    const [timerEnabled] = useState(() => {
-        try {
-            return JSON.parse(
-                localStorage.getItem("mindscape:quizTimer") ?? "true",
-            ) as boolean;
-        } catch {
-            return true;
-        }
-    });
+    // Per-palace "Quiz timer" setting; when off, learners answer at their pace.
+    const [timerEnabled] = useState(() => palaceSettings(palace).quizTimer);
 
     const currentQ = questions[currentQuestion];
 
@@ -382,17 +374,15 @@ export function PalaceQuizScreen({
  * palace still has something to quiz against.
  */
 function buildQuizQuestions(palace: Palace | undefined): QuizQuestion[] {
-    const authored = (palace?.floors || []).flatMap((floor) =>
-        floor.rooms.flatMap((room) =>
-            (room.questions || []).map((q) => ({
-                id: q.id,
-                question: q.prompt,
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-                roomTitle: room.title,
-                explanation: q.explanation,
-            })),
-        ),
+    const authored = (palace?.rooms || []).flatMap((room) =>
+        (room.questions || []).map((q) => ({
+            id: q.id,
+            question: q.prompt,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            roomTitle: room.title,
+            explanation: q.explanation,
+        })),
     );
     if (authored.length > 0) return authored;
     return generateQuizQuestions(palace?.id || "default");

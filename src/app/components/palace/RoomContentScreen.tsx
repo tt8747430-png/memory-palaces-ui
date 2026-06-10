@@ -7,7 +7,7 @@ import {
     DownloadCloud,
     FileUp,
     HelpCircle,
-    Layers,
+    MapPin,
     Pencil,
     Plus,
     Trash2,
@@ -17,7 +17,7 @@ import {
 import {toast} from "sonner";
 import {StatusBar} from "../ui/StatusBar";
 import {
-    type Flashcard,
+    type Locus,
     type Question,
     useProgressState,
 } from "../../hooks/useProgressState";
@@ -45,7 +45,7 @@ import {
 import {Dialog, DialogContent, DialogTitle} from "../ui/dialog";
 import {
     ContentImportError,
-    exportFlashcardsCSV,
+    exportLociCSV,
     exportQuestionsCSV,
     exportRoomContentJSON,
     importContentFile,
@@ -53,14 +53,13 @@ import {
 
 interface RoomContentScreenProps {
     palaceId: string;
-    floorId: string;
     roomId: string;
     onBack: () => void;
 }
 
-type Tab = "flashcards" | "questions";
+type Tab = "loci" | "questions";
 type Editor =
-    | {kind: "card"; card: Flashcard | null}
+    | {kind: "locus"; locus: Locus | null}
     | {kind: "question"; question: Question | null}
     | null;
 
@@ -69,26 +68,24 @@ const navyField =
 
 export function RoomContentScreen({
                                       palaceId,
-                                      floorId,
                                       roomId,
                                       onBack,
                                   }: RoomContentScreenProps) {
     const {state, actions} = useProgressState();
     const palace = state.palaces.find((p) => p.id === palaceId);
-    const floor = palace?.floors?.find((f) => f.id === floorId);
-    const room = floor?.rooms.find((r) => r.id === roomId);
+    const room = palace?.rooms?.find((r) => r.id === roomId);
 
-    const [tab, setTab] = useState<Tab>("flashcards");
+    const [tab, setTab] = useState<Tab>("loci");
     const [editor, setEditor] = useState<Editor>(null);
     const [pendingDelete, setPendingDelete] = useState<
         {kind: Tab; id: string} | null
     >(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const flashcards = useMemo(() => room?.flashcards ?? [], [room]);
+    const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);
 
-    if (!palace || !floor || !room) {
+    if (!palace || !room) {
         return (
             <div className="h-full flex items-center justify-center bg-[#091A7A]">
                 <p className="text-white text-[15px]">Room not found</p>
@@ -103,20 +100,17 @@ export function RoomContentScreen({
         if (file) {
             try {
                 const content = await importContentFile(file);
-                const {cards, questions: qs} = actions.importRoomContent(
-                    palaceId,
-                    floorId,
-                    roomId,
-                    content,
-                    "merge",
-                );
+                const {loci: lociCount, questions: qCount} =
+                    actions.importRoomContent(palaceId, roomId, content, "merge");
                 const parts = [
-                    cards > 0 && `${cards} card${cards === 1 ? "" : "s"}`,
-                    qs > 0 && `${qs} question${qs === 1 ? "" : "s"}`,
+                    lociCount > 0 &&
+                        `${lociCount} ${lociCount === 1 ? "locus" : "loci"}`,
+                    qCount > 0 &&
+                        `${qCount} question${qCount === 1 ? "" : "s"}`,
                 ].filter(Boolean);
                 toast.success(`Imported ${parts.join(" and ")}`);
-                if (cards > 0 && qs === 0) setTab("flashcards");
-                if (qs > 0 && cards === 0) setTab("questions");
+                if (lociCount > 0 && qCount === 0) setTab("loci");
+                if (qCount > 0 && lociCount === 0) setTab("questions");
             } catch (error) {
                 toast.error(
                     error instanceof ContentImportError
@@ -129,21 +123,21 @@ export function RoomContentScreen({
     };
 
     const handleExportJSON = () => {
-        if (flashcards.length === 0 && questions.length === 0) {
+        if (loci.length === 0 && questions.length === 0) {
             toast.warning("Nothing to export yet");
             return;
         }
-        exportRoomContentJSON(room.title, {flashcards, questions});
+        exportRoomContentJSON(room.title, {loci, questions});
         toast.success("Exported as JSON");
     };
 
     const handleExportCSV = () => {
-        if (tab === "flashcards") {
-            if (flashcards.length === 0) {
-                toast.warning("No flashcards to export");
+        if (tab === "loci") {
+            if (loci.length === 0) {
+                toast.warning("No loci to export");
                 return;
             }
-            exportFlashcardsCSV(room.title, flashcards);
+            exportLociCSV(room.title, loci);
         } else {
             if (questions.length === 0) {
                 toast.warning("No questions to export");
@@ -156,17 +150,17 @@ export function RoomContentScreen({
 
     const confirmDelete = () => {
         if (!pendingDelete) return;
-        if (pendingDelete.kind === "flashcards") {
-            actions.deleteFlashcard(palaceId, floorId, roomId, pendingDelete.id);
-            toast.success("Card deleted");
+        if (pendingDelete.kind === "loci") {
+            actions.deleteLocus(palaceId, roomId, pendingDelete.id);
+            toast.success("Locus deleted");
         } else {
-            actions.deleteQuestion(palaceId, floorId, roomId, pendingDelete.id);
+            actions.deleteQuestion(palaceId, roomId, pendingDelete.id);
             toast.success("Question deleted");
         }
         setPendingDelete(null);
     };
 
-    const count = tab === "flashcards" ? flashcards.length : questions.length;
+    const count = tab === "loci" ? loci.length : questions.length;
 
     return (
         <div className="size-full flex flex-col relative bg-[#091A7A]">
@@ -188,23 +182,21 @@ export function RoomContentScreen({
                                 <ArrowLeft className="w-5 h-5"/>
                             </motion.button>
 
-                            <div className="flex items-center gap-2">
-                                <ContentMenu
-                                    onImport={handleImportClick}
-                                    onExportJSON={handleExportJSON}
-                                    onExportCSV={handleExportCSV}
-                                    csvLabel={
-                                        tab === "flashcards"
-                                            ? "Export cards (CSV)"
-                                            : "Export questions (CSV)"
-                                    }
-                                />
-                            </div>
+                            <ContentMenu
+                                onImport={handleImportClick}
+                                onExportJSON={handleExportJSON}
+                                onExportCSV={handleExportCSV}
+                                csvLabel={
+                                    tab === "loci"
+                                        ? "Export loci (CSV)"
+                                        : "Export questions (CSV)"
+                                }
+                            />
                         </div>
 
                         <div className="mb-4">
                             <p className="text-[13px] font-medium text-white/70 mb-0.5">
-                                {floor.title}
+                                {palace.name}
                             </p>
                             <h1 className="text-[24px] font-bold text-white leading-tight text-balance">
                                 {room.title}
@@ -219,13 +211,13 @@ export function RoomContentScreen({
                         >
                             <TabsList className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[14px] p-1 h-11 group-data-horizontal/tabs:h-11">
                                 <TabsTrigger
-                                    value="flashcards"
+                                    value="loci"
                                     className="rounded-[10px] text-[14px] font-semibold text-white/75 hover:text-white data-active:bg-white data-active:text-[#091A7A]"
                                 >
-                                    <Layers size={16} strokeWidth={2.4}/>
-                                    Cards
+                                    <MapPin size={16} strokeWidth={2.4}/>
+                                    Loci
                                     <span className="ml-1 text-[12px] opacity-70">
-                                        {flashcards.length}
+                                        {loci.length}
                                     </span>
                                 </TabsTrigger>
                                 <TabsTrigger
@@ -254,34 +246,35 @@ export function RoomContentScreen({
                             transition={{duration: 0.2}}
                             className="space-y-3"
                         >
-                            {tab === "flashcards" &&
-                                (flashcards.length === 0 ? (
+                            {tab === "loci" &&
+                                (loci.length === 0 ? (
                                     <EmptyState
-                                        icon={<Layers className="w-7 h-7"/>}
-                                        title="No flashcards yet"
-                                        description="Add cards with a prompt on the front and what to recall on the back. Give each a vivid image to place in this room."
+                                        icon={<MapPin className="w-7 h-7"/>}
+                                        title="No loci yet"
+                                        description="Each locus is a spot in this room. Add what to recall, what it means, and the vivid image to picture there."
                                         action={
                                             <ImportOrAddButtons
-                                                addLabel="Add a card"
+                                                addLabel="Add a locus"
                                                 onAdd={() =>
-                                                    setEditor({kind: "card", card: null})
+                                                    setEditor({kind: "locus", locus: null})
                                                 }
                                                 onImport={handleImportClick}
                                             />
                                         }
                                     />
                                 ) : (
-                                    flashcards.map((card) => (
-                                        <FlashcardRow
-                                            key={card.id}
-                                            card={card}
+                                    loci.map((locus, i) => (
+                                        <LocusRow
+                                            key={locus.id}
+                                            locus={locus}
+                                            index={i}
                                             onEdit={() =>
-                                                setEditor({kind: "card", card})
+                                                setEditor({kind: "locus", locus})
                                             }
                                             onDelete={() =>
                                                 setPendingDelete({
-                                                    kind: "flashcards",
-                                                    id: card.id,
+                                                    kind: "loci",
+                                                    id: locus.id,
                                                 })
                                             }
                                         />
@@ -339,15 +332,15 @@ export function RoomContentScreen({
                             whileTap={{scale: 0.98}}
                             onClick={() =>
                                 setEditor(
-                                    tab === "flashcards"
-                                        ? {kind: "card", card: null}
+                                    tab === "loci"
+                                        ? {kind: "locus", locus: null}
                                         : {kind: "question", question: null},
                                 )
                             }
                             className="pointer-events-auto w-full py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-[0_12px_28px_rgba(9,26,122,0.30)] flex items-center justify-center gap-2"
                         >
                             <Plus size={20}/>
-                            {tab === "flashcards" ? "Add card" : "Add question"}
+                            {tab === "loci" ? "Add locus" : "Add question"}
                         </motion.button>
                     </div>
                 )}
@@ -355,40 +348,34 @@ export function RoomContentScreen({
 
             {/* Editors */}
             <Dialog
-                open={editor?.kind === "card"}
+                open={editor?.kind === "locus"}
                 onOpenChange={(o) => !o && setEditor(null)}
             >
                 <DialogContent
                     showCloseButton={false}
-                    className="max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0"
+                    className="max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
                 >
                     <DialogTitle className="sr-only">
-                        {editor?.kind === "card" && editor.card
-                            ? "Edit flashcard"
-                            : "New flashcard"}
+                        {editor?.kind === "locus" && editor.locus
+                            ? "Edit locus"
+                            : "New locus"}
                     </DialogTitle>
-                    {editor?.kind === "card" && (
-                        <FlashcardEditor
-                            initial={editor.card}
+                    {editor?.kind === "locus" && (
+                        <LocusEditor
+                            initial={editor.locus}
                             onCancel={() => setEditor(null)}
                             onSave={(data) => {
-                                if (editor.card) {
-                                    actions.updateFlashcard(
+                                if (editor.locus) {
+                                    actions.updateLocus(
                                         palaceId,
-                                        floorId,
                                         roomId,
-                                        editor.card.id,
+                                        editor.locus.id,
                                         data,
                                     );
-                                    toast.success("Card updated");
+                                    toast.success("Locus updated");
                                 } else {
-                                    actions.createFlashcard(
-                                        palaceId,
-                                        floorId,
-                                        roomId,
-                                        data,
-                                    );
-                                    toast.success("Card added");
+                                    actions.createLocus(palaceId, roomId, data);
+                                    toast.success("Locus added");
                                 }
                                 setEditor(null);
                             }}
@@ -403,7 +390,7 @@ export function RoomContentScreen({
             >
                 <DialogContent
                     showCloseButton={false}
-                    className="max-w-[420px] rounded-3xl p-0 overflow-hidden gap-0"
+                    className="max-w-[420px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
                 >
                     <DialogTitle className="sr-only">
                         {editor?.kind === "question" && editor.question
@@ -418,19 +405,13 @@ export function RoomContentScreen({
                                 if (editor.question) {
                                     actions.updateQuestion(
                                         palaceId,
-                                        floorId,
                                         roomId,
                                         editor.question.id,
                                         data,
                                     );
                                     toast.success("Question updated");
                                 } else {
-                                    actions.createQuestion(
-                                        palaceId,
-                                        floorId,
-                                        roomId,
-                                        data,
-                                    );
+                                    actions.createQuestion(palaceId, roomId, data);
                                     toast.success("Question added");
                                 }
                                 setEditor(null);
@@ -452,9 +433,7 @@ export function RoomContentScreen({
                         </div>
                         <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
                             Delete this{" "}
-                            {pendingDelete?.kind === "flashcards"
-                                ? "card"
-                                : "question"}
+                            {pendingDelete?.kind === "loci" ? "locus" : "question"}
                             ?
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-[#475569]">
@@ -581,12 +560,14 @@ function ImportOrAddButtons({
 
 // --- List rows --------------------------------------------------------------
 
-function FlashcardRow({
-                          card,
-                          onEdit,
-                          onDelete,
-                      }: {
-    card: Flashcard;
+function LocusRow({
+                      locus,
+                      index,
+                      onEdit,
+                      onDelete,
+                  }: {
+    locus: Locus;
+    index: number;
     onEdit: () => void;
     onDelete: () => void;
 }) {
@@ -600,20 +581,25 @@ function FlashcardRow({
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                    <p className="text-[15px] font-semibold text-[#091A7A] leading-snug">
-                        {card.front}
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <span className="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-[#EAF4FF] text-[11px] font-bold text-[#3D8FEF]">
+                            {index + 1}
+                        </span>
+                        <p className="text-[15px] font-semibold text-[#091A7A] leading-snug">
+                            {locus.front}
+                        </p>
+                    </div>
                     <p className="text-[14px] text-[#475569] mt-1 leading-relaxed">
-                        {card.back}
+                        {locus.back}
                     </p>
-                    {card.hint && (
+                    {locus.hint && (
                         <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-[#EAF4FF] px-3 py-2">
                             <Brain
                                 size={14}
                                 className="text-[#3D8FEF] mt-0.5 flex-shrink-0"
                             />
                             <p className="text-[13px] text-[#3D6FE0] italic leading-snug">
-                                {card.hint}
+                                {locus.hint}
                             </p>
                         </div>
                     )}
@@ -771,14 +757,14 @@ function FieldLabel({children}: {children: React.ReactNode}) {
     );
 }
 
-function FlashcardEditor({
-                             initial,
-                             onCancel,
-                             onSave,
-                         }: {
-    initial: Flashcard | null;
+function LocusEditor({
+                         initial,
+                         onCancel,
+                         onSave,
+                     }: {
+    initial: Locus | null;
     onCancel: () => void;
-    onSave: (data: Omit<Flashcard, "id">) => void;
+    onSave: (data: Omit<Locus, "id">) => void;
 }) {
     const [front, setFront] = useState(initial?.front ?? "");
     const [back, setBack] = useState(initial?.back ?? "");
@@ -787,7 +773,7 @@ function FlashcardEditor({
 
     return (
         <EditorShell
-            title={initial ? "Edit card" : "New card"}
+            title={initial ? "Edit locus" : "New locus"}
             onCancel={onCancel}
             saveDisabled={!valid}
             onSave={() =>
@@ -799,7 +785,7 @@ function FlashcardEditor({
             }
         >
             <div>
-                <FieldLabel>Front (prompt)</FieldLabel>
+                <FieldLabel>Front (what to recall)</FieldLabel>
                 <Input
                     value={front}
                     onChange={(e) => setFront(e.target.value)}
@@ -809,7 +795,7 @@ function FlashcardEditor({
                 />
             </div>
             <div>
-                <FieldLabel>Back (answer)</FieldLabel>
+                <FieldLabel>Back (what it means)</FieldLabel>
                 <Textarea
                     value={back}
                     onChange={(e) => setBack(e.target.value)}
@@ -819,7 +805,7 @@ function FlashcardEditor({
                 />
             </div>
             <div>
-                <FieldLabel>Memory cue (optional)</FieldLabel>
+                <FieldLabel>Place / image cue (optional)</FieldLabel>
                 <Textarea
                     value={hint}
                     onChange={(e) => setHint(e.target.value)}

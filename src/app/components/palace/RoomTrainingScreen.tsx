@@ -11,7 +11,7 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
-import {useProgressState} from "../../hooks/useProgressState";
+import {palaceSettings, useProgressState} from "../../hooks/useProgressState";
 import {RiveAnimation} from "../ui/RiveAnimation";
 
 interface RoomTrainingScreenProps {
@@ -78,23 +78,33 @@ export function RoomTrainingScreen({
     const [isDisliked, setIsDisliked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    // Load the room's authored flashcards; fall back to the sample deck so an
-    // empty room still has something to train against.
+    // Load the room's authored loci; fall back to the sample deck so an empty
+    // room still has something to train against. Honors the palace's shuffle
+    // setting so study order can be randomized.
     const [flashCards, setFlashCards] = useState<FlashCard[]>(() => {
         const palace = state.palaces.find((p) => p.id === palaceId);
-        const authored = (palace?.floors || [])
-            .flatMap((f) => f.rooms)
-            .find((r) => r.title === roomTitle)?.flashcards;
-        if (authored && authored.length > 0) {
-            return authored.map((c, i) => ({
-                id: i + 1,
-                front: c.front,
-                back: c.back,
-                visualCue: c.hint || "",
-                isFlipped: false,
-            }));
+        const authored = (palace?.rooms || []).find(
+            (r) => r.title === roomTitle,
+        )?.loci;
+        const source =
+            authored && authored.length > 0
+                ? authored.map((c, i) => ({
+                    id: i + 1,
+                    front: c.front,
+                    back: c.back,
+                    visualCue: c.hint || "",
+                    isFlipped: false,
+                }))
+                : SAMPLE_CARDS;
+        if (palaceSettings(palace).shuffle && source.length > 1) {
+            const shuffled = [...source];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
         }
-        return SAMPLE_CARDS;
+        return source;
     });
 
     const currentCard = flashCards[currentCardIndex];

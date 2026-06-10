@@ -105,7 +105,6 @@ export default function HomePage() {
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
     const [managingContent, setManagingContent] = useState<{
-        floorId: string;
         roomId: string;
     } | null>(null);
 
@@ -232,7 +231,6 @@ export default function HomePage() {
         return (
             <RoomContentScreen
                 palaceId={selectedPalaceId}
-                floorId={managingContent.floorId}
                 roomId={managingContent.roomId}
                 onBack={() => setManagingContent(null)}
             />
@@ -246,9 +244,8 @@ export default function HomePage() {
                 onBack={() => setSelectedPalaceId(null)}
                 onRoomClick={handleRoomClick}
                 onQuizClick={handleQuizClick}
-                onManageContent={(floorId, roomId) =>
-                    setManagingContent({floorId, roomId})
-                }
+                onManageContent={(roomId) => setManagingContent({roomId})}
+                onEditPalace={() => selectedPalaceId && setEditingPalaceId(selectedPalaceId)}
             />
         );
     }
@@ -263,13 +260,8 @@ export default function HomePage() {
                         onSearch={() => setSearchOpen(true)}
                         onPalaceClick={handlePalaceClick}
                         onCreatePalace={() => setShowCreatePalace(true)}
-                        onEditPalace={(palaceId) => setEditingPalaceId(palaceId)}
                         onDeletePalace={(palaceId) => actions.deletePalace(palaceId)}
                         onToggleFavorite={(palaceId) => actions.togglePalaceFavorite(palaceId)}
-                        onDuplicatePalace={(palaceId) => {
-                            actions.duplicatePalace(palaceId);
-                            toast.success("Palace duplicated");
-                        }}
                         onToggleArchive={(palaceId) => {
                             const palace = state.palaces.find((p) => p.id === palaceId);
                             actions.togglePalaceArchived(palaceId);

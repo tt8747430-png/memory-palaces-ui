@@ -83,7 +83,6 @@ export function CreatePalaceScreen({
             category: data.category,
             icon: data.icon,
             color: data.color,
-            totalRooms: 0,
         });
         onSuccess(palaceId);
     };
