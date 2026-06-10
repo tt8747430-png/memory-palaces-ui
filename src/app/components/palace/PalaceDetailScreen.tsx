@@ -28,9 +28,12 @@ import {
     X,
 } from "lucide-react";
 import {
+    type CardOrder,
     Palace,
+    type PalaceSettings,
     palaceSettings,
     Room as StateRoom,
+    type StudyDirection,
     useProgressState,
 } from "../../hooks/useProgressState";
 import {useDrag} from "@use-gesture/react";
@@ -236,6 +239,14 @@ function SwipeableRoomCard({
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
+                        <RoomCardMenu
+                            canMoveUp={canMoveUp}
+                            canMoveDown={canMoveDown}
+                            onManage={() => onManageContent?.(room.id)}
+                            onEdit={() => onEditRoom(room)}
+                            onMove={(dir) => onMoveRoom(room.id, dir)}
+                            onDelete={() => onDeleteRoom(room.id)}
+                        />
                         {room.isCompleted ? (
                             <div className="w-9 h-9 bg-green-50 rounded-full flex items-center justify-center border border-green-200">
                                 <CheckCircle className="w-4.5 h-4.5 text-green-600"/>
@@ -297,70 +308,15 @@ function SwipeableRoomCard({
     );
 }
 
-/** Compact, honest per-palace stats derived from real structure and content. */
-function PalaceInsights({
-                            rooms,
-                            roomsCompleted,
-                            totalRooms,
-                            progress,
-                            updatedAt,
-                        }: {
-    rooms: StateRoom[];
-    roomsCompleted: number;
-    totalRooms: number;
-    progress: number;
-    updatedAt: string;
-}) {
-    const totalLoci = rooms.reduce((sum, r) => sum + (r.loci?.length ?? 0), 0);
-    const totalQuestions = rooms.reduce(
-        (sum, r) => sum + (r.questions?.length ?? 0),
-        0,
-    );
-    const lastReviewed = (() => {
-        const d = new Date(updatedAt);
-        if (Number.isNaN(d.getTime())) return "—";
-        const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
-        if (days <= 0) return "Today";
-        if (days === 1) return "Yesterday";
-        if (days < 7) return `${days} days ago`;
-        return d.toLocaleDateString(undefined, {month: "short", day: "numeric"});
-    })();
-
-    const tiles = [
-        {icon: MapPin, label: "Loci", value: String(totalLoci)},
-        {icon: HelpCircle, label: "Questions", value: String(totalQuestions)},
-        {icon: CheckCircle, label: "Rooms done", value: `${roomsCompleted}/${totalRooms}`},
-        {icon: Target, label: "Mastery", value: `${progress}%`},
-    ];
-
-    return (
-        <div className="mt-3 rounded-2xl bg-white/90 backdrop-blur-md p-5 shadow-card border border-white/50">
-            <div className="grid grid-cols-2 gap-3">
-                {tiles.map((tile) => (
-                    <div key={tile.label} className="rounded-xl bg-[#F4F8FF] px-4 py-3.5">
-                        <div className="flex items-center gap-2 mb-1.5">
-                            <tile.icon className="w-4 h-4 text-[#3D8FEF]"/>
-                            <span className="text-[12px] font-medium text-[#475569]">
-                                {tile.label}
-                            </span>
-                        </div>
-                        <p className="text-[22px] font-bold text-[#091A7A] leading-none">
-                            {tile.value}
-                        </p>
-                    </div>
-                ))}
-            </div>
-
-            <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-[#EAF4FF] px-4 py-3">
-                <Sparkles className="w-4 h-4 text-[#3D8FEF] flex-shrink-0"/>
-                <p className="text-[13px] text-[#3D6FE0] leading-snug">
-                    {totalLoci + totalQuestions === 0
-                        ? "Add loci and questions to a room to start tracking recall here."
-                        : `Last updated ${lastReviewed}. Keep reviewing to lift your mastery.`}
-                </p>
-            </div>
-        </div>
-    );
+/** Friendly relative day label for "last updated". */
+function relativeDay(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (days <= 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 7) return `${days} days ago`;
+    return d.toLocaleDateString(undefined, {month: "short", day: "numeric"});
 }
 
 export function PalaceDetailScreen({
@@ -393,6 +349,11 @@ export function PalaceDetailScreen({
     const rooms = palace.rooms || [];
     const currentRoom = rooms.length > 0 ? getCurrentRoom(rooms) : null;
     const totalDuration = rooms.reduce((sum, r) => sum + r.duration, 0);
+    const totalLoci = rooms.reduce((sum, r) => sum + (r.loci?.length ?? 0), 0);
+    const totalQuestions = rooms.reduce(
+        (sum, r) => sum + (r.questions?.length ?? 0),
+        0,
+    );
     const settings = palaceSettings(palace);
     const roomToDelete = rooms.find((r) => r.id === deleteRoomId);
 
@@ -432,7 +393,7 @@ export function PalaceDetailScreen({
                         </motion.button>
                     </div>
 
-                    {/* Banner */}
+                    {/* Banner with merged, expandable insights */}
                     <motion.div
                         initial={{opacity: 0, y: 20}}
                         animate={{opacity: 1, y: 0}}
@@ -459,10 +420,10 @@ export function PalaceDetailScreen({
                             </div>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-2 mb-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-subheading text-[#091A7A]">
-                                    Overall Progress
+                                    Overall progress
                                 </span>
                                 <span className="text-subheading font-semibold text-[#091A7A]">
                                     {palace.progress}%
@@ -476,13 +437,80 @@ export function PalaceDetailScreen({
                                     className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full shadow-sm"
                                 />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-tiny text-[#6B7280]">Rooms</span>
-                                <span className="text-tiny text-[#6B7280]">
-                                    {palace.roomsCompleted}/{palace.totalRooms} Rooms
-                                </span>
-                            </div>
                         </div>
+
+                        {/* Stat tiles */}
+                        <div className="grid grid-cols-4 gap-2">
+                            {[
+                                {icon: CheckCircle, label: "Rooms", value: `${palace.roomsCompleted}/${palace.totalRooms}`},
+                                {icon: Target, label: "Mastery", value: `${palace.progress}%`},
+                                {icon: MapPin, label: "Loci", value: String(totalLoci)},
+                                {icon: HelpCircle, label: "Questions", value: String(totalQuestions)},
+                            ].map((tile) => (
+                                <div key={tile.label} className="rounded-xl bg-[#F4F8FF] px-2 py-2.5 text-center">
+                                    <tile.icon className="w-4 h-4 text-[#3D8FEF] mx-auto mb-1"/>
+                                    <p className="text-[16px] font-bold text-[#091A7A] leading-none">
+                                        {tile.value}
+                                    </p>
+                                    <p className="text-[10px] font-medium text-[#64748b] mt-1">
+                                        {tile.label}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {rooms.length > 0 && (
+                            <>
+                                <button
+                                    onClick={() => setShowInsights((v) => !v)}
+                                    aria-expanded={showInsights}
+                                    className="mt-3 w-full flex items-center justify-center gap-1.5 text-[13px] font-semibold text-[#3D8FEF] hover:text-[#091A7A] transition-colors"
+                                >
+                                    {showInsights ? "Hide details" : "More insights"}
+                                    <motion.span animate={{rotate: showInsights ? 180 : 0}} transition={{duration: 0.25}}>
+                                        <ChevronDown className="w-4 h-4"/>
+                                    </motion.span>
+                                </button>
+
+                                <AnimatePresence initial={false}>
+                                    {showInsights && (
+                                        <motion.div
+                                            initial={{height: 0, opacity: 0}}
+                                            animate={{height: "auto", opacity: 1}}
+                                            exit={{height: 0, opacity: 0}}
+                                            transition={{duration: 0.3, ease: [0.16, 1, 0.3, 1]}}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="mt-3 pt-3 border-t border-[#091A7A]/[0.07] space-y-2">
+                                                {rooms.map((r) => (
+                                                    <div
+                                                        key={r.id}
+                                                        className="flex items-center justify-between gap-2"
+                                                    >
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            {r.isCompleted ? (
+                                                                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0"/>
+                                                            ) : (
+                                                                <span className="w-4 h-4 rounded-full border-2 border-[#ADC8FF] flex-shrink-0"/>
+                                                            )}
+                                                            <span className="text-[13px] font-medium text-[#091A7A] truncate">
+                                                                {r.title}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[12px] text-[#64748b] flex-shrink-0">
+                                                            {r.loci?.length ?? 0} loci · {r.questions?.length ?? 0} q
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                                <p className="text-[12px] text-[#94a3b8] pt-1">
+                                                    Last updated {relativeDay(palace.updatedAt)}.
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </>
+                        )}
                     </motion.div>
                 </div>
             </div>
@@ -548,52 +576,6 @@ export function PalaceDetailScreen({
                 </motion.button>
             </div>
 
-            {/* Insights */}
-            <div className="px-6 mb-6">
-                <motion.button
-                    whileTap={{scale: 0.98}}
-                    onClick={() => setShowInsights((v) => !v)}
-                    aria-expanded={showInsights}
-                    className="w-full flex items-center justify-between rounded-2xl bg-white/90 backdrop-blur-md px-5 py-4 shadow-card border border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#EAF4FF] flex items-center justify-center">
-                            <BarChart3 className="w-5 h-5 text-[#091A7A]"/>
-                        </div>
-                        <span className="text-subheading font-semibold text-[#091A7A]">
-                            Insights
-                        </span>
-                    </div>
-                    <motion.span
-                        animate={{rotate: showInsights ? 180 : 0}}
-                        transition={{duration: 0.25}}
-                        className="text-[#091A7A]/50"
-                    >
-                        <ChevronDown className="w-5 h-5"/>
-                    </motion.span>
-                </motion.button>
-
-                <AnimatePresence initial={false}>
-                    {showInsights && (
-                        <motion.div
-                            initial={{height: 0, opacity: 0}}
-                            animate={{height: "auto", opacity: 1}}
-                            exit={{height: 0, opacity: 0}}
-                            transition={{duration: 0.3, ease: [0.16, 1, 0.3, 1]}}
-                            className="overflow-hidden"
-                        >
-                            <PalaceInsights
-                                rooms={rooms}
-                                roomsCompleted={palace.roomsCompleted}
-                                totalRooms={palace.totalRooms}
-                                progress={palace.progress}
-                                updatedAt={palace.updatedAt}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
             {/* Rooms */}
             <div className="px-6 pb-10">
                 {rooms.length === 0 ? (
@@ -654,8 +636,7 @@ export function PalaceDetailScreen({
                     setShowSettings(false);
                     onEditPalace?.();
                 }}
-                onToggleTimer={(v) => actions.updatePalaceSettings(palaceId, {quizTimer: v})}
-                onToggleShuffle={(v) => actions.updatePalaceSettings(palaceId, {shuffle: v})}
+                onUpdateSettings={(u) => actions.updatePalaceSettings(palaceId, u)}
                 onDuplicate={() => {
                     actions.duplicatePalace(palaceId);
                     setShowSettings(false);
@@ -859,14 +840,45 @@ function SettingsGroup({children}: {children: React.ReactNode}) {
     );
 }
 
+/** Compact pill segmented control used in the settings sheet. */
+function Segmented({
+                       value,
+                       options,
+                       onChange,
+                   }: {
+    value: string;
+    options: {value: string; label: string}[];
+    onChange: (value: string) => void;
+}) {
+    return (
+        <div className="flex items-center gap-0.5 rounded-full bg-[#F1F5F9] p-0.5">
+            {options.map((o) => {
+                const active = o.value === value;
+                return (
+                    <button
+                        key={o.value}
+                        onClick={() => onChange(o.value)}
+                        className={`rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors ${
+                            active
+                                ? "bg-[#091A7A] text-white shadow-sm"
+                                : "text-[#475569] hover:text-[#091A7A]"
+                        }`}
+                    >
+                        {o.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
 function PalaceSettingsSheet({
                                  open,
                                  onOpenChange,
                                  palace,
                                  settings,
                                  onEditPalace,
-                                 onToggleTimer,
-                                 onToggleShuffle,
+                                 onUpdateSettings,
                                  onDuplicate,
                                  onExport,
                                  onReset,
@@ -876,10 +888,9 @@ function PalaceSettingsSheet({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     palace: Palace;
-    settings: {quizTimer: boolean; shuffle: boolean};
+    settings: PalaceSettings;
     onEditPalace: () => void;
-    onToggleTimer: (v: boolean) => void;
-    onToggleShuffle: (v: boolean) => void;
+    onUpdateSettings: (updates: Partial<PalaceSettings>) => void;
     onDuplicate: () => void;
     onExport: () => void;
     onReset: () => void;
@@ -931,24 +942,65 @@ function PalaceSettingsSheet({
                             </h3>
                             <SettingsGroup>
                                 <SettingRow
+                                    icon={<ArrowLeftRight size={18} className="text-[#091A7A]"/>}
+                                    label="Study direction"
+                                    sublabel="Which face leads in training"
+                                    right={
+                                        <Segmented
+                                            value={settings.studyDirection}
+                                            options={[
+                                                {value: "front", label: "Front"},
+                                                {value: "back", label: "Back"},
+                                            ]}
+                                            onChange={(v) =>
+                                                onUpdateSettings({
+                                                    studyDirection: v as StudyDirection,
+                                                })
+                                            }
+                                        />
+                                    }
+                                />
+                                <SettingRow
+                                    icon={<Shuffle size={18} className="text-[#091A7A]"/>}
+                                    label="Card order"
+                                    sublabel="Default order when browsing"
+                                    right={
+                                        <Segmented
+                                            value={settings.cardOrder}
+                                            options={[
+                                                {value: "inOrder", label: "List"},
+                                                {value: "shuffle", label: "Shuffle"},
+                                                {value: "reverse", label: "Reverse"},
+                                            ]}
+                                            onChange={(v) =>
+                                                onUpdateSettings({cardOrder: v as CardOrder})
+                                            }
+                                        />
+                                    }
+                                />
+                                <SettingRow
                                     icon={<Timer size={18} className="text-[#091A7A]"/>}
                                     label="Quiz timer"
                                     sublabel="Count down each quiz question"
                                     right={
                                         <Switch
                                             checked={settings.quizTimer}
-                                            onCheckedChange={onToggleTimer}
+                                            onCheckedChange={(v) =>
+                                                onUpdateSettings({quizTimer: v})
+                                            }
                                         />
                                     }
                                 />
                                 <SettingRow
                                     icon={<Shuffle size={18} className="text-[#091A7A]"/>}
-                                    label="Shuffle loci"
-                                    sublabel="Study loci in random order"
+                                    label="Shuffle questions"
+                                    sublabel="Randomize quiz question order"
                                     right={
                                         <Switch
-                                            checked={settings.shuffle}
-                                            onCheckedChange={onToggleShuffle}
+                                            checked={settings.shuffleQuestions}
+                                            onCheckedChange={(v) =>
+                                                onUpdateSettings({shuffleQuestions: v})
+                                            }
                                         />
                                     }
                                 />

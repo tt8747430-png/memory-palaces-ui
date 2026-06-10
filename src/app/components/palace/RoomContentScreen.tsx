@@ -2,12 +2,16 @@ import {type ChangeEvent, useMemo, useRef, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {
     ArrowLeft,
-    Brain,
     Check,
+    ChevronDown,
+    ChevronUp,
+    Copy,
     DownloadCloud,
     FileUp,
     HelpCircle,
+    Lightbulb,
     MapPin,
+    MoreVertical,
     Pencil,
     Plus,
     Trash2,
@@ -268,8 +272,17 @@ export function RoomContentScreen({
                                             key={locus.id}
                                             locus={locus}
                                             index={i}
+                                            canMoveUp={i > 0}
+                                            canMoveDown={i < loci.length - 1}
                                             onEdit={() =>
                                                 setEditor({kind: "locus", locus})
+                                            }
+                                            onDuplicate={() => {
+                                                actions.duplicateLocus(palaceId, roomId, locus.id);
+                                                toast.success("Locus duplicated");
+                                            }}
+                                            onMove={(dir) =>
+                                                actions.moveLocus(palaceId, roomId, locus.id, dir)
                                             }
                                             onDelete={() =>
                                                 setPendingDelete({
@@ -306,11 +319,20 @@ export function RoomContentScreen({
                                             key={q.id}
                                             question={q}
                                             index={i}
+                                            canMoveUp={i > 0}
+                                            canMoveDown={i < questions.length - 1}
                                             onEdit={() =>
                                                 setEditor({
                                                     kind: "question",
                                                     question: q,
                                                 })
+                                            }
+                                            onDuplicate={() => {
+                                                actions.duplicateQuestion(palaceId, roomId, q.id);
+                                                toast.success("Question duplicated");
+                                            }}
+                                            onMove={(dir) =>
+                                                actions.moveQuestion(palaceId, roomId, q.id, dir)
                                             }
                                             onDelete={() =>
                                                 setPendingDelete({
@@ -560,17 +582,20 @@ function ImportOrAddButtons({
 
 // --- List rows --------------------------------------------------------------
 
+interface RowControls {
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    onEdit: () => void;
+    onDuplicate: () => void;
+    onMove: (direction: "up" | "down") => void;
+    onDelete: () => void;
+}
+
 function LocusRow({
                       locus,
                       index,
-                      onEdit,
-                      onDelete,
-                  }: {
-    locus: Locus;
-    index: number;
-    onEdit: () => void;
-    onDelete: () => void;
-}) {
+                      ...controls
+                  }: {locus: Locus; index: number} & RowControls) {
     return (
         <motion.div
             layout
@@ -594,7 +619,7 @@ function LocusRow({
                     </p>
                     {locus.hint && (
                         <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-[#EAF4FF] px-3 py-2">
-                            <Brain
+                            <MapPin
                                 size={14}
                                 className="text-[#3D8FEF] mt-0.5 flex-shrink-0"
                             />
@@ -603,8 +628,19 @@ function LocusRow({
                             </p>
                         </div>
                     )}
+                    {locus.tip && (
+                        <div className="mt-2 flex items-start gap-2 rounded-xl bg-[#FFF7E0] px-3 py-2">
+                            <Lightbulb
+                                size={14}
+                                className="text-[#B8860B] mt-0.5 flex-shrink-0"
+                            />
+                            <p className="text-[13px] text-[#8a6d1a] italic leading-snug">
+                                {locus.tip}
+                            </p>
+                        </div>
+                    )}
                 </div>
-                <RowActions onEdit={onEdit} onDelete={onDelete}/>
+                <RowMenu {...controls}/>
             </div>
         </motion.div>
     );
@@ -613,14 +649,8 @@ function LocusRow({
 function QuestionRow({
                          question,
                          index,
-                         onEdit,
-                         onDelete,
-                     }: {
-    question: Question;
-    index: number;
-    onEdit: () => void;
-    onDelete: () => void;
-}) {
+                         ...controls
+                     }: {question: Question; index: number} & RowControls) {
     return (
         <motion.div
             layout
@@ -670,32 +700,66 @@ function QuestionRow({
                         })}
                     </ul>
                 </div>
-                <RowActions onEdit={onEdit} onDelete={onDelete}/>
+                <RowMenu {...controls}/>
             </div>
         </motion.div>
     );
 }
 
-function RowActions({onEdit, onDelete}: {onEdit: () => void; onDelete: () => void}) {
+function RowMenu({
+                     canMoveUp,
+                     canMoveDown,
+                     onEdit,
+                     onDuplicate,
+                     onMove,
+                     onDelete,
+                 }: RowControls) {
+    const item =
+        "rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]";
     return (
-        <div className="flex flex-col gap-1.5 flex-shrink-0">
-            <motion.button
-                whileTap={{scale: 0.9}}
-                onClick={onEdit}
-                aria-label="Edit"
-                className="w-9 h-9 rounded-full bg-[#EAF4FF] flex items-center justify-center text-[#091A7A] hover:bg-[#dcebff] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
-            >
-                <Pencil size={15}/>
-            </motion.button>
-            <motion.button
-                whileTap={{scale: 0.9}}
-                onClick={onDelete}
-                aria-label="Delete"
-                className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-            >
-                <Trash2 size={15}/>
-            </motion.button>
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <motion.button
+                        whileTap={{scale: 0.9}}
+                        aria-label="More actions"
+                        className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A] hover:bg-[#EAF4FF] transition-colors flex-shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                    >
+                        <MoreVertical size={16}/>
+                    </motion.button>
+                }
+            />
+            <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
+                <DropdownMenuItem onClick={onEdit} className={item}>
+                    <Pencil size={16} className="text-[#091A7A]"/>
+                    Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDuplicate} className={item}>
+                    <Copy size={16} className="text-[#091A7A]"/>
+                    Duplicate
+                </DropdownMenuItem>
+                {canMoveUp && (
+                    <DropdownMenuItem onClick={() => onMove("up")} className={item}>
+                        <ChevronUp size={16} className="text-[#091A7A]"/>
+                        Move up
+                    </DropdownMenuItem>
+                )}
+                {canMoveDown && (
+                    <DropdownMenuItem onClick={() => onMove("down")} className={item}>
+                        <ChevronDown size={16} className="text-[#091A7A]"/>
+                        Move down
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem
+                    onClick={onDelete}
+                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
+                >
+                    <Trash2 size={16} className="text-red-600"/>
+                    Delete
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
@@ -769,6 +833,7 @@ function LocusEditor({
     const [front, setFront] = useState(initial?.front ?? "");
     const [back, setBack] = useState(initial?.back ?? "");
     const [hint, setHint] = useState(initial?.hint ?? "");
+    const [tip, setTip] = useState(initial?.tip ?? "");
     const valid = front.trim().length > 0 && back.trim().length > 0;
 
     return (
@@ -781,6 +846,7 @@ function LocusEditor({
                     front: front.trim(),
                     back: back.trim(),
                     ...(hint.trim() ? {hint: hint.trim()} : {}),
+                    ...(tip.trim() ? {tip: tip.trim()} : {}),
                 })
             }
         >
@@ -810,6 +876,16 @@ function LocusEditor({
                     value={hint}
                     onChange={(e) => setHint(e.target.value)}
                     placeholder="Picture Zeus on a throne of clouds with a glowing bolt."
+                    rows={2}
+                    className={`${navyField} px-4 py-3 resize-none`}
+                />
+            </div>
+            <div>
+                <FieldLabel>Hint / tip (optional)</FieldLabel>
+                <Textarea
+                    value={tip}
+                    onChange={(e) => setTip(e.target.value)}
+                    placeholder="A short nudge you can peek at before flipping."
                     rows={2}
                     className={`${navyField} px-4 py-3 resize-none`}
                 />

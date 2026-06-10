@@ -1,6 +1,7 @@
 import {useEffect} from "react";
 import {useLocalStorage} from "./useLocalStorage";
 import {calculateLevel} from "./useSaveStatus";
+import {type Grade, schedule, type SrsState} from "../utils/srs";
 
 /** Stable, collision-resistant id with a readable prefix. */
 function genId(prefix: string): string {
@@ -9,14 +10,17 @@ function genId(prefix: string): string {
 
 /**
  * A locus: one memory spot inside a room. `front` is the thing to recall,
- * `back` is what it means, and `hint` is the image/place you picture it in
- * (the heart of the method of loci).
+ * `back` is what it means, `hint` is the image/place you picture it in (the
+ * heart of the method of loci), and `tip` is an optional nudge you can peek at
+ * before flipping. `srs` carries its spaced-repetition schedule.
  */
 export interface Locus {
     id: string;
     front: string;
     back: string;
     hint?: string;
+    tip?: string;
+    srs?: SrsState;
 }
 
 /** A multiple-choice recall question scoped to a room. */
@@ -44,22 +48,39 @@ export interface Room {
     questions?: Question[];
 }
 
+export type StudyDirection = "front" | "back";
+export type CardOrder = "inOrder" | "shuffle" | "reverse";
+
 /** Per-palace study configuration. Absent means defaults (see DEFAULT_SETTINGS). */
 export interface PalaceSettings {
     /** Run the per-question countdown in this palace's quiz. */
     quizTimer: boolean;
-    /** Shuffle loci order during training instead of walking them in sequence. */
-    shuffle: boolean;
+    /** Which face leads in training: `front` (recall meaning) or `back`. */
+    studyDirection: StudyDirection;
+    /** Default browse order for a study session. */
+    cardOrder: CardOrder;
+    /** Randomize question order in the quiz. */
+    shuffleQuestions: boolean;
 }
 
 export const DEFAULT_SETTINGS: PalaceSettings = {
     quizTimer: true,
-    shuffle: false,
+    studyDirection: "front",
+    cardOrder: "inOrder",
+    shuffleQuestions: false,
 };
 
-/** Read a palace's settings, applying defaults for any missing keys. */
+/** Read a palace's settings, applying defaults and mapping any legacy keys. */
 export function palaceSettings(palace?: Palace): PalaceSettings {
-    return {...DEFAULT_SETTINGS, ...(palace?.settings ?? {})};
+    const raw = (palace?.settings ?? {}) as Partial<PalaceSettings> & {
+        shuffle?: boolean;
+    };
+    return {
+        ...DEFAULT_SETTINGS,
+        ...raw,
+        // Legacy `shuffle` boolean maps onto the new cardOrder.
+        cardOrder: raw.cardOrder ?? (raw.shuffle ? "shuffle" : "inOrder"),
+    };
 }
 
 export interface Palace {
@@ -525,7 +546,11 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
                     isCompleted: false,
                     isUnlocked: idx === 0,
                     progress: 0,
-                    loci: (room.loci || []).map((l) => ({...l, id: genId("locus")})),
+                    loci: (room.loci || []).map((l) => ({
+                        ...l,
+                        id: genId("locus"),
+                        srs: undefined, // a copy starts unscheduled
+                    })),
                     questions: (room.questions || []).map((q) => ({
                         ...q,
                         id: genId("q"),
@@ -747,6 +772,86 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         }));
     };
 
+    /** Record a spaced-repetition grade for a locus, advancing its schedule. */
+    const reviewLocus = (
+        palaceId: string,
+        roomId: string,
+        locusId: string,
+        grade: Grade,
+    ) => {
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).map((l) =>
+                l.id === locusId ? {...l, srs: schedule(l.srs, grade)} : l,
+            ),
+        }));
+    };
+
+    /** Insert a copy of a locus right after the original, unscheduled. */
+    const duplicateLocus = (palaceId: string, roomId: string, locusId: string) => {
+        mutateRoom(palaceId, roomId, (room) => {
+            const loci = room.loci || [];
+            const i = loci.findIndex((l) => l.id === locusId);
+            if (i < 0) return room;
+            const copy: Locus = {...loci[i], id: genId("locus"), srs: undefined};
+            return {...room, loci: [...loci.slice(0, i + 1), copy, ...loci.slice(i + 1)]};
+        });
+    };
+
+    const duplicateQuestion = (
+        palaceId: string,
+        roomId: string,
+        questionId: string,
+    ) => {
+        mutateRoom(palaceId, roomId, (room) => {
+            const questions = room.questions || [];
+            const i = questions.findIndex((q) => q.id === questionId);
+            if (i < 0) return room;
+            const copy: Question = {...questions[i], id: genId("q")};
+            return {
+                ...room,
+                questions: [
+                    ...questions.slice(0, i + 1),
+                    copy,
+                    ...questions.slice(i + 1),
+                ],
+            };
+        });
+    };
+
+    /** Move a locus one slot up or down within its room. */
+    const moveLocus = (
+        palaceId: string,
+        roomId: string,
+        locusId: string,
+        direction: "up" | "down",
+    ) => {
+        mutateRoom(palaceId, roomId, (room) => {
+            const loci = [...(room.loci || [])];
+            const i = loci.findIndex((l) => l.id === locusId);
+            const j = direction === "up" ? i - 1 : i + 1;
+            if (i < 0 || j < 0 || j >= loci.length) return room;
+            [loci[i], loci[j]] = [loci[j], loci[i]];
+            return {...room, loci};
+        });
+    };
+
+    const moveQuestion = (
+        palaceId: string,
+        roomId: string,
+        questionId: string,
+        direction: "up" | "down",
+    ) => {
+        mutateRoom(palaceId, roomId, (room) => {
+            const questions = [...(room.questions || [])];
+            const i = questions.findIndex((q) => q.id === questionId);
+            const j = direction === "up" ? i - 1 : i + 1;
+            if (i < 0 || j < 0 || j >= questions.length) return room;
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+            return {...room, questions};
+        });
+    };
+
     /**
      * Bulk-add imported content to a room. `merge` appends, `replace` swaps the
      * whole set. Incoming items always get fresh ids so imports never collide.
@@ -845,9 +950,14 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             createLocus,
             updateLocus,
             deleteLocus,
+            duplicateLocus,
+            moveLocus,
+            reviewLocus,
             createQuestion,
             updateQuestion,
             deleteQuestion,
+            duplicateQuestion,
+            moveQuestion,
             importRoomContent,
             createFolder,
             updateFolder,
