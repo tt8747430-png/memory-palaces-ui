@@ -1,5 +1,6 @@
 import {useMemo, useRef, useState} from "react";
-import {motion, useReducedMotion, useScroll, useTransform} from "motion/react";
+import {motion} from "motion/react";
+import {useCollapsibleHeader} from "../hooks/useCollapsibleHeader";
 import {
   Archive,
   ArchiveRestore,
@@ -193,16 +194,10 @@ export function PalacesPage({
     const [newFolderName, setNewFolderName] = useState("");
     const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
-    // Collapse the header in place on scroll: the big title shrinks and the
-    // view-controls row folds away, while search + create stay pinned.
+    // Scroll-away header: the navy hero recedes and a compact bar fades in that
+    // keeps Palaces + search + create pinned at the top.
     const scrollRef = useRef<HTMLDivElement>(null);
-    const {scrollY} = useScroll({container: scrollRef});
-    const reduce = useReducedMotion();
-    const titleScale = useTransform(scrollY, [0, 80], reduce ? [1, 1] : [1, 0.66]);
-    const titleY = useTransform(scrollY, [0, 80], reduce ? [0, 0] : [0, 2]);
-    const controlsHeight = useTransform(scrollY, [0, 80], reduce ? [56, 56] : [56, 0]);
-    const controlsOpacity = useTransform(scrollY, [0, 48], reduce ? [1, 1] : [1, 0]);
-    const headerPadBottom = useTransform(scrollY, [0, 80], reduce ? [20, 20] : [20, 12]);
+    const header = useCollapsibleHeader(scrollRef, {distance: 110});
 
     const safeFolders = folders ?? [];
     const archivedCount = palaces.filter((p) => p.archived).length;
@@ -298,24 +293,58 @@ export function PalacesPage({
             <DynamicBackground/>
             <AmbientParticles/>
 
-            <div className="relative z-10 flex-1 flex flex-col">
-                {/* Header */}
-                <div className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative flex-shrink-0 backdrop-blur-md">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]"/>
-
-                    <div className="h-safe-top relative z-10"/>
-
-                    <motion.div
-                        style={{paddingBottom: headerPadBottom}}
-                        className="px-[20px] pt-[16px] relative z-10"
-                    >
-                        <div className="flex items-center justify-between">
-                            <motion.h1
-                                style={{scale: titleScale, y: titleY}}
-                                className="text-[32px] font-bold text-white origin-left"
+            <div className="relative z-10 flex-1 flex flex-col min-h-0">
+                {/* Compact sticky bar — fades in once the hero scrolls away */}
+                <motion.div
+                    style={{
+                        opacity: header.compactOpacity,
+                        pointerEvents: header.compactPointerEvents,
+                    }}
+                    className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-[#091A7A] to-[#1c2f9c] backdrop-blur-md shadow-[0_4px_24px_rgba(9,26,122,0.18)]"
+                >
+                    <div className="h-safe-top"/>
+                    <div className="flex items-center justify-between px-[20px] py-2.5">
+                        <h2 className="text-[18px] font-bold text-white">Palaces</h2>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={onSearch}
+                                aria-label="Search palaces"
+                                className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
                             >
-                                Palaces
-                            </motion.h1>
+                                <Search size={19} strokeWidth={2.5}/>
+                            </button>
+                            <button
+                                onClick={onCreatePalace}
+                                aria-label="Create palace"
+                                className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform"
+                            >
+                                <Plus size={19} strokeWidth={2.5}/>
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Scroll container holds the receding hero + content */}
+                <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
+                    {/* Hero header — recedes on scroll */}
+                    <motion.div
+                        style={{
+                            opacity: header.largeOpacity,
+                            scale: header.largeScale,
+                            y: header.largeY,
+                            pointerEvents: header.largePointerEvents,
+                        }}
+                        className="bg-gradient-to-b from-[#091A7A]/95 to-[#4F8EFF]/95 relative backdrop-blur-md origin-top will-change-transform"
+                    >
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]"/>
+
+                        <div className="h-safe-top relative z-10"/>
+
+                        <div className="px-[20px] pt-[16px] pb-[20px] relative z-10">
+                            <div className="flex items-center justify-between mb-[16px]">
+                                <h1 className="text-[32px] font-bold text-white">
+                                    Palaces
+                                </h1>
                             <div className="flex items-center gap-3">
                                 <motion.button
                                     whileTap={{scale: 0.92}}
@@ -336,11 +365,8 @@ export function PalacesPage({
                             </div>
                         </div>
 
-                        {/* View Controls — fold away as the header collapses */}
-                        <motion.div
-                            style={{height: controlsHeight, opacity: controlsOpacity}}
-                            className="overflow-hidden flex items-center gap-[12px] pt-[12px]"
-                        >
+                        {/* View Controls */}
+                        <div className="flex items-center gap-[12px]">
                             <div className="flex-1">
                                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")}
                                       className="w-full">
@@ -389,14 +415,12 @@ export function PalacesPage({
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        </motion.div>
+                        </div>
+                        </div>
                     </motion.div>
-                </div>
 
-                {/* Scrollable Content */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
                     {/* Folder / collection rail */}
-                    <div className="px-[20px] py-[14px] border-b border-[#E5E5EA] sticky top-0 bg-white/95 backdrop-blur-md z-10 shadow-sm">
+                    <div className="px-[20px] py-[14px] border-b border-[#E5E5EA] bg-white/95 backdrop-blur-md z-10 shadow-sm">
                         <div className="flex gap-[8px] overflow-x-auto scrollbar-hide pb-1">
                             {rail.map((chip) => {
                                 const active = activeFilter === chip.id;

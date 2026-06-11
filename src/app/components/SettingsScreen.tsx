@@ -1,4 +1,4 @@
-import {AnimatePresence, motion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
 import {
   ArrowLeft,
   Bell,
@@ -103,17 +103,22 @@ export function SettingsScreen({
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const {scrollY} = useScroll({container: scrollRef});
+    const reduce = useReducedMotion();
 
-    // Modern Parallax & Overscroll (Pull-to-refresh style)
+    // Hero recedes as you scroll; the compact bar fades in. Reduced motion keeps
+    // the opacity crossfade but drops the scale/translate parallax.
     const headerOpacity = useTransform(scrollY, [0, 80], [1, 0]);
-    const headerScale = useTransform(scrollY, [0, 80], [1, 0.95]);
-    const headerY = useTransform(scrollY, [0, 80], [0, 20]);
+    const headerScale = useTransform(scrollY, [0, 80], reduce ? [1, 1] : [1, 0.95]);
+    const headerY = useTransform(scrollY, [0, 80], reduce ? [0, 0] : [0, 20]);
 
-    // Magic: Negative scrollY (overscroll on iOS/Mac) scales up the profile image
-    const profileScale = useTransform(scrollY, [-150, 0, 80], [1.2, 1, 0.9]);
-    const profileY = useTransform(scrollY, [-150, 0], [20, 0]);
+    // Overscroll (negative scrollY on iOS/Mac) scales up the profile image.
+    const profileScale = useTransform(scrollY, [-150, 0, 80], reduce ? [1, 1, 1] : [1.2, 1, 0.9]);
+    const profileY = useTransform(scrollY, [-150, 0], reduce ? [0, 0] : [20, 0]);
 
     const compactHeaderOpacity = useTransform(scrollY, [40, 80], [0, 1]);
+    const compactHeaderPointer = useTransform(compactHeaderOpacity, (v) =>
+        v > 0.5 ? "auto" : "none"
+    );
     const headerPointerEvents = useTransform(headerOpacity, (v) =>
         v > 0.5 ? "auto" : "none"
     );
@@ -340,9 +345,10 @@ export function SettingsScreen({
         >
             {/* Sticky Compact Header */}
             <motion.div
-                style={{opacity: compactHeaderOpacity}}
+                style={{opacity: compactHeaderOpacity, pointerEvents: compactHeaderPointer}}
                 className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-[#091A7A]/[0.06] shadow-[0_4px_24px_rgba(9,26,122,0.04)]"
             >
+                <div className="h-safe-top"/>
                 <div className="flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-3">
                         <motion.button
@@ -363,6 +369,9 @@ export function SettingsScreen({
                 </div>
             </motion.div>
 
+            {/* Notch clearance */}
+            <div className="h-safe-top"/>
+
             {/* Large Header */}
             <motion.div
                 style={{
@@ -371,7 +380,7 @@ export function SettingsScreen({
                     y: headerY,
                     pointerEvents: headerPointerEvents,
                 }}
-                className="relative px-6 pt-12 pb-6 will-change-transform flex flex-col items-center"
+                className="relative px-6 pt-5 pb-6 will-change-transform flex flex-col items-center origin-top"
             >
                 <div className="w-full flex items-center justify-start mb-6">
                     <motion.button

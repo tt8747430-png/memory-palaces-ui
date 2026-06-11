@@ -1,5 +1,6 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
+import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
     ArrowLeft,
     ArrowLeftRight,
@@ -412,6 +413,9 @@ export function PalaceDetailScreen({
     const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
     const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
 
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const header = useCollapsibleHeader(scrollRef, {distance: 150});
+
     if (!palace) {
         return (
             <div className="h-full flex items-center justify-center">
@@ -439,12 +443,57 @@ export function PalaceDetailScreen({
     };
 
     return (
-        <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto">
-            {/* Header */}
-            <div className="relative">
+        <div
+            ref={scrollRef}
+            className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto"
+        >
+            {/* Compact sticky bar — fades in once the banner scrolls away */}
+            <motion.div
+                style={{
+                    opacity: header.compactOpacity,
+                    pointerEvents: header.compactPointerEvents,
+                }}
+                className="fixed top-0 left-0 right-0 z-40 bg-white/85 backdrop-blur-2xl border-b border-[#091A7A]/[0.06] shadow-[0_4px_24px_rgba(9,26,122,0.04)]"
+            >
+                <div className="h-safe-top"/>
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                    <button
+                        onClick={onBack}
+                        aria-label="Go back"
+                        className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[#091A7A] active:scale-95 transition-transform"
+                    >
+                        <ArrowLeft className="w-5 h-5"/>
+                    </button>
+                    <span className="text-[20px] flex-shrink-0">{palace.icon}</span>
+                    <h2 className="text-[16px] font-bold text-[#091A7A] truncate flex-1 min-w-0">
+                        {palace.name}
+                    </h2>
+                    <button
+                        onClick={() => setShowSettings(true)}
+                        aria-label="Palace settings"
+                        className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[#091A7A] active:scale-95 transition-transform"
+                    >
+                        <Settings2 className="w-5 h-5"/>
+                    </button>
+                </div>
+            </motion.div>
+
+            {/* Notch clearance */}
+            <div className="h-safe-top"/>
+
+            {/* Header — recedes on scroll */}
+            <motion.div
+                style={{
+                    opacity: header.largeOpacity,
+                    scale: header.largeScale,
+                    y: header.largeY,
+                    pointerEvents: header.largePointerEvents,
+                }}
+                className="relative origin-top will-change-transform"
+            >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#ADC8FF]/30 via-transparent to-transparent"/>
 
-                <div className="relative px-6 pt-6 pb-6">
+                <div className="relative px-6 pt-3 pb-6">
                     <div className="flex items-center justify-between mb-6">
                         <motion.button
                             whileTap={{scale: 0.92}}
@@ -587,7 +636,7 @@ export function PalaceDetailScreen({
                         )}
                     </motion.div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Continue */}
             {currentRoom && (
