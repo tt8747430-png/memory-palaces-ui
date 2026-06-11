@@ -1,12 +1,17 @@
 import {motion} from "motion/react";
 import {Clock, Heart, Lock, Play, Star} from "lucide-react";
 import {useState} from "react";
+import {PalaceCover} from "./PalaceCover";
 
 interface PalaceCardProps {
     id: string;
     name: string;
     description: string;
     icon: string;
+    /** Preset gradient or custom hex; only used as a fallback tint. */
+    color?: string;
+    /** Optional custom cover photo (data URL). */
+    image?: string;
     progress: number;
     totalRooms: number;
     roomsCompleted?: number;
@@ -32,6 +37,8 @@ export function PalaceCard({
                                name,
                                description,
                                icon,
+                               color,
+                               image,
                                progress,
                                totalRooms,
                                estimatedTime,
@@ -60,9 +67,15 @@ export function PalaceCard({
                 className="bg-white rounded-2xl shadow-[0px_6px_16px_0px_rgba(19,44,74,0.06)] overflow-hidden cursor-pointer relative"
             >
                 {/* Image Section */}
-                <div
-                    className="relative h-[110px] bg-gradient-to-br from-[#ADC8FF] to-[#E8F2FF] flex items-center justify-center overflow-hidden">
-                    <span className="text-6xl">{icon}</span>
+                <div className="relative h-[110px] overflow-hidden">
+                    <PalaceCover
+                        variant="brand"
+                        image={image}
+                        icon={icon}
+                        color={color ?? ""}
+                        className="absolute inset-0"
+                        iconClassName="text-6xl"
+                    />
                     {isLocked && (
                         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
                             <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center">
@@ -136,9 +149,15 @@ export function PalaceCard({
                 className="bg-white rounded-3xl shadow-[0px_10px_28px_0px_rgba(19,44,74,0.08)] overflow-hidden cursor-pointer relative"
             >
                 {/* Large Image Section */}
-                <div
-                    className="relative h-[180px] bg-gradient-to-br from-[#ADC8FF] to-[#E8F2FF] flex items-center justify-center overflow-hidden">
-                    <span className="text-8xl">{icon}</span>
+                <div className="relative h-[180px] overflow-hidden">
+                    <PalaceCover
+                        variant="brand"
+                        image={image}
+                        icon={icon}
+                        color={color ?? ""}
+                        className="absolute inset-0"
+                        iconClassName="text-8xl"
+                    />
 
                     {/* Favorite Button */}
                     <motion.button
@@ -225,11 +244,15 @@ export function PalaceCard({
             className="bg-white rounded-2xl shadow-[0px_6px_16px_0px_rgba(19,44,74,0.06)] overflow-hidden cursor-pointer relative group"
         >
             {/* Image Section */}
-            <div
-                className="relative h-[143px] bg-gradient-to-br from-[#ADC8FF] to-[#E8F2FF] flex items-center justify-center overflow-hidden">
-        <span className="text-7xl group-hover:scale-110 transition-transform duration-300">
-          {icon}
-        </span>
+            <div className="relative h-[143px] overflow-hidden">
+                <PalaceCover
+                    variant="brand"
+                    image={image}
+                    icon={icon}
+                    color={color ?? ""}
+                    className="absolute inset-0"
+                    iconClassName="text-7xl"
+                />
 
                 {isLocked && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">

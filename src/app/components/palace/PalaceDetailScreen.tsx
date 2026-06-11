@@ -10,11 +10,11 @@ import {
     ChevronRight,
     ChevronUp,
     Clock,
+    GraduationCap,
     Copy,
     DownloadCloud,
     Edit2,
     HelpCircle,
-    Layers,
     Lock,
     MapPin,
     MoreVertical,
@@ -63,16 +63,16 @@ import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {LociPreviewCarousel} from "./LociPreviewCarousel";
+import {PalaceCover} from "../cards/PalaceCover";
+import {isDue, srsStatus} from "../../utils/srs";
 
 interface PalaceDetailScreenProps {
     palaceId: string;
     onBack: () => void;
     onRoomClick?: (roomTitle: string) => void;
-    /** Jump straight into a room's flashcard deck (skips the set page). */
+    /** Jump straight into a room's flashcard deck (skips the detail page). */
     onStudyRoom?: (roomTitle: string) => void;
     onQuizClick?: () => void;
-    /** Open the loci & questions manager for a specific room. */
-    onManageContent?: (roomId: string) => void;
     /** Open the full edit flow (name, icon, color) for this palace. */
     onEditPalace?: () => void;
 }
@@ -115,7 +115,6 @@ interface SwipeableRoomCardProps {
     onEditRoom: (room: StateRoom) => void;
     onDeleteRoom: (roomId: string) => void;
     onRoomClick?: (roomTitle: string) => void;
-    onManageContent?: (roomId: string) => void;
     onMoveRoom: (roomId: string, direction: "up" | "down") => void;
 }
 
@@ -127,26 +126,36 @@ function SwipeableRoomCard({
                                onEditRoom,
                                onDeleteRoom,
                                onRoomClick,
-                               onManageContent,
                                onMoveRoom,
                            }: SwipeableRoomCardProps) {
     const x = useMotionValue(0);
 
-    const bind = useDrag(({down, movement: [mx], velocity: [vx], direction: [dx]}) => {
-        const boundedX = Math.min(0, mx);
-        if (down) {
-            x.set(boundedX);
-        } else {
-            if (boundedX < -60 || (vx > 0.5 && dx < 0)) {
+    const bind = useDrag(
+        ({down, movement: [mx], velocity: [vx], direction: [dx], tap}) => {
+            // A clean tap anywhere on the card opens the room; a left swipe
+            // reveals the move / edit / delete actions behind it.
+            if (tap) {
+                animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
+                onRoomClick?.(room.title);
+                return;
+            }
+            const boundedX = Math.min(0, mx);
+            if (down) {
+                x.set(boundedX);
+            } else if (boundedX < -60 || (vx > 0.5 && dx < 0)) {
                 animate(x, -208, {type: "spring", stiffness: 400, damping: 30});
             } else {
                 animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
             }
-        }
-    }, {axis: "x", filterTaps: true});
+        },
+        {axis: "x", filterTaps: true},
+    );
 
-    const lociCount = room.loci?.length ?? 0;
+    const loci = room.loci ?? [];
+    const lociCount = loci.length;
     const questionCount = room.questions?.length ?? 0;
+    const knownCount = loci.filter((l) => srsStatus(l.srs) === "known").length;
+    const dueCount = loci.filter((l) => isDue(l.srs)).length;
 
     return (
         <motion.div
@@ -254,7 +263,6 @@ function SwipeableRoomCard({
                         <RoomCardMenu
                             canMoveUp={canMoveUp}
                             canMoveDown={canMoveDown}
-                            onManage={() => onManageContent?.(room.id)}
                             onEdit={() => onEditRoom(room)}
                             onMove={(dir) => onMoveRoom(room.id, dir)}
                             onDelete={() => onDeleteRoom(room.id)}
@@ -263,18 +271,13 @@ function SwipeableRoomCard({
                             <div className="w-9 h-9 bg-green-50 rounded-full flex items-center justify-center border border-green-200">
                                 <CheckCircle className="w-4.5 h-4.5 text-green-600"/>
                             </div>
-                        ) : room.isUnlocked ? (
-                            <motion.button
-                                whileTap={{scale: 0.9}}
-                                aria-label={`Start ${room.title}`}
-                                onClick={() => onRoomClick?.(room.title)}
-                                className="w-11 h-11 bg-[#091A7A] rounded-full flex items-center justify-center shadow-interactive"
-                            >
-                                <Play className="w-4 h-4 text-white"/>
-                            </motion.button>
-                        ) : (
+                        ) : !room.isUnlocked ? (
                             <div className="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
                                 <Lock className="w-4 h-4 text-gray-400"/>
+                            </div>
+                        ) : (
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[#091A7A]/30">
+                                <ChevronRight className="w-5 h-5"/>
                             </div>
                         )}
                     </div>
@@ -293,28 +296,28 @@ function SwipeableRoomCard({
                     </div>
                 )}
 
-                {/* Content manager entry: counts double as the affordance. */}
-                <motion.button
-                    whileTap={{scale: 0.97}}
-                    onClick={() => onManageContent?.(room.id)}
-                    className="mt-3 w-full flex items-center justify-between rounded-xl bg-[#F4F8FF] px-3.5 py-2.5 text-left transition-colors hover:bg-[#EAF4FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/30"
-                >
-                    <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
-                            <MapPin size={14} className="text-[#3D8FEF]"/>
-                            {lociCount} {lociCount === 1 ? "locus" : "loci"}
-                        </span>
-                        <span className="h-3 w-px bg-[#091A7A]/15"/>
-                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
-                            <HelpCircle size={14} className="text-[#3D8FEF]"/>
-                            {questionCount} {questionCount === 1 ? "question" : "questions"}
-                        </span>
-                    </div>
-                    <span className="flex items-center gap-1 text-[12px] font-semibold text-[#3D8FEF]">
-                        {lociCount + questionCount === 0 ? "Add" : "Manage"}
-                        <ChevronRight size={14}/>
+                {/* Stats: counts + mastery + a due nudge, at a glance. */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
+                        <MapPin size={14} className="text-[#3D8FEF]"/>
+                        {lociCount} {lociCount === 1 ? "locus" : "loci"}
                     </span>
-                </motion.button>
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
+                        <HelpCircle size={14} className="text-[#3D8FEF]"/>
+                        {questionCount} {questionCount === 1 ? "question" : "questions"}
+                    </span>
+                    {lociCount > 0 && (
+                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#091A7A]">
+                            <GraduationCap size={14} className="text-[#047857]"/>
+                            {knownCount}/{lociCount} mastered
+                        </span>
+                    )}
+                    {dueCount > 0 && knownCount < lociCount && (
+                        <span className="inline-flex items-center rounded-full bg-[#EAF4FF] px-2 py-0.5 text-[11px] font-bold text-[#3D8FEF]">
+                            {dueCount} due
+                        </span>
+                    )}
+                </div>
             </motion.div>
         </motion.div>
     );
@@ -324,14 +327,12 @@ function SwipeableRoomCard({
 function RoomCardMenu({
                           canMoveUp,
                           canMoveDown,
-                          onManage,
                           onEdit,
                           onMove,
                           onDelete,
                       }: {
     canMoveUp: boolean;
     canMoveDown: boolean;
-    onManage: () => void;
     onEdit: () => void;
     onMove: (direction: "up" | "down") => void;
     onDelete: () => void;
@@ -346,6 +347,7 @@ function RoomCardMenu({
                         whileTap={{scale: 0.9}}
                         aria-label="Room actions"
                         onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A] hover:bg-[#EAF4FF] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                     >
                         <MoreVertical size={16}/>
@@ -353,10 +355,6 @@ function RoomCardMenu({
                 }
             />
             <DropdownMenuContent align="end" className="w-[190px] rounded-[16px] p-1.5">
-                <DropdownMenuItem onClick={onManage} className={item}>
-                    <Layers size={16} className="text-[#091A7A]"/>
-                    Cards & questions
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={onEdit} className={item}>
                     <Edit2 size={16} className="text-[#091A7A]"/>
                     Edit room
@@ -403,7 +401,6 @@ export function PalaceDetailScreen({
                                        onRoomClick,
                                        onStudyRoom,
                                        onQuizClick,
-                                       onManageContent,
                                        onEditPalace,
                                    }: PalaceDetailScreenProps) {
     const {state, actions} = useProgressState();
@@ -471,7 +468,13 @@ export function PalaceDetailScreen({
                     >
                         <ArrowLeft className="w-5 h-5"/>
                     </button>
-                    <span className="text-[20px] flex-shrink-0">{palace.icon}</span>
+                    <PalaceCover
+                        icon={palace.icon}
+                        color={palace.color}
+                        image={palace.image}
+                        className="w-8 h-8 rounded-lg flex-shrink-0"
+                        iconClassName="text-[16px]"
+                    />
                     <h2 className="text-[16px] font-bold text-[#091A7A] truncate flex-1 min-w-0">
                         {palace.name}
                     </h2>
@@ -530,7 +533,13 @@ export function PalaceDetailScreen({
                         className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/50 mb-6"
                     >
                         <div className="flex items-start gap-4 mb-4">
-                            <div className="text-5xl">{palace.icon}</div>
+                            <PalaceCover
+                                icon={palace.icon}
+                                color={palace.color}
+                                image={palace.image}
+                                className="w-16 h-16 rounded-2xl flex-shrink-0 shadow-md"
+                                iconClassName="text-4xl"
+                            />
                             <div className="flex-1 min-w-0">
                                 <h1 className="text-main-heading text-[#091A7A] mb-2">
                                     {palace.name}
@@ -777,7 +786,6 @@ export function PalaceDetailScreen({
                                 onEditRoom={(r) => setRoomEditor({mode: "edit", room: r})}
                                 onDeleteRoom={(rId) => setDeleteRoomId(rId)}
                                 onRoomClick={onRoomClick}
-                                onManageContent={onManageContent}
                                 onMoveRoom={(rId, dir) => actions.moveRoom(palaceId, rId, dir)}
                             />
                         ))}

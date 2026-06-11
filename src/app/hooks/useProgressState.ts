@@ -100,7 +100,10 @@ export interface Palace {
     description: string;
     progress: number;
     icon: string;
+    /** A preset Tailwind gradient (`from-… to-…`) or a custom hex (`#7C3AED`). */
     color: string;
+    /** Optional custom cover photo, stored as a downscaled data URL. */
+    image?: string;
     roomsCompleted: number;
     totalRooms: number;
     category: string;

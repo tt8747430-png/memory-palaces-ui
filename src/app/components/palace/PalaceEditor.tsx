@@ -1,12 +1,16 @@
+import {type ChangeEvent, type ReactNode, useRef} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {motion} from "motion/react";
-import {ArrowLeft, Check, Save, Sparkles} from "lucide-react";
+import {ArrowLeft, Check, ImagePlus, Plus, Save, Sparkles, Trash2} from "lucide-react";
+import {toast} from "sonner";
 import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
+import {PalaceCover} from "../cards/PalaceCover";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {useKeyboardInset} from "../../hooks/useKeyboardInset";
+import {fileToCoverDataUrl} from "../../utils/image";
 import {
     categoryOptions,
     colorOptions,
@@ -55,9 +59,24 @@ export function PalaceEditor({
     const category = watch("category");
     const icon = watch("icon");
     const color = watch("color");
+    const image = watch("image");
     const keyboardInset = useKeyboardInset();
+    const fileRef = useRef<HTMLInputElement>(null);
 
     const isCreate = mode === "create";
+    const isCustomColor = !color?.startsWith("from-");
+
+    const handlePickImage = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (!file) return;
+        try {
+            const dataUrl = await fileToCoverDataUrl(file);
+            setValue("image", dataUrl, {shouldDirty: true});
+        } catch {
+            toast.error("Couldn't use that image. Try another.");
+        }
+    };
 
     return (
         <div className="size-full flex flex-col relative bg-[#091A7A]">
@@ -91,13 +110,19 @@ export function PalaceEditor({
                         {/* Live preview */}
                         <div className="px-6 flex items-center gap-4">
                             <motion.div
-                                key={`${icon}-${color}`}
+                                key={`${icon}-${color}-${image ? "img" : "no"}`}
                                 initial={{scale: 0.85, opacity: 0.5}}
                                 animate={{scale: 1, opacity: 1}}
                                 transition={{duration: 0.25, ease: [0.16, 1, 0.3, 1]}}
-                                className={`w-20 h-20 flex-shrink-0 rounded-3xl bg-gradient-to-br ${color} flex items-center justify-center text-[44px] shadow-2xl`}
+                                className="flex-shrink-0"
                             >
-                                <span>{icon}</span>
+                                <PalaceCover
+                                    icon={icon}
+                                    color={color}
+                                    image={image}
+                                    className="w-20 h-20 rounded-3xl shadow-2xl"
+                                    iconClassName="text-[44px]"
+                                />
                             </motion.div>
                             <div className="min-w-0">
                                 <p className="text-white/70 text-[11px] font-semibold uppercase tracking-[0.08em]">
@@ -184,6 +209,53 @@ export function PalaceEditor({
                         <section className="space-y-5">
                             <SectionTitle index={2} title="Appearance"/>
 
+                            <Field label="Cover photo (optional)">
+                                <input
+                                    ref={fileRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handlePickImage}
+                                />
+                                {image ? (
+                                    <div className="flex items-center gap-3">
+                                        <PalaceCover
+                                            icon={icon}
+                                            color={color}
+                                            image={image}
+                                            hideIcon
+                                            className="w-16 h-16 rounded-2xl flex-shrink-0 shadow-lg"
+                                        />
+                                        <div className="flex flex-1 gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => fileRef.current?.click()}
+                                                className="flex-1 py-3 rounded-2xl bg-white/20 text-white text-[14px] font-semibold active:bg-white/30 transition-colors"
+                                            >
+                                                Replace
+                                            </button>
+                                            <button
+                                                type="button"
+                                                aria-label="Remove cover photo"
+                                                onClick={() => setValue("image", undefined, {shouldDirty: true})}
+                                                className="w-12 flex-shrink-0 rounded-2xl bg-white/15 text-white flex items-center justify-center active:bg-white/25 transition-colors"
+                                            >
+                                                <Trash2 size={18}/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => fileRef.current?.click()}
+                                        className="w-full flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-dashed border-white/40 bg-white/10 text-white text-[14px] font-semibold active:bg-white/20 transition-colors"
+                                    >
+                                        <ImagePlus size={18}/>
+                                        Upload a photo
+                                    </button>
+                                )}
+                            </Field>
+
                             <Field label="Icon">
                                 <div
                                     className="grid grid-cols-6 gap-2.5"
@@ -236,6 +308,40 @@ export function PalaceEditor({
                                             )}
                                         </motion.button>
                                     ))}
+
+                                    {/* Free custom color */}
+                                    <label
+                                        aria-label="Custom color"
+                                        className={`relative aspect-square rounded-2xl shadow-md flex items-center justify-center cursor-pointer transition-transform ${
+                                            isCustomColor
+                                                ? "ring-2 ring-white ring-offset-2 ring-offset-[#4F8EFF]"
+                                                : ""
+                                        }`}
+                                        style={
+                                            isCustomColor
+                                                ? {
+                                                      backgroundImage: `linear-gradient(135deg, ${color}, color-mix(in oklab, ${color}, #000 22%))`,
+                                                  }
+                                                : {
+                                                      backgroundImage:
+                                                          "conic-gradient(from 180deg, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6, #ef4444)",
+                                                  }
+                                        }
+                                    >
+                                        <input
+                                            type="color"
+                                            value={isCustomColor && color.startsWith("#") ? color : "#7C3AED"}
+                                            onChange={(e) =>
+                                                setValue("color", e.target.value, {shouldDirty: true})
+                                            }
+                                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                        />
+                                        {isCustomColor ? (
+                                            <Check className="w-5 h-5 text-white drop-shadow"/>
+                                        ) : (
+                                            <Plus className="w-5 h-5 text-white drop-shadow"/>
+                                        )}
+                                    </label>
                                 </div>
                             </Field>
                         </section>
@@ -292,7 +398,7 @@ function Field({
     label: string;
     htmlFor?: string;
     error?: string;
-    children: React.ReactNode;
+    children: ReactNode;
 }) {
     return (
         <div>

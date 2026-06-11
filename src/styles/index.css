@@ -1,3 +1,31 @@
 @import "./fonts.css";
 @import "./tailwind.css";
 @import "./theme.css";
+
+/*
+ * Native-app feel: this is a phone-first PWA, so tapping or long-pressing
+ * chrome (buttons, cards, labels) should never select text or raise the iOS
+ * callout the way a web page does. Real text fields, and anything explicitly
+ * opted in with `data-selectable`, keep normal selection so users can still
+ * type and copy where it matters.
+ */
+html,
+body,
+#root {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+[data-selectable] {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+}

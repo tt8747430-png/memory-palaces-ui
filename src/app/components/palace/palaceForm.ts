@@ -14,7 +14,10 @@ export const palaceFormSchema = z.object({
     description: z.string().trim().max(280, "Keep the description under 280 characters"),
     category: z.string().min(1, "Pick a category"),
     icon: z.string(),
+    // A preset Tailwind gradient (`from-… to-…`) or a custom hex (`#7C3AED`).
     color: z.string(),
+    // Optional custom cover photo as a downscaled data URL.
+    image: z.string().optional(),
 });
 
 export type PalaceFormData = z.infer<typeof palaceFormSchema>;

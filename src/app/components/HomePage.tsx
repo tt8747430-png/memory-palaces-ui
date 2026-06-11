@@ -9,8 +9,7 @@ import {ProfilePage} from "./ProfilePage";
 import {SettingsScreen} from "./SettingsScreen";
 import {ProgressDebugPanel} from "./progress/ProgressDebugPanel";
 import {PalaceDetailScreen} from "./palace/PalaceDetailScreen";
-import {RoomContentScreen} from "./palace/RoomContentScreen";
-import {RoomOverviewScreen} from "./palace/RoomOverviewScreen";
+import {RoomDetailScreen} from "./palace/RoomDetailScreen";
 import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
 import {MatchGameScreen} from "./palace/MatchGameScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
@@ -91,10 +90,10 @@ export default function HomePage() {
 
     // Full-screen flows, overlaid on top of the tab shell.
     const [selectedPalaceId, setSelectedPalaceId] = useState<string | null>(null);
-    // A room opens to its set page ("overview"); from there it can switch into
-    // flashcards or the Match game without leaving the palace.
+    // A room opens to its detail page; from there it can switch into flashcards
+    // or the Match game without leaving the palace.
     const [roomView, setRoomView] = useState<
-        {roomTitle: string; mode: "overview" | "flashcards" | "match"} | null
+        {roomTitle: string; mode: "detail" | "flashcards" | "match"} | null
     >(null);
     const [showQuiz, setShowQuiz] = useState(false);
     // When set, the quiz is scoped to a single room rather than the whole palace.
@@ -104,9 +103,6 @@ export default function HomePage() {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
-    const [managingContent, setManagingContent] = useState<{roomId: string} | null>(
-        null,
-    );
 
     const unreadCount = state.notifications.filter((n) => !n.read).length;
     // Dev-only: floating debug widget with destructive controls. Gate on DEV so
@@ -140,7 +136,7 @@ export default function HomePage() {
     // Finishing a room returns to its set page (keep the room open) rather than
     // dropping the user back out to the palace or the list.
     const handleRoomComplete = () => {
-        setRoomView((v) => (v ? {...v, mode: "overview"} : null));
+        setRoomView((v) => (v ? {...v, mode: "detail"} : null));
     };
 
     const handleQuizComplete = (results: QuizResults) => {
@@ -244,26 +240,16 @@ export default function HomePage() {
         );
     }
 
-    if (managingContent && selectedPalaceId) {
-        return (
-            <RoomContentScreen
-                palaceId={selectedPalaceId}
-                roomId={managingContent.roomId}
-                onBack={() => setManagingContent(null)}
-            />
-        );
-    }
-
     if (roomView && selectedPalaceId) {
         const palaceTitle =
             state.palaces.find((p) => p.id === selectedPalaceId)?.name || "Memory Palace";
-        const backToOverview = () =>
-            setRoomView((v) => (v ? {...v, mode: "overview"} : null));
+        const backToDetail = () =>
+            setRoomView((v) => (v ? {...v, mode: "detail"} : null));
 
         if (roomView.mode === "flashcards") {
             return (
                 <RoomTrainingScreen
-                    onBack={backToOverview}
+                    onBack={backToDetail}
                     onComplete={handleRoomComplete}
                     palaceId={selectedPalaceId}
                     roomTitle={roomView.roomTitle}
@@ -275,8 +261,8 @@ export default function HomePage() {
         if (roomView.mode === "match") {
             return (
                 <MatchGameScreen
-                    onBack={backToOverview}
-                    onComplete={backToOverview}
+                    onBack={backToDetail}
+                    onComplete={backToDetail}
                     palaceId={selectedPalaceId}
                     roomTitle={roomView.roomTitle}
                     palaceTitle={palaceTitle}
@@ -285,7 +271,7 @@ export default function HomePage() {
         }
 
         return (
-            <RoomOverviewScreen
+            <RoomDetailScreen
                 palaceId={selectedPalaceId}
                 roomTitle={roomView.roomTitle}
                 palaceTitle={palaceTitle}
@@ -298,12 +284,6 @@ export default function HomePage() {
                     setQuizRoomTitle(roomView.roomTitle);
                     setShowQuiz(true);
                 }}
-                onManage={() => {
-                    const r = state.palaces
-                        .find((p) => p.id === selectedPalaceId)
-                        ?.rooms?.find((rm) => rm.title === roomView.roomTitle);
-                    if (r) setManagingContent({roomId: r.id});
-                }}
             />
         );
     }
@@ -313,13 +293,12 @@ export default function HomePage() {
             <PalaceDetailScreen
                 palaceId={selectedPalaceId}
                 onBack={() => setSelectedPalaceId(null)}
-                onRoomClick={(roomTitle) => setRoomView({roomTitle, mode: "overview"})}
+                onRoomClick={(roomTitle) => setRoomView({roomTitle, mode: "detail"})}
                 onStudyRoom={(roomTitle) => setRoomView({roomTitle, mode: "flashcards"})}
                 onQuizClick={() => {
                     setQuizRoomTitle(null);
                     setShowQuiz(true);
                 }}
-                onManageContent={(roomId) => setManagingContent({roomId})}
                 onEditPalace={() => setEditingPalaceId(selectedPalaceId)}
             />
         );

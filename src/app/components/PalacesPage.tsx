@@ -23,6 +23,7 @@ import {AmbientParticles} from "./AmbientParticles";
 import {Folder, Palace} from "../hooks/useProgressState";
 import {PalaceCard} from "./cards/PalaceCard";
 import {PalaceCardSkeleton} from "./cards/PalaceCardSkeleton";
+import {PalaceCover} from "./cards/PalaceCover";
 import {EmptyState} from "./ui/EmptyState";
 import {
   AlertDialog,
@@ -553,6 +554,8 @@ export function PalacesPage({
                                                 name={palace.name}
                                                 description={palace.description}
                                                 icon={palace.icon}
+                                                color={palace.color}
+                                                image={palace.image}
                                                 progress={palace.progress}
                                                 totalRooms={palace.totalRooms}
                                                 roomsCompleted={palace.roomsCompleted}
@@ -611,11 +614,13 @@ export function PalacesPage({
                                         onClick={() => onPalaceClick(palace.id)}
                                     >
                                         <div className="flex items-center gap-[16px] relative">
-                                            <div
-                                                className={`w-[72px] h-[72px] rounded-[16px] bg-gradient-to-br ${palace.color} flex items-center justify-center flex-shrink-0`}
-                                            >
-                                                <span className="text-[40px]">{palace.icon}</span>
-                                            </div>
+                                            <PalaceCover
+                                                icon={palace.icon}
+                                                color={palace.color}
+                                                image={palace.image}
+                                                className="w-[72px] h-[72px] rounded-[16px] flex-shrink-0"
+                                                iconClassName="text-[40px]"
+                                            />
 
                                             <PalaceActionsMenu
                                                 triggerClassName="absolute top-0 right-0 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md outline-none"

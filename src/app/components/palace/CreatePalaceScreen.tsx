@@ -32,6 +32,7 @@ export function CreatePalaceScreen({onBack, onSuccess}: CreatePalaceScreenProps)
             category: data.category,
             icon: data.icon,
             color: data.color,
+            image: data.image,
         });
         onSuccess(palaceId);
     };

@@ -68,6 +68,8 @@ export function PalacesOverview({
                                     name={palace.name}
                                     description={palace.description}
                                     icon={palace.icon}
+                                    color={palace.color}
+                                    image={palace.image}
                                     progress={palace.progress}
                                     totalRooms={palace.totalRooms}
                                     roomsCompleted={palace.roomsCompleted}

@@ -1,7 +1,6 @@
 import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
-import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
+import {AnimatePresence, motion} from "motion/react";
 import {
-    ArrowLeft,
     Check,
     CheckSquare,
     ChevronDown,
@@ -35,7 +34,6 @@ import {
     useProgressState,
 } from "../../hooks/useProgressState";
 import {srsStatus, type SrsStatus} from "../../utils/srs";
-import {useContainerScroll} from "../../hooks/useCollapsibleHeader";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {EmptyState} from "../ui/EmptyState";
@@ -67,10 +65,9 @@ import {
     parsePastedLoci,
 } from "../../utils/contentUtils";
 
-interface RoomContentScreenProps {
+interface RoomContentEditorProps {
     palaceId: string;
     roomId: string;
-    onBack: () => void;
 }
 
 type Tab = "loci" | "questions";
@@ -82,11 +79,16 @@ type Editor =
 const navyField =
     "w-full bg-[#F4F8FF] rounded-xl text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 outline-none border-2 border-transparent focus:border-[#4F8EFF]/60 focus:bg-white transition-all";
 
-export function RoomContentScreen({
+/**
+ * The room's content-management surface: Loci / Questions tabs with inline add,
+ * search, multi-select bulk actions, import/export, and full editors. Rendered
+ * as a section inside RoomDetailScreen (no page chrome of its own), so studying
+ * and editing a room live on one page.
+ */
+export function RoomContentEditor({
                                       palaceId,
                                       roomId,
-                                      onBack,
-                                  }: RoomContentScreenProps) {
+                                  }: RoomContentEditorProps) {
     const {state, actions} = useProgressState();
     const palace = state.palaces.find((p) => p.id === palaceId);
     const room = palace?.rooms?.find((r) => r.id === roomId);
@@ -106,14 +108,6 @@ export function RoomContentScreen({
     const [pasteText, setPasteText] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const quickFrontRef = useRef<HTMLInputElement>(null);
-
-    // Collapse the room title on scroll; tabs + search stay pinned below.
-    const {ref: listRef, scrollY} = useContainerScroll();
-    const reduceMotion = useReducedMotion();
-    const titleScale = useTransform(scrollY, [0, 70], reduceMotion ? [1, 1] : [1, 0.84]);
-    const titleMb = useTransform(scrollY, [0, 70], reduceMotion ? [16, 16] : [16, 6]);
-    const nameHeight = useTransform(scrollY, [0, 60], reduceMotion ? [18, 18] : [18, 0]);
-    const nameOpacity = useTransform(scrollY, [0, 40], reduceMotion ? [1, 1] : [1, 0]);
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);
@@ -144,8 +138,8 @@ export function RoomContentScreen({
 
     if (!palace || !room) {
         return (
-            <div className="h-full flex items-center justify-center bg-[#091A7A]">
-                <p className="text-white text-[15px]">Room not found</p>
+            <div className="py-10 text-center">
+                <p className="text-[15px] text-[#6B7280]">Room not found</p>
             </div>
         );
     }
@@ -338,84 +332,48 @@ export function RoomContentScreen({
     const hasItems = total > 0;
 
     return (
-        <div className="size-full flex flex-col relative bg-[#091A7A]">
-            <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-b from-[#091A7A] to-[#3D6FE0] relative flex-shrink-0 pb-5 pt-2">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.12),transparent_55%)]"/>
-                    <div className="h-safe-top relative z-10"/>
-                    <div className="px-5 relative z-10">
-                        <div className="flex items-center justify-between mb-4 mt-3">
-                            <motion.button
-                                whileTap={{scale: 0.92}}
-                                aria-label="Go back"
-                                onClick={onBack}
-                                className="w-11 h-11 bg-white/15 backdrop-blur-md rounded-full flex items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                            >
-                                <ArrowLeft className="w-5 h-5"/>
-                            </motion.button>
-
-                            <motion.button
-                                whileTap={{scale: 0.92}}
-                                onClick={() => setTransferOpen(true)}
-                                aria-label="Import or export"
-                                className="h-11 px-4 bg-white/15 backdrop-blur-md rounded-full flex items-center gap-2 text-white text-[14px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                            >
-                                <FileUp size={17} strokeWidth={2.4}/>
-                                Import / Export
-                            </motion.button>
-                        </div>
-
-                        <motion.div style={{marginBottom: titleMb}}>
-                            <motion.p
-                                style={{height: nameHeight, opacity: nameOpacity}}
-                                className="text-[13px] font-medium text-white/70 overflow-hidden"
-                            >
-                                {palace.name}
-                            </motion.p>
-                            <motion.h1
-                                style={{scale: titleScale}}
-                                className="text-[24px] font-bold text-white leading-tight text-balance origin-left"
-                            >
-                                {room.title}
-                            </motion.h1>
-                        </motion.div>
-
-                        {/* Tabs */}
-                        <Tabs
-                            value={tab}
-                            onValueChange={(v) => changeTab(v as Tab)}
-                            className="w-full"
+        <div>
+            {/* Toolbar: tabs + import/export */}
+            <div className="mb-3 flex items-center gap-2">
+                <Tabs
+                    value={tab}
+                    onValueChange={(v) => changeTab(v as Tab)}
+                    className="flex-1"
+                >
+                    <TabsList className="grid w-full grid-cols-2 bg-[#EAF4FF] rounded-[14px] p-1 h-11 group-data-horizontal/tabs:h-11">
+                        <TabsTrigger
+                            value="loci"
+                            className="rounded-[10px] text-[14px] font-semibold text-[#091A7A]/60 data-active:bg-white data-active:text-[#091A7A] data-active:shadow-sm"
                         >
-                            <TabsList className="grid w-full grid-cols-2 bg-white/15 backdrop-blur-md rounded-[14px] p-1 h-11 group-data-horizontal/tabs:h-11">
-                                <TabsTrigger
-                                    value="loci"
-                                    className="rounded-[10px] text-[14px] font-semibold text-white/75 hover:text-white data-active:bg-white data-active:text-[#091A7A]"
-                                >
-                                    <MapPin size={16} strokeWidth={2.4}/>
-                                    Loci
-                                    <span className="ml-1 text-[12px] opacity-70">
-                                        {loci.length}
-                                    </span>
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="questions"
-                                    className="rounded-[10px] text-[14px] font-semibold text-white/75 hover:text-white data-active:bg-white data-active:text-[#091A7A]"
-                                >
-                                    <HelpCircle size={16} strokeWidth={2.4}/>
-                                    Questions
-                                    <span className="ml-1 text-[12px] opacity-70">
-                                        {questions.length}
-                                    </span>
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                    </div>
-                </div>
+                            <MapPin size={16} strokeWidth={2.4}/>
+                            Loci
+                            <span className="ml-1 text-[12px] opacity-70">{loci.length}</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="questions"
+                            className="rounded-[10px] text-[14px] font-semibold text-[#091A7A]/60 data-active:bg-white data-active:text-[#091A7A] data-active:shadow-sm"
+                        >
+                            <HelpCircle size={16} strokeWidth={2.4}/>
+                            Questions
+                            <span className="ml-1 text-[12px] opacity-70">{questions.length}</span>
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <motion.button
+                    whileTap={{scale: 0.92}}
+                    onClick={() => setTransferOpen(true)}
+                    aria-label="Import or export"
+                    className="h-11 w-11 flex-shrink-0 rounded-xl bg-[#EAF4FF] text-[#091A7A] flex items-center justify-center active:bg-[#dcebff] outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                >
+                    <FileUp size={18} strokeWidth={2.4}/>
+                </motion.button>
+            </div>
 
+            {/* Inner content */}
+            <div>
                 {/* Search + selection controls */}
                 {hasItems && (
-                    <div className="flex-shrink-0 bg-[#EEF4FF] px-5 pt-4 pb-2">
+                    <div className="pt-1 pb-2">
                         {selectMode ? (
                             <div className="flex items-center justify-between gap-3">
                                 <button
@@ -475,7 +433,7 @@ export function RoomContentScreen({
                 )}
 
                 {/* List */}
-                <div ref={listRef} className="flex-1 overflow-y-auto scrollbar-hide bg-[#EEF4FF] px-5 pt-3 pb-[120px]">
+                <div className="pt-1">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={tab}
@@ -605,7 +563,7 @@ export function RoomContentScreen({
 
                 {/* Bottom bar: bulk actions in select mode, otherwise Add */}
                 {selectMode ? (
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-xl border-t border-[#091A7A]/[0.07] flex items-center gap-2">
+                    <div className="sticky bottom-3 z-20 mt-3 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-[#091A7A]/[0.08] shadow-[0_10px_28px_rgba(9,26,122,0.18)] flex items-center gap-2">
                         {tab === "loci" && (
                             <>
                                 <BulkButton
@@ -632,7 +590,7 @@ export function RoomContentScreen({
                     </div>
                 ) : (
                     hasItems && (
-                        <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#EEF4FF] via-[#EEF4FF]/95 to-transparent pointer-events-none">
+                        <div className="sticky bottom-3 z-20 mt-3 pointer-events-none">
                             <motion.button
                                 whileTap={{scale: 0.98}}
                                 onClick={() =>
