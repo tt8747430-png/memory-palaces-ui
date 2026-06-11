@@ -41,7 +41,7 @@ import {
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
 import {Tabs, TabsList, TabsTrigger} from "./ui/tabs";
-import {Dialog, DialogContent, DialogTitle} from "./ui/dialog";
+import {KeyboardSheet} from "./ui/KeyboardSheet";
 import {Input} from "./ui/input";
 
 const FOLDER_COLORS = [
@@ -732,89 +732,90 @@ export function PalacesPage({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* New folder */}
-            <Dialog open={showNewFolder} onOpenChange={(o) => {
-                if (!o) {
+            {/* New folder — keyboard-docked sheet */}
+            <KeyboardSheet
+                open={showNewFolder}
+                onClose={() => {
                     setShowNewFolder(false);
                     setNewFolderName("");
-                }
-            }}>
-                <DialogContent showCloseButton className="max-w-[360px] rounded-3xl p-6">
-                    <DialogTitle className="text-[18px] font-bold text-[#091A7A]">New folder</DialogTitle>
-                    <p className="text-[14px] text-[#475569] -mt-2">
-                        Group related palaces, like “Languages” or “Med school”.
-                    </p>
-                    <Input
-                        value={newFolderName}
-                        onChange={(e) => setNewFolderName(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleCreateFolder();
-                        }}
-                        placeholder="Folder name"
-                        autoFocus
-                        className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
-                    />
-                    <motion.button
-                        whileTap={{scale: newFolderName.trim() ? 0.98 : 1}}
+                }}
+                title="New folder"
+                footer={
+                    <button
                         onClick={handleCreateFolder}
                         disabled={!newFolderName.trim()}
                         className={`w-full py-3.5 rounded-2xl font-semibold transition-colors ${
                             newFolderName.trim()
-                                ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
+                                ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
                                 : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
                         }`}
                     >
                         Create folder
-                    </motion.button>
-                </DialogContent>
-            </Dialog>
+                    </button>
+                }
+            >
+                <p className="text-[14px] text-[#475569]">
+                    Group related palaces, like “Languages” or “Med school”.
+                </p>
+                <Input
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") handleCreateFolder();
+                    }}
+                    placeholder="Folder name"
+                    enterKeyHint="done"
+                    className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
+                />
+            </KeyboardSheet>
 
-            {/* Move to folder */}
-            <Dialog open={!!movingPalaceId} onOpenChange={(o) => !o && setMovingPalaceId(null)}>
-                <DialogContent showCloseButton className="max-w-[360px] rounded-3xl p-6">
-                    <DialogTitle className="text-[18px] font-bold text-[#091A7A]">
-                        Move to folder
-                    </DialogTitle>
-                    {movingPalace && (
-                        <p className="text-[14px] text-[#475569] -mt-2 line-clamp-1">
-                            {movingPalace.name}
-                        </p>
-                    )}
-                    <div className="space-y-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide -mx-1 px-1">
-                        <FolderOption
-                            label="None (Unfiled)"
-                            icon={<Sparkles size={16} className="text-[#94a3b8]"/>}
-                            selected={!movingPalace?.folderId}
-                            onClick={() => {
-                                if (movingPalaceId) onSetPalaceFolder(movingPalaceId, null);
-                                setMovingPalaceId(null);
-                            }}
-                        />
-                        {safeFolders.map((f) => (
-                            <FolderOption
-                                key={f.id}
-                                label={f.name}
-                                icon={<FolderIcon size={16} className="text-[#3D8FEF]"/>}
-                                selected={movingPalace?.folderId === f.id}
-                                onClick={() => {
-                                    if (movingPalaceId) onSetPalaceFolder(movingPalaceId, f.id);
-                                    setMovingPalaceId(null);
-                                }}
-                            />
-                        ))}
-                    </div>
+            {/* Move to folder — bottom sheet */}
+            <KeyboardSheet
+                open={!!movingPalaceId}
+                onClose={() => setMovingPalaceId(null)}
+                title="Move to folder"
+                footer={
                     <button
                         onClick={() => {
                             setMovingPalaceId(null);
                             setShowNewFolder(true);
                         }}
-                        className="w-full mt-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#EAF4FF] text-[#091A7A] font-semibold"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#EAF4FF] text-[#091A7A] font-semibold active:scale-[0.98] transition-transform"
                     >
                         <FolderPlus size={17}/>
                         New folder
                     </button>
-                </DialogContent>
-            </Dialog>
+                }
+            >
+                {movingPalace && (
+                    <p className="text-[14px] text-[#475569] line-clamp-1">
+                        {movingPalace.name}
+                    </p>
+                )}
+                <div className="space-y-1.5">
+                    <FolderOption
+                        label="None (Unfiled)"
+                        icon={<Sparkles size={16} className="text-[#94a3b8]"/>}
+                        selected={!movingPalace?.folderId}
+                        onClick={() => {
+                            if (movingPalaceId) onSetPalaceFolder(movingPalaceId, null);
+                            setMovingPalaceId(null);
+                        }}
+                    />
+                    {safeFolders.map((f) => (
+                        <FolderOption
+                            key={f.id}
+                            label={f.name}
+                            icon={<FolderIcon size={16} className="text-[#3D8FEF]"/>}
+                            selected={movingPalace?.folderId === f.id}
+                            onClick={() => {
+                                if (movingPalaceId) onSetPalaceFolder(movingPalaceId, f.id);
+                                setMovingPalaceId(null);
+                            }}
+                        />
+                    ))}
+                </div>
+            </KeyboardSheet>
         </div>
     );
 }

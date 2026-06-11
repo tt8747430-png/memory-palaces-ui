@@ -9,11 +9,9 @@ export const palaceFormSchema = z.object({
     name: z
         .string()
         .trim()
-        .min(3, "Name needs at least 3 characters"),
-    description: z
-        .string()
-        .trim()
-        .min(10, "Description needs at least 10 characters"),
+        .min(2, "Give your palace a name"),
+    // Optional: a palace only needs a name + category to exist.
+    description: z.string().trim().max(280, "Keep the description under 280 characters"),
     category: z.string().min(1, "Pick a category"),
     icon: z.string(),
     color: z.string(),

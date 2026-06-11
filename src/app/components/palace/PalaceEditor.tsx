@@ -44,7 +44,7 @@ export function PalaceEditor({
         setValue,
         watch,
         trigger,
-        formState: {errors},
+        formState: {errors, isValid},
     } = useForm<PalaceFormData>({
         resolver: zodResolver(palaceFormSchema),
         defaultValues: initial,
@@ -141,7 +141,7 @@ export function PalaceEditor({
                             </Field>
 
                             <Field
-                                label="Description"
+                                label="Description (optional)"
                                 htmlFor="palace-description"
                                 error={errors.description?.message}
                             >
@@ -244,14 +244,24 @@ export function PalaceEditor({
 
                 {/* Footer — lifts above the keyboard when a field is focused */}
                 <div
-                    className="px-6 pt-6 bg-white/95 backdrop-blur-xl shrink-0"
+                    className="px-6 pt-4 bg-white/95 backdrop-blur-xl shrink-0"
                     style={{paddingBottom: keyboardInset > 0 ? keyboardInset + 12 : 24}}
                 >
+                    {!isValid && (
+                        <p className="text-center text-[12px] font-medium text-[#64748b] mb-2">
+                            Add a name and pick a category to continue
+                        </p>
+                    )}
                     <motion.button
                         type="submit"
                         form={FORM_ID}
-                        whileTap={{scale: 0.98}}
-                        className="w-full py-4 bg-[#091A7A] text-white rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2"
+                        disabled={!isValid}
+                        whileTap={{scale: isValid ? 0.98 : 1}}
+                        className={`w-full py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
+                            isValid
+                                ? "bg-[#091A7A] text-white shadow-interactive"
+                                : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                        }`}
                     >
                         {isCreate ? <Sparkles size={20}/> : <Save size={20}/>}
                         <span>{isCreate ? "Create palace" : "Save changes"}</span>

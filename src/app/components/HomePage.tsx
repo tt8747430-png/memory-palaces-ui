@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {AnimatePresence} from "motion/react";
 import {toast} from "sonner";
 import {LiquidGlassBottomNav} from "./LiquidGlassBottomNav";
 import {SearchPopup} from "./SearchPopup";
@@ -364,12 +365,14 @@ export default function HomePage() {
 
             <SettingsScreen open={showSettings} onOpenChange={setShowSettings}/>
 
-            {showCreatePalace && (
-                <CreatePalaceScreen
-                    onBack={() => setShowCreatePalace(false)}
-                    onSuccess={handleCreatePalaceSuccess}
-                />
-            )}
+            <AnimatePresence>
+                {showCreatePalace && (
+                    <CreatePalaceScreen
+                        onBack={() => setShowCreatePalace(false)}
+                        onSuccess={handleCreatePalaceSuccess}
+                    />
+                )}
+            </AnimatePresence>
 
             {showDebug && <ProgressDebugPanel/>}
         </div>

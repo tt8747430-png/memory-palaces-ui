@@ -17,6 +17,13 @@ const Textarea = React.forwardRef<
         <textarea
             ref={ref}
             data-slot="textarea"
+            // Match the input: no autofill/contact bar or password-manager overlay.
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="sentences"
+            spellCheck={false}
+            data-1p-ignore=""
+            data-lpignore="true"
             onFocus={(e) => {
                 onFocus?.(e)
                 keepInViewOnFocus(e.currentTarget)

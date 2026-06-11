@@ -19,6 +19,16 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
                 ref={ref}
                 type={type}
                 data-slot="input"
+                // Suppress the iOS autofill / contact accessory bar and
+                // password-manager overlays — they steal space above the keyboard
+                // and we never want contact data in these fields. Callers can
+                // still override by passing their own autoComplete.
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="sentences"
+                spellCheck={false}
+                data-1p-ignore=""
+                data-lpignore="true"
                 onFocus={(e) => {
                     onFocus?.(e)
                     keepInViewOnFocus(e.currentTarget)
