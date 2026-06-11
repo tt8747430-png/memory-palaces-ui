@@ -21,4 +21,8 @@ later" comments unless explicitly requested.
 
 📋 Task:
 
-/impeccable polish and harden the inputs and the collapsible headers. and the settings header still doesnt work. polish dialogs and other inputs.
+/impeccable craft can you add more swipe functions and posibilities like you did in the palaces details for the rooms. and other features like swipes and gestures and press hold posibilities and other
+
+/impeccable craft and this is for the flashcards refactorign and flashcards settings page
+
+/Users/kristianbraila/Downloads/IMG_1781.PNG /Users/kristianbraila/Downloads/IMG_1782.PNG /Users/kristianbraila/Downloads/IMG_1783.PNG /Users/kristianbraila/Downloads/IMG_1784.PNG /Users/kristianbraila/Downloads/IMG_1785.PNG

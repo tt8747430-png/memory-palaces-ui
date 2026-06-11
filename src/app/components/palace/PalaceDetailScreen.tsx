@@ -62,7 +62,6 @@ import {
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
-import {Drawer} from "vaul";
 
 interface PalaceDetailScreenProps {
     palaceId: string;
@@ -1020,22 +1019,38 @@ function PalaceSettingsSheet({
     onDelete: () => void;
 }) {
     return (
-        <Drawer.Root open={open} onOpenChange={onOpenChange}>
-            <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
-                <Drawer.Content
-                    aria-describedby={undefined}
-                    className="bg-[#EEF4FF] flex flex-col rounded-t-[20px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none max-h-[88%]"
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    initial={{x: "100%"}}
+                    animate={{x: 0}}
+                    exit={{x: "100%"}}
+                    transition={{ease: [0.22, 1, 0.36, 1], duration: 0.35}}
+                    className="fixed inset-0 z-[100] bg-[#EEF4FF] flex flex-col shadow-[-20px_0_40px_rgba(9,26,122,0.10)]"
                 >
-                    <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-[#091A7A]/15 mt-3 mb-1"/>
-                    <Drawer.Title className="px-5 pt-3 pb-1 text-[20px] font-bold text-[#091A7A]">
-                        Palace settings
-                    </Drawer.Title>
-                    <p className="px-5 pb-4 text-[13px] text-[#475569] line-clamp-1">
-                        {palace.name}
-                    </p>
+                    {/* Header */}
+                    <div className="flex-shrink-0 bg-white border-b border-[#091A7A]/[0.06]">
+                        <div className="h-safe-top"/>
+                        <div className="flex items-center gap-2 px-3 py-2.5">
+                            <button
+                                onClick={() => onOpenChange(false)}
+                                aria-label="Go back"
+                                className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[#091A7A] active:scale-95 transition-transform"
+                            >
+                                <ArrowLeft className="w-5 h-5"/>
+                            </button>
+                            <div className="min-w-0">
+                                <h1 className="text-[18px] font-bold text-[#091A7A] leading-tight">
+                                    Palace settings
+                                </h1>
+                                <p className="text-[12px] text-[#64748b] truncate">
+                                    {palace.name}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-8 space-y-5">
+                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5 space-y-5 pb-[max(env(safe-area-inset-bottom),2rem)]">
                         <div>
                             <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
                                 Palace
@@ -1169,9 +1184,9 @@ function PalaceSettingsSheet({
                             />
                         </SettingsGroup>
                     </div>
-                </Drawer.Content>
-            </Drawer.Portal>
-        </Drawer.Root>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }
 

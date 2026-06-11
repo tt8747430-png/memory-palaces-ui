@@ -169,7 +169,7 @@ export function NotificationsScreen({
                                 <ArrowLeft className="w-5 h-5"/>
                             </motion.button>
                             <div className="min-w-0">
-                                <h1 className="text-[26px] font-bold text-[#091A7A] leading-tight tracking-tight">
+                                <h1 className="text-[23px] font-bold text-[#091A7A] leading-tight tracking-tight truncate">
                                     Notifications
                                 </h1>
                                 <p className="text-[12px] text-[#475569]">
@@ -181,28 +181,27 @@ export function NotificationsScreen({
                         </div>
 
                         {notifications.length > 0 && (
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <motion.button
                                     whileTap={{scale: 0.94}}
                                     onClick={onMarkAllRead}
                                     disabled={unreadCount === 0}
                                     aria-label="Mark all as read"
-                                    className={`h-11 px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-semibold border transition-colors ${
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
                                         unreadCount === 0
                                             ? "bg-white/50 border-transparent text-[#94a3b8]"
-                                            : "bg-white border-[#091A7A]/12 text-[#091A7A]"
+                                            : "bg-white border-[#091A7A]/12 text-[#091A7A] shadow-sm"
                                     }`}
                                 >
-                                    <CheckCheck className="w-4 h-4"/>
-                                    Read
+                                    <CheckCheck className="w-[18px] h-[18px]"/>
                                 </motion.button>
                                 <motion.button
                                     whileTap={{scale: 0.94}}
                                     onClick={onClear}
                                     aria-label="Clear all notifications"
-                                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white border border-[#091A7A]/12 text-[#B91C1C]"
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[#091A7A]/12 text-[#B91C1C] shadow-sm"
                                 >
-                                    <Trash2 className="w-4 h-4"/>
+                                    <Trash2 className="w-[18px] h-[18px]"/>
                                 </motion.button>
                             </div>
                         )}

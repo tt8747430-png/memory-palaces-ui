@@ -5,9 +5,12 @@ import {
     Check,
     CheckSquare,
     ChevronDown,
+    ChevronRight,
     ChevronUp,
+    ClipboardPaste,
     Copy,
-    DownloadCloud,
+    FileJson,
+    FileSpreadsheet,
     FileUp,
     Flag,
     GraduationCap,
@@ -61,6 +64,7 @@ import {
     exportQuestionsCSV,
     exportRoomContentJSON,
     importContentFile,
+    parsePastedLoci,
 } from "../../utils/contentUtils";
 
 interface RoomContentScreenProps {
@@ -97,6 +101,9 @@ export function RoomContentScreen({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [quickFront, setQuickFront] = useState("");
     const [quickBack, setQuickBack] = useState("");
+    const [transferOpen, setTransferOpen] = useState(false);
+    const [pasteOpen, setPasteOpen] = useState(false);
+    const [pasteText, setPasteText] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const quickFrontRef = useRef<HTMLInputElement>(null);
 
@@ -143,7 +150,68 @@ export function RoomContentScreen({
         );
     }
 
-    const handleImportClick = () => fileInputRef.current?.click();
+    // Open the OS file picker, scoped to the format the user chose.
+    const importFile = (accept: string) => {
+        setTransferOpen(false);
+        const input = fileInputRef.current;
+        if (input) {
+            input.accept = accept;
+            input.click();
+        }
+    };
+
+    const openPaste = () => {
+        setTransferOpen(false);
+        setPasteOpen(true);
+    };
+
+    const applyPaste = () => {
+        const parsed = parsePastedLoci(pasteText);
+        if (parsed.length === 0) {
+            toast.warning("Add lines like “front, back”");
+            return;
+        }
+        const {loci: n} = actions.importRoomContent(
+            palaceId,
+            roomId,
+            {loci: parsed},
+            "merge",
+        );
+        toast.success(`Added ${n} ${n === 1 ? "locus" : "loci"}`);
+        setPasteText("");
+        setPasteOpen(false);
+        setTab("loci");
+    };
+
+    const exportAll = () => {
+        if (loci.length === 0 && questions.length === 0) {
+            toast.warning("Nothing to export yet");
+            return;
+        }
+        exportRoomContentJSON(room!.title, {loci, questions});
+        toast.success("Exported as JSON");
+        setTransferOpen(false);
+    };
+
+    const exportLoci = () => {
+        if (loci.length === 0) {
+            toast.warning("No loci to export");
+            return;
+        }
+        exportLociCSV(room!.title, loci);
+        toast.success("Exported loci as CSV");
+        setTransferOpen(false);
+    };
+
+    const exportQuestions = () => {
+        if (questions.length === 0) {
+            toast.warning("No questions to export");
+            return;
+        }
+        exportQuestionsCSV(room!.title, questions);
+        toast.success("Exported questions as CSV");
+        setTransferOpen(false);
+    };
 
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -170,32 +238,6 @@ export function RoomContentScreen({
             }
         }
         if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const handleExportJSON = () => {
-        if (loci.length === 0 && questions.length === 0) {
-            toast.warning("Nothing to export yet");
-            return;
-        }
-        exportRoomContentJSON(room.title, {loci, questions});
-        toast.success("Exported as JSON");
-    };
-
-    const handleExportCSV = () => {
-        if (tab === "loci") {
-            if (loci.length === 0) {
-                toast.warning("No loci to export");
-                return;
-            }
-            exportLociCSV(room.title, loci);
-        } else {
-            if (questions.length === 0) {
-                toast.warning("No questions to export");
-                return;
-            }
-            exportQuestionsCSV(room.title, questions);
-        }
-        toast.success("Exported as CSV");
     };
 
     const confirmDelete = () => {
@@ -313,16 +355,15 @@ export function RoomContentScreen({
                                 <ArrowLeft className="w-5 h-5"/>
                             </motion.button>
 
-                            <ContentMenu
-                                onImport={handleImportClick}
-                                onExportJSON={handleExportJSON}
-                                onExportCSV={handleExportCSV}
-                                csvLabel={
-                                    tab === "loci"
-                                        ? "Export loci (CSV)"
-                                        : "Export questions (CSV)"
-                                }
-                            />
+                            <motion.button
+                                whileTap={{scale: 0.92}}
+                                onClick={() => setTransferOpen(true)}
+                                aria-label="Import or export"
+                                className="h-11 px-4 bg-white/15 backdrop-blur-md rounded-full flex items-center gap-2 text-white text-[14px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                            >
+                                <FileUp size={17} strokeWidth={2.4}/>
+                                Import / Export
+                            </motion.button>
                         </div>
 
                         <motion.div style={{marginBottom: titleMb}}>
@@ -468,7 +509,7 @@ export function RoomContentScreen({
                                                 onAdd={() =>
                                                     setEditor({kind: "locus", locus: null})
                                                 }
-                                                onImport={handleImportClick}
+                                                onImport={() => setTransferOpen(true)}
                                             />
                                         }
                                     />
@@ -523,7 +564,7 @@ export function RoomContentScreen({
                                                 onAdd={() =>
                                                     setEditor({kind: "question", question: null})
                                                 }
-                                                onImport={handleImportClick}
+                                                onImport={() => setTransferOpen(true)}
                                             />
                                         }
                                     />
@@ -691,68 +732,198 @@ export function RoomContentScreen({
                 accept=".json,.csv"
                 onChange={handleFileChange}
             />
+
+            <TransferSheet
+                open={transferOpen}
+                onClose={() => setTransferOpen(false)}
+                lociCount={loci.length}
+                questionCount={questions.length}
+                onImportJson={() => importFile(".json")}
+                onImportCsv={() => importFile(".csv")}
+                onPaste={openPaste}
+                onExportAll={exportAll}
+                onExportLoci={exportLoci}
+                onExportQuestions={exportQuestions}
+            />
+
+            <PasteSheet
+                open={pasteOpen}
+                onClose={() => setPasteOpen(false)}
+                value={pasteText}
+                onChange={setPasteText}
+                onApply={applyPaste}
+            />
         </div>
     );
 }
 
-// --- Header menu ------------------------------------------------------------
+// --- Import / export sheets -------------------------------------------------
 
-function ContentMenu({
-                         onImport,
-                         onExportJSON,
-                         onExportCSV,
-                         csvLabel,
+function TransferRow({
+                         icon,
+                         tint,
+                         title,
+                         sub,
+                         onClick,
                      }: {
-    onImport: () => void;
-    onExportJSON: () => void;
-    onExportCSV: () => void;
-    csvLabel: string;
+    icon: React.ReactNode;
+    tint: string;
+    title: string;
+    sub: string;
+    onClick: () => void;
 }) {
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger
-                render={
-                    <motion.button
-                        whileTap={{scale: 0.92}}
-                        aria-label="Import or export"
-                        className="h-11 px-4 bg-white/15 backdrop-blur-md rounded-full flex items-center gap-2 text-white text-[14px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                    >
-                        <FileUp size={17} strokeWidth={2.4}/>
-                        Import / Export
-                    </motion.button>
-                }
+        <button
+            onClick={onClick}
+            className="w-full flex items-center gap-3.5 rounded-2xl bg-[#F4F8FF] p-3 text-left active:bg-[#EAF4FF] transition-colors"
+        >
+            <div
+                className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${tint}`}
+            >
+                {icon}
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-[#091A7A]">{title}</p>
+                <p className="text-[13px] text-[#64748b] leading-snug">{sub}</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-[#94a3b8] flex-shrink-0"/>
+        </button>
+    );
+}
+
+function TransferSheet({
+                           open,
+                           onClose,
+                           lociCount,
+                           questionCount,
+                           onImportJson,
+                           onImportCsv,
+                           onPaste,
+                           onExportAll,
+                           onExportLoci,
+                           onExportQuestions,
+                       }: {
+    open: boolean;
+    onClose: () => void;
+    lociCount: number;
+    questionCount: number;
+    onImportJson: () => void;
+    onImportCsv: () => void;
+    onPaste: () => void;
+    onExportAll: () => void;
+    onExportLoci: () => void;
+    onExportQuestions: () => void;
+}) {
+    const hasContent = lociCount > 0 || questionCount > 0;
+    return (
+        <KeyboardSheet open={open} onClose={onClose} title="Import & export">
+            <div className="space-y-2.5">
+                <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+                    Import from
+                </p>
+                <TransferRow
+                    icon={<FileJson size={20} className="text-[#3D8FEF]"/>}
+                    tint="bg-[#E6F0FF]"
+                    title="JSON file"
+                    sub="A Mindscape export (.json)"
+                    onClick={onImportJson}
+                />
+                <TransferRow
+                    icon={<FileSpreadsheet size={20} className="text-[#0E9F6E]"/>}
+                    tint="bg-[#E3F6EE]"
+                    title="CSV file"
+                    sub="Loci or questions from a spreadsheet"
+                    onClick={onImportCsv}
+                />
+                <TransferRow
+                    icon={<ClipboardPaste size={20} className="text-[#B8860B]"/>}
+                    tint="bg-[#FFF4D6]"
+                    title="Paste text"
+                    sub="One card per line: front, back"
+                    onClick={onPaste}
+                />
+            </div>
+
+            <div className="space-y-2.5">
+                <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+                    Export this room
+                </p>
+                <TransferRow
+                    icon={<FileJson size={20} className="text-[#091A7A]"/>}
+                    tint="bg-[#EAF0FF]"
+                    title="All content"
+                    sub={
+                        hasContent
+                            ? `${lociCount} loci · ${questionCount} questions as JSON`
+                            : "Nothing to export yet"
+                    }
+                    onClick={onExportAll}
+                />
+                <TransferRow
+                    icon={<MapPin size={20} className="text-[#3D8FEF]"/>}
+                    tint="bg-[#E6F0FF]"
+                    title="Loci"
+                    sub="As a CSV file"
+                    onClick={onExportLoci}
+                />
+                <TransferRow
+                    icon={<HelpCircle size={20} className="text-[#091A7A]"/>}
+                    tint="bg-[#EAF0FF]"
+                    title="Questions"
+                    sub="As a CSV file"
+                    onClick={onExportQuestions}
+                />
+            </div>
+        </KeyboardSheet>
+    );
+}
+
+function PasteSheet({
+                        open,
+                        onClose,
+                        value,
+                        onChange,
+                        onApply,
+                    }: {
+    open: boolean;
+    onClose: () => void;
+    value: string;
+    onChange: (v: string) => void;
+    onApply: () => void;
+}) {
+    const count = parsePastedLoci(value).length;
+    return (
+        <KeyboardSheet
+            open={open}
+            onClose={onClose}
+            title="Paste cards"
+            footer={
+                <button
+                    onClick={onApply}
+                    disabled={count === 0}
+                    className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
+                        count > 0
+                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
+                            : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                    }`}
+                >
+                    <Plus size={18}/>
+                    {count > 0 ? `Add ${count} ${count === 1 ? "card" : "cards"}` : "Add cards"}
+                </button>
+            }
+        >
+            <p className="text-[13px] text-[#475569] leading-relaxed">
+                Paste one card per line. Separate the front and back with a comma,
+                semicolon, or tab.
+            </p>
+            <Textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={"Zeus, King of the gods\nPoseidon, God of the sea"}
+                rows={7}
+                className={`${navyField} px-4 py-3 resize-none font-mono text-[13px]`}
             />
-            <DropdownMenuContent align="end" className="w-[220px] rounded-[16px] p-1.5">
-                <DropdownMenuItem
-                    onClick={onImport}
-                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                >
-                    <UploadCloud size={17} className="text-[#091A7A]"/>
-                    <span className="text-[14px] font-medium text-[#2C2C2C]">
-                        Import file (.json / .csv)
-                    </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator/>
-                <DropdownMenuItem
-                    onClick={onExportJSON}
-                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                >
-                    <DownloadCloud size={17} className="text-[#091A7A]"/>
-                    <span className="text-[14px] font-medium text-[#2C2C2C]">
-                        Export all (JSON)
-                    </span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={onExportCSV}
-                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
-                >
-                    <DownloadCloud size={17} className="text-[#091A7A]"/>
-                    <span className="text-[14px] font-medium text-[#2C2C2C]">
-                        {csvLabel}
-                    </span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        </KeyboardSheet>
     );
 }
 

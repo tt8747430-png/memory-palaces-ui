@@ -27,14 +27,6 @@ import {
     useProgressState,
 } from "../../hooks/useProgressState";
 import {type Grade, isDue, nextIntervalLabel} from "../../utils/srs";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import {RiveAnimation} from "../ui/RiveAnimation";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Input} from "../ui/input";
@@ -136,6 +128,7 @@ export function RoomTrainingScreen({
     const [peek, setPeek] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [editing, setEditing] = useState(false);
+    const [optionsOpen, setOptionsOpen] = useState(false);
 
     // In-study editing only works for real authored loci, not the sample deck.
     const canEditCard = !usingSample && !!roomId && !!palaceId;
@@ -314,22 +307,14 @@ export function RoomTrainingScreen({
                         </p>
                     </div>
 
-                    <StudyOptionsMenu
-                        mode={mode}
-                        direction={direction}
-                        order={order}
-                        onMode={switchMode}
-                        onDirection={(d) => {
-                            setDirection(d);
-                            resetCardView();
-                        }}
-                        onOrder={(o) => {
-                            setOrder(o);
-                            if (mode === "browse") restartSession(o);
-                        }}
-                        onRestart={() => restartSession()}
-                        onFinish={finish}
-                    />
+                    <motion.button
+                        whileTap={{scale: 0.92}}
+                        onClick={() => setOptionsOpen(true)}
+                        aria-label="Study options"
+                        className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 text-[#091A7A]"
+                    >
+                        <MoreHorizontal className="w-5 h-5"/>
+                    </motion.button>
                 </div>
 
                 {/* Mode + progress */}
@@ -498,6 +483,25 @@ export function RoomTrainingScreen({
                 />
             )}
 
+            <StudyOptionsSheet
+                open={optionsOpen}
+                onClose={() => setOptionsOpen(false)}
+                mode={mode}
+                direction={direction}
+                order={order}
+                onMode={switchMode}
+                onDirection={(d) => {
+                    setDirection(d);
+                    resetCardView();
+                }}
+                onOrder={(o) => {
+                    setOrder(o);
+                    if (mode === "browse") restartSession(o);
+                }}
+                onRestart={() => restartSession()}
+                onFinish={finish}
+            />
+
             {/* Footer: grading (review) or navigation (browse) */}
             <div className="px-6 pb-7 pt-2">
                 {mode === "review" ? (
@@ -623,9 +627,44 @@ function SuccessOverlay() {
     );
 }
 
-// --- Study options menu (replaces the old decorative brain icon) ------------
+// --- Study options sheet ----------------------------------------------------
+// A bottom sheet rather than a dropdown: dropdowns were unreliable to open on
+// touch here, and full-width segmented controls are far easier to hit on a phone.
 
-function StudyOptionsMenu({
+function SegmentedControl<T extends string>({
+                                                value,
+                                                options,
+                                                onChange,
+                                            }: {
+    value: T;
+    options: {value: T; label: string}[];
+    onChange: (value: T) => void;
+}) {
+    return (
+        <div className="flex items-center gap-1 rounded-2xl bg-[#F1F5F9] p-1">
+            {options.map((o) => {
+                const active = o.value === value;
+                return (
+                    <button
+                        key={o.value}
+                        onClick={() => onChange(o.value)}
+                        className={`flex-1 rounded-xl px-2 py-2.5 text-[13px] font-semibold transition-colors ${
+                            active
+                                ? "bg-white text-[#091A7A] shadow-sm"
+                                : "text-[#64748b] active:text-[#091A7A]"
+                        }`}
+                    >
+                        {o.label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+function StudyOptionsSheet({
+                              open,
+                              onClose,
                               mode,
                               direction,
                               order,
@@ -635,6 +674,8 @@ function StudyOptionsMenu({
                               onRestart,
                               onFinish,
                           }: {
+    open: boolean;
+    onClose: () => void;
     mode: Mode;
     direction: StudyDirection;
     order: CardOrder;
@@ -644,88 +685,88 @@ function StudyOptionsMenu({
     onRestart: () => void;
     onFinish: () => void;
 }) {
-    const itemBase =
-        "rounded-[10px] px-3 py-2 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]";
-    const dot = (active: boolean) =>
-        active ? <span className="ml-auto w-2 h-2 rounded-full bg-[#091A7A]"/> : null;
-
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger
-                render={
-                    <motion.button
-                        whileTap={{scale: 0.92}}
-                        aria-label="Study options"
-                        className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 text-[#091A7A] outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+        <KeyboardSheet
+            open={open}
+            onClose={onClose}
+            title="Study options"
+            footer={
+                <div className="flex gap-2.5">
+                    <button
+                        onClick={() => {
+                            onRestart();
+                            onClose();
+                        }}
+                        className="flex-1 py-3.5 rounded-2xl font-semibold bg-[#EAF4FF] text-[#091A7A] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                     >
-                        <MoreHorizontal className="w-5 h-5"/>
-                    </motion.button>
-                }
-            />
-            <DropdownMenuContent align="end" className="w-[230px] rounded-[16px] p-1.5">
-                <DropdownMenuLabel className="px-3 pt-1.5 text-[11px] uppercase tracking-wider text-[#64748b]">
+                        <RotateCcw size={18}/>
+                        Restart
+                    </button>
+                    <button
+                        onClick={() => {
+                            onFinish();
+                            onClose();
+                        }}
+                        className="flex-1 py-3.5 rounded-2xl font-semibold bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                    >
+                        <Check size={18}/>
+                        Finish
+                    </button>
+                </div>
+            }
+        >
+            <div>
+                <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
+                    <Zap size={15} className="text-[#091A7A]"/>
                     Mode
-                </DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => onMode("review")} className={itemBase}>
-                    <Zap size={16} className="text-[#091A7A]"/>
-                    Spaced review
-                    {dot(mode === "review")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onMode("browse")} className={itemBase}>
-                    <BookOpen size={16} className="text-[#091A7A]"/>
-                    Browse cards
-                    {dot(mode === "browse")}
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator/>
-                <DropdownMenuLabel className="px-3 text-[11px] uppercase tracking-wider text-[#64748b]">
+                </p>
+                <SegmentedControl
+                    value={mode}
+                    options={[
+                        {value: "review", label: "Spaced review"},
+                        {value: "browse", label: "Browse"},
+                    ]}
+                    onChange={onMode}
+                />
+            </div>
+            <div>
+                <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
+                    <ArrowLeftRight size={15} className="text-[#091A7A]"/>
                     Direction
-                </DropdownMenuLabel>
-                <DropdownMenuItem
-                    onClick={() => onDirection(direction === "front" ? "back" : "front")}
-                    className={itemBase}
-                >
-                    <ArrowLeftRight size={16} className="text-[#091A7A]"/>
-                    {direction === "front" ? "Front first" : "Back first"}
-                </DropdownMenuItem>
-
-                {mode === "browse" && (
-                    <>
-                        <DropdownMenuSeparator/>
-                        <DropdownMenuLabel className="px-3 text-[11px] uppercase tracking-wider text-[#64748b]">
-                            Order
-                        </DropdownMenuLabel>
-                        {(
-                            [
-                                {value: "inOrder", label: "In order"},
-                                {value: "shuffle", label: "Shuffle"},
-                                {value: "reverse", label: "Reverse"},
-                            ] as {value: CardOrder; label: string}[]
-                        ).map((o) => (
-                            <DropdownMenuItem
-                                key={o.value}
-                                onClick={() => onOrder(o.value)}
-                                className={itemBase}
-                            >
-                                <Shuffle size={16} className="text-[#091A7A]"/>
-                                {o.label}
-                                {dot(order === o.value)}
-                            </DropdownMenuItem>
-                        ))}
-                    </>
-                )}
-
-                <DropdownMenuSeparator/>
-                <DropdownMenuItem onClick={onRestart} className={itemBase}>
-                    <RotateCcw size={16} className="text-[#091A7A]"/>
-                    Restart session
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onFinish} className={itemBase}>
-                    <Check size={16} className="text-[#091A7A]"/>
-                    Finish &amp; earn XP
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                </p>
+                <SegmentedControl
+                    value={direction}
+                    options={[
+                        {value: "front", label: "Front first"},
+                        {value: "back", label: "Back first"},
+                    ]}
+                    onChange={onDirection}
+                />
+            </div>
+            {mode === "browse" && (
+                <div>
+                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
+                        <Shuffle size={15} className="text-[#091A7A]"/>
+                        Card order
+                    </p>
+                    <SegmentedControl
+                        value={order}
+                        options={[
+                            {value: "inOrder", label: "In order"},
+                            {value: "shuffle", label: "Shuffle"},
+                            {value: "reverse", label: "Reverse"},
+                        ]}
+                        onChange={onOrder}
+                    />
+                </div>
+            )}
+            <p className="text-[12px] text-[#64748b] flex items-center gap-1.5 pt-1">
+                <BookOpen size={14}/>
+                {mode === "review"
+                    ? "Spaced review schedules each card by how well you recall it."
+                    : "Browse flips through every card in order, your way."}
+            </p>
+        </KeyboardSheet>
     );
 }
 

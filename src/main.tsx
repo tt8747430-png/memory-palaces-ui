@@ -4,6 +4,7 @@ import App from "./app/App.tsx";
 import {TooltipProvider} from "@/app/components/ui/tooltip";
 import {Toaster} from "@/app/components/ui/sonner";
 import {SmoothScrollProvider} from "@/app/components/ui/SmoothScrollProvider";
+import {initNativeShell} from "./app/native";
 import "./styles/index.css";
 
 // iOS Safari still honours pinch-zoom even with `user-scalable=no`. Swallow the
@@ -12,6 +13,9 @@ import "./styles/index.css";
 for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
     document.addEventListener(type, (e) => e.preventDefault(), {passive: false});
 }
+
+// Native (Capacitor) shell tweaks; no-op in the browser / PWA.
+void initNativeShell();
 
 createRoot(document.getElementById("root")!).render(
     // reducedMotion="user" makes every Motion animation honor the OS

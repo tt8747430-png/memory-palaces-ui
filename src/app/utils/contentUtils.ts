@@ -287,6 +287,27 @@ function contentFromCsv(rows: string[][]): RoomContent {
     return {loci, questions: []};
 }
 
+/**
+ * Parse pasted text into loci. Each non-empty line is one card, split on the
+ * first tab, semicolon, or comma into `front` then `back`. Lines without a
+ * separator (or an empty side) are skipped.
+ */
+export function parsePastedLoci(text: string): Locus[] {
+    return text
+        .split(/\r?\n/)
+        .map((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) return null;
+            const m = trimmed.match(/^(.*?)[\t;,](.*)$/);
+            if (!m) return null;
+            const front = m[1].trim();
+            const back = m[2].trim();
+            if (!front || !back) return null;
+            return {id: placeholderId, front, back} as Locus;
+        })
+        .filter((l): l is Locus => l !== null);
+}
+
 export class ContentImportError extends Error {}
 
 /**
