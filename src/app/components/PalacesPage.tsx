@@ -1,5 +1,5 @@
 import {useMemo, useRef, useState} from "react";
-import {motion, useScroll, useTransform} from "motion/react";
+import {motion, useReducedMotion, useScroll, useTransform} from "motion/react";
 import {
   Archive,
   ArchiveRestore,
@@ -197,11 +197,12 @@ export function PalacesPage({
     // view-controls row folds away, while search + create stay pinned.
     const scrollRef = useRef<HTMLDivElement>(null);
     const {scrollY} = useScroll({container: scrollRef});
-    const titleScale = useTransform(scrollY, [0, 80], [1, 0.66]);
-    const titleY = useTransform(scrollY, [0, 80], [0, 2]);
-    const controlsHeight = useTransform(scrollY, [0, 80], [56, 0]);
-    const controlsOpacity = useTransform(scrollY, [0, 48], [1, 0]);
-    const headerPadBottom = useTransform(scrollY, [0, 80], [20, 12]);
+    const reduce = useReducedMotion();
+    const titleScale = useTransform(scrollY, [0, 80], reduce ? [1, 1] : [1, 0.66]);
+    const titleY = useTransform(scrollY, [0, 80], reduce ? [0, 0] : [0, 2]);
+    const controlsHeight = useTransform(scrollY, [0, 80], reduce ? [56, 56] : [56, 0]);
+    const controlsOpacity = useTransform(scrollY, [0, 48], reduce ? [1, 1] : [1, 0]);
+    const headerPadBottom = useTransform(scrollY, [0, 80], reduce ? [20, 20] : [20, 12]);
 
     const safeFolders = folders ?? [];
     const archivedCount = palaces.filter((p) => p.archived).length;

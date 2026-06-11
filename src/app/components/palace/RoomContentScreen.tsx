@@ -1,5 +1,5 @@
 import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
-import {AnimatePresence, motion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
 import {
     ArrowLeft,
     Check,
@@ -102,10 +102,11 @@ export function RoomContentScreen({
     // Collapse the room title on scroll; tabs + search stay pinned below.
     const listRef = useRef<HTMLDivElement>(null);
     const {scrollY} = useScroll({container: listRef});
-    const titleScale = useTransform(scrollY, [0, 70], [1, 0.84]);
-    const titleMb = useTransform(scrollY, [0, 70], [16, 6]);
-    const nameHeight = useTransform(scrollY, [0, 60], [18, 0]);
-    const nameOpacity = useTransform(scrollY, [0, 40], [1, 0]);
+    const reduceMotion = useReducedMotion();
+    const titleScale = useTransform(scrollY, [0, 70], reduceMotion ? [1, 1] : [1, 0.84]);
+    const titleMb = useTransform(scrollY, [0, 70], reduceMotion ? [16, 16] : [16, 6]);
+    const nameHeight = useTransform(scrollY, [0, 60], reduceMotion ? [18, 18] : [18, 0]);
+    const nameOpacity = useTransform(scrollY, [0, 40], reduceMotion ? [1, 1] : [1, 0]);
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);

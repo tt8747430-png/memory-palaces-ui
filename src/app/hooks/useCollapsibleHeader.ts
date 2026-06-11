@@ -1,5 +1,10 @@
 import {type RefObject} from "react";
-import {type MotionValue, useScroll, useTransform} from "motion/react";
+import {
+    type MotionValue,
+    useReducedMotion,
+    useScroll,
+    useTransform,
+} from "motion/react";
 
 export interface CollapsibleHeader {
     /** Raw vertical scroll position of the container. */
@@ -25,10 +30,13 @@ export function useCollapsibleHeader(
     {distance = 120}: {distance?: number} = {},
 ): CollapsibleHeader {
     const {scrollY} = useScroll({container});
+    // Keep the opacity crossfade (an allowed reduced-motion alternative) but
+    // drop the scale/translate parallax when the user prefers reduced motion.
+    const reduce = useReducedMotion();
 
     const largeOpacity = useTransform(scrollY, [0, distance], [1, 0]);
-    const largeScale = useTransform(scrollY, [0, distance], [1, 0.96]);
-    const largeY = useTransform(scrollY, [0, distance], [0, 28]);
+    const largeScale = useTransform(scrollY, [0, distance], reduce ? [1, 1] : [1, 0.96]);
+    const largeY = useTransform(scrollY, [0, distance], reduce ? [0, 0] : [0, 28]);
     const largePointerEvents = useTransform(largeOpacity, (v) =>
         v > 0.5 ? "auto" : "none",
     );

@@ -21,4 +21,4 @@ later" comments unless explicitly requested.
 
 📋 Task:
 
-/impeccable craft check that all the controls are mobile friendly and all the os components frientdly. also improve the ui by add collapsible headers with animation like in the profile page. and improve also the profile header and its animation. and also look so that the buttons that are needed the most stay at the top like the bottomnav and improve the ux in the app overall.
+/impeccable craft because of this autofill contact bar there is too little space and the dialogs arent visible very good. remove this browser look autofil contact ios native bar. we dont need it here. the input controls should be keyboard friendly like in these images /Users/kristianbraila/Downloads/IMG_1769.PNG /Users/kristianbraila/Downloads/IMG_1768.PNG. also refactor the dialogs like the new folder and so on. they should be like in the images with the atacheted to the keyboard look. and also fix the create palace dialog and page. it doesnt work correectly. refactor it completely and make more usable and better ux and ui.
