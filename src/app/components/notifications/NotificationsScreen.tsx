@@ -1,5 +1,6 @@
-import {useMemo} from "react";
+import {useMemo, useRef} from "react";
 import {AnimatePresence, motion} from "motion/react";
+import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
     ArrowLeft,
     BellOff,

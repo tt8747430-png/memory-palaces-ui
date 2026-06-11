@@ -21,6 +21,7 @@ import {
     type NotificationType,
     useProgressState,
 } from "../../hooks/useProgressState";
+import {useKeyboardInset} from "../../hooks/useKeyboardInset";
 
 /**
  * Dev-only control room. Renders its own floating trigger and a bottom drawer
@@ -29,6 +30,7 @@ import {
  */
 export function ProgressDebugPanel() {
     const {state, actions} = useProgressState();
+    const keyboardInset = useKeyboardInset();
     const [open, setOpen] = useState(false);
     const [xpInput, setXpInput] = useState("");
     const [streakInput, setStreakInput] = useState("");
@@ -145,7 +147,10 @@ export function ProgressDebugPanel() {
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-5 pb-8 space-y-5">
+                        <div
+                            className="flex-1 overflow-y-auto px-5 pb-8 space-y-5"
+                            style={keyboardInset > 0 ? {paddingBottom: keyboardInset + 24} : undefined}
+                        >
                             {/* Snapshot */}
                             <Section title="State snapshot">
                                 <div className="grid grid-cols-3 gap-2">

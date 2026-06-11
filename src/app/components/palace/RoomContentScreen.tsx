@@ -1,4 +1,4 @@
-import {type ChangeEvent, useMemo, useRef, useState} from "react";
+import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {
     ArrowLeft,
@@ -53,7 +53,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "../ui/alert-dialog";
-import {Dialog, DialogContent, DialogTitle} from "../ui/dialog";
+import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {
     ContentImportError,
     exportLociCSV,
@@ -596,88 +596,42 @@ export function RoomContentScreen({
                 )}
             </div>
 
-            {/* Editors */}
-            <Dialog
+            {/* Editors — keyboard-docked bottom sheets */}
+            <LocusEditor
                 open={editor?.kind === "locus"}
-                onOpenChange={(o) => !o && setEditor(null)}
-            >
-                <DialogContent
-                    showCloseButton={false}
-                    className="max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
-                >
-                    <DialogTitle className="sr-only">
-                        {editor?.kind === "locus" && editor.locus
-                            ? "Edit locus"
-                            : "New locus"}
-                    </DialogTitle>
-                    {editor?.kind === "locus" && (
-                        <LocusEditor
-                            initial={editor.locus}
-                            onCancel={() => setEditor(null)}
-                            onSave={(data) => {
-                                if (editor.locus) {
-                                    actions.updateLocus(
-                                        palaceId,
-                                        roomId,
-                                        editor.locus.id,
-                                        data,
-                                    );
-                                    toast.success("Locus updated");
-                                } else {
-                                    actions.createLocus(palaceId, roomId, data);
-                                    toast.success("Locus added");
-                                }
-                                setEditor(null);
-                            }}
-                            onSaveAndAddAnother={
-                                editor.locus
-                                    ? undefined
-                                    : (data) => {
-                                        actions.createLocus(palaceId, roomId, data);
-                                        toast.success("Locus added — next one");
-                                    }
-                            }
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+                initial={editor?.kind === "locus" ? editor.locus : null}
+                onCancel={() => setEditor(null)}
+                onSave={(data) => {
+                    if (editor?.kind === "locus" && editor.locus) {
+                        actions.updateLocus(palaceId, roomId, editor.locus.id, data);
+                        toast.success("Locus updated");
+                    } else {
+                        actions.createLocus(palaceId, roomId, data);
+                        toast.success("Locus added");
+                    }
+                    setEditor(null);
+                }}
+                onSaveAndAddAnother={(data) => {
+                    actions.createLocus(palaceId, roomId, data);
+                    toast.success("Locus added — next one");
+                }}
+            />
 
-            <Dialog
+            <QuestionEditor
                 open={editor?.kind === "question"}
-                onOpenChange={(o) => !o && setEditor(null)}
-            >
-                <DialogContent
-                    showCloseButton={false}
-                    className="max-w-[420px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
-                >
-                    <DialogTitle className="sr-only">
-                        {editor?.kind === "question" && editor.question
-                            ? "Edit question"
-                            : "New question"}
-                    </DialogTitle>
-                    {editor?.kind === "question" && (
-                        <QuestionEditor
-                            initial={editor.question}
-                            onCancel={() => setEditor(null)}
-                            onSave={(data) => {
-                                if (editor.question) {
-                                    actions.updateQuestion(
-                                        palaceId,
-                                        roomId,
-                                        editor.question.id,
-                                        data,
-                                    );
-                                    toast.success("Question updated");
-                                } else {
-                                    actions.createQuestion(palaceId, roomId, data);
-                                    toast.success("Question added");
-                                }
-                                setEditor(null);
-                            }}
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+                initial={editor?.kind === "question" ? editor.question : null}
+                onCancel={() => setEditor(null)}
+                onSave={(data) => {
+                    if (editor?.kind === "question" && editor.question) {
+                        actions.updateQuestion(palaceId, roomId, editor.question.id, data);
+                        toast.success("Question updated");
+                    } else {
+                        actions.createQuestion(palaceId, roomId, data);
+                        toast.success("Question added");
+                    }
+                    setEditor(null);
+                }}
+            />
 
             {/* Delete confirm */}
             <AlertDialog
@@ -1242,56 +1196,12 @@ function BulkButton({
 
 // --- Editors ----------------------------------------------------------------
 
-function EditorShell({
-                         title,
-                         onCancel,
-                         children,
-                         onSave,
-                         saveDisabled,
-                         secondary,
-                     }: {
-    title: string;
-    onCancel: () => void;
-    children: React.ReactNode;
-    onSave: () => void;
-    saveDisabled: boolean;
-    secondary?: React.ReactNode;
-}) {
-    return (
-        <div className="flex flex-col max-h-[85dvh]">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#091A7A]/[0.07]">
-                <h2 className="text-[17px] font-bold text-[#091A7A]">{title}</h2>
-                <motion.button
-                    whileTap={{scale: 0.9}}
-                    onClick={onCancel}
-                    aria-label="Close"
-                    className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A]"
-                >
-                    <X size={18}/>
-                </motion.button>
-            </div>
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5 space-y-4">
-                {children}
-            </div>
-            <div className="px-5 py-4 border-t border-[#091A7A]/[0.07] space-y-2.5">
-                {secondary}
-                <motion.button
-                    whileTap={{scale: saveDisabled ? 1 : 0.98}}
-                    onClick={onSave}
-                    disabled={saveDisabled}
-                    className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
-                        saveDisabled
-                            ? "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
-                            : "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
-                    }`}
-                >
-                    <Check size={18}/>
-                    Save
-                </motion.button>
-            </div>
-        </div>
-    );
-}
+const sheetPrimaryBtn = (enabled: boolean) =>
+    `w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
+        enabled
+            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
+            : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+    }`;
 
 function FieldLabel({
                         children,
@@ -1315,23 +1225,36 @@ function FieldLabel({
 }
 
 function LocusEditor({
+                         open,
                          initial,
                          onCancel,
                          onSave,
                          onSaveAndAddAnother,
                      }: {
+    open: boolean;
     initial: Locus | null;
     onCancel: () => void;
     onSave: (data: Omit<Locus, "id">) => void;
     onSaveAndAddAnother?: (data: Omit<Locus, "id">) => void;
 }) {
-    const [front, setFront] = useState(initial?.front ?? "");
-    const [back, setBack] = useState(initial?.back ?? "");
-    const [hint, setHint] = useState(initial?.hint ?? "");
-    const [tip, setTip] = useState(initial?.tip ?? "");
+    const [front, setFront] = useState("");
+    const [back, setBack] = useState("");
+    const [hint, setHint] = useState("");
+    const [tip, setTip] = useState("");
     const frontRef = useRef<HTMLInputElement>(null);
-    const valid = front.trim().length > 0 && back.trim().length > 0;
 
+    // Reset the fields each time the sheet opens (or switches target).
+    useEffect(() => {
+        if (open) {
+            setFront(initial?.front ?? "");
+            setBack(initial?.back ?? "");
+            setHint(initial?.hint ?? "");
+            setTip(initial?.tip ?? "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, initial?.id]);
+
+    const valid = front.trim().length > 0 && back.trim().length > 0;
     const buildData = (): Omit<Locus, "id"> => ({
         front: front.trim(),
         back: back.trim(),
@@ -1350,26 +1273,35 @@ function LocusEditor({
     };
 
     return (
-        <EditorShell
+        <KeyboardSheet
+            open={open}
+            onClose={onCancel}
             title={initial ? "Edit locus" : "New locus"}
-            onCancel={onCancel}
-            saveDisabled={!valid}
-            onSave={() => onSave(buildData())}
-            secondary={
-                onSaveAndAddAnother ? (
+            footer={
+                <>
+                    {!initial && onSaveAndAddAnother && (
+                        <button
+                            onClick={handleAddAnother}
+                            disabled={!valid}
+                            className={`w-full py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border-2 transition-colors ${
+                                valid
+                                    ? "border-[#091A7A]/15 text-[#091A7A] bg-white active:scale-[0.98]"
+                                    : "border-transparent bg-[#F1F5F9] text-[#94a3b8] cursor-not-allowed"
+                            }`}
+                        >
+                            <Plus size={17}/>
+                            Save &amp; add another
+                        </button>
+                    )}
                     <button
-                        onClick={handleAddAnother}
+                        onClick={() => valid && onSave(buildData())}
                         disabled={!valid}
-                        className={`w-full py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border-2 transition-colors ${
-                            valid
-                                ? "border-[#091A7A]/15 text-[#091A7A] bg-white"
-                                : "border-transparent bg-[#F1F5F9] text-[#94a3b8] cursor-not-allowed"
-                        }`}
+                        className={sheetPrimaryBtn(valid)}
                     >
-                        <Plus size={17}/>
-                        Save &amp; add another
+                        <Check size={18}/>
+                        {initial ? "Save changes" : "Save locus"}
                     </button>
-                ) : undefined
+                </>
             }
         >
             <div>
@@ -1379,8 +1311,8 @@ function LocusEditor({
                     value={front}
                     onChange={(e) => setFront(e.target.value)}
                     placeholder="e.g., Zeus"
+                    enterKeyHint="next"
                     className={`${navyField} px-4 h-12`}
-                    autoFocus
                 />
             </div>
             <div>
@@ -1413,7 +1345,7 @@ function LocusEditor({
                     className={`${navyField} px-4 py-3 resize-none`}
                 />
             </div>
-        </EditorShell>
+        </KeyboardSheet>
     );
 }
 
@@ -1421,20 +1353,30 @@ const MAX_OPTIONS = 6;
 const MIN_OPTIONS = 2;
 
 function QuestionEditor({
+                            open,
                             initial,
                             onCancel,
                             onSave,
                         }: {
+    open: boolean;
     initial: Question | null;
     onCancel: () => void;
     onSave: (data: Omit<Question, "id">) => void;
 }) {
-    const [prompt, setPrompt] = useState(initial?.prompt ?? "");
-    const [options, setOptions] = useState<string[]>(
-        initial?.options ?? ["", ""],
-    );
-    const [correct, setCorrect] = useState(initial?.correctAnswer ?? 0);
-    const [explanation, setExplanation] = useState(initial?.explanation ?? "");
+    const [prompt, setPrompt] = useState("");
+    const [options, setOptions] = useState<string[]>(["", ""]);
+    const [correct, setCorrect] = useState(0);
+    const [explanation, setExplanation] = useState("");
+
+    useEffect(() => {
+        if (open) {
+            setPrompt(initial?.prompt ?? "");
+            setOptions(initial?.options ?? ["", ""]);
+            setCorrect(initial?.correctAnswer ?? 0);
+            setExplanation(initial?.explanation ?? "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, initial?.id]);
 
     const filled = options.map((o) => o.trim());
     const valid =
@@ -1446,9 +1388,7 @@ function QuestionEditor({
         setOptions((prev) => prev.map((o, idx) => (idx === i ? value : o)));
 
     const addOption = () =>
-        setOptions((prev) =>
-            prev.length < MAX_OPTIONS ? [...prev, ""] : prev,
-        );
+        setOptions((prev) => (prev.length < MAX_OPTIONS ? [...prev, ""] : prev));
 
     const removeOption = (i: number) => {
         setOptions((prev) => prev.filter((_, idx) => idx !== i));
@@ -1458,30 +1398,36 @@ function QuestionEditor({
         });
     };
 
+    const save = () => {
+        if (!valid) return;
+        // Drop blank options, remapping the correct index to survive it.
+        const kept: string[] = [];
+        let newCorrect = 0;
+        options.forEach((o, i) => {
+            if (o.trim()) {
+                if (i === correct) newCorrect = kept.length;
+                kept.push(o.trim());
+            }
+        });
+        onSave({
+            prompt: prompt.trim(),
+            options: kept,
+            correctAnswer: newCorrect,
+            ...(explanation.trim() ? {explanation: explanation.trim()} : {}),
+        });
+    };
+
     return (
-        <EditorShell
+        <KeyboardSheet
+            open={open}
+            onClose={onCancel}
             title={initial ? "Edit question" : "New question"}
-            onCancel={onCancel}
-            saveDisabled={!valid}
-            onSave={() => {
-                // Drop blank options, remapping the correct index to survive it.
-                const kept: string[] = [];
-                let newCorrect = 0;
-                options.forEach((o, i) => {
-                    if (o.trim()) {
-                        if (i === correct) newCorrect = kept.length;
-                        kept.push(o.trim());
-                    }
-                });
-                onSave({
-                    prompt: prompt.trim(),
-                    options: kept,
-                    correctAnswer: newCorrect,
-                    ...(explanation.trim()
-                        ? {explanation: explanation.trim()}
-                        : {}),
-                });
-            }}
+            footer={
+                <button onClick={save} disabled={!valid} className={sheetPrimaryBtn(valid)}>
+                    <Check size={18}/>
+                    {initial ? "Save changes" : "Save question"}
+                </button>
+            }
         >
             <div>
                 <FieldLabel count={prompt.length}>Question</FieldLabel>
@@ -1491,7 +1437,6 @@ function QuestionEditor({
                     placeholder="Which planet is closest to the Sun?"
                     rows={2}
                     className={`${navyField} px-4 py-3 resize-none`}
-                    autoFocus
                 />
             </div>
 
@@ -1509,11 +1454,9 @@ function QuestionEditor({
                                     type="button"
                                     onClick={() => setCorrect(i)}
                                     aria-label={
-                                        isCorrect
-                                            ? "Correct answer"
-                                            : "Mark as correct"
+                                        isCorrect ? "Correct answer" : "Mark as correct"
                                     }
-                                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors ${
+                                    className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors ${
                                         isCorrect
                                             ? "bg-emerald-500 border-emerald-500 text-white"
                                             : "bg-white border-[#cbd5e1] text-[#94a3b8]"
@@ -1538,7 +1481,7 @@ function QuestionEditor({
                                         type="button"
                                         onClick={() => removeOption(i)}
                                         aria-label="Remove option"
-                                        className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[#94a3b8] hover:text-red-500 hover:bg-red-50 transition-colors"
+                                        className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#94a3b8] hover:text-red-500 hover:bg-red-50 transition-colors"
                                     >
                                         <X size={16}/>
                                     </button>
@@ -1569,6 +1512,6 @@ function QuestionEditor({
                     className={`${navyField} px-4 py-3 resize-none`}
                 />
             </div>
-        </EditorShell>
+        </KeyboardSheet>
     );
 }

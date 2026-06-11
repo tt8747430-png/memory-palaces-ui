@@ -6,6 +6,7 @@ import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
+import {useKeyboardInset} from "../../hooks/useKeyboardInset";
 import {
     categoryOptions,
     colorOptions,
@@ -54,6 +55,7 @@ export function PalaceEditor({
     const category = watch("category");
     const icon = watch("icon");
     const color = watch("color");
+    const keyboardInset = useKeyboardInset();
 
     const isCreate = mode === "create";
 
@@ -240,8 +242,11 @@ export function PalaceEditor({
                     </form>
                 </div>
 
-                {/* Footer */}
-                <div className="p-6 bg-white/95 backdrop-blur-xl shrink-0">
+                {/* Footer — lifts above the keyboard when a field is focused */}
+                <div
+                    className="px-6 pt-6 bg-white/95 backdrop-blur-xl shrink-0"
+                    style={{paddingBottom: keyboardInset > 0 ? keyboardInset + 12 : 24}}
+                >
                     <motion.button
                         type="submit"
                         form={FORM_ID}

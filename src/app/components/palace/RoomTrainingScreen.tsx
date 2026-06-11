@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {
     ArrowLeft,
@@ -36,7 +36,7 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {RiveAnimation} from "../ui/RiveAnimation";
-import {Dialog, DialogContent, DialogTitle} from "../ui/dialog";
+import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 
@@ -763,6 +763,9 @@ function StudyToolButton({
     );
 }
 
+const studyField =
+    "w-full bg-[#F4F8FF] rounded-xl text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 outline-none border-2 border-transparent focus:border-[#4F8EFF]/60 focus:bg-white transition-all";
+
 function InStudyEditor({
                            open,
                            locus,
@@ -774,44 +777,22 @@ function InStudyEditor({
     onClose: () => void;
     onSave: (data: Omit<Locus, "id" | "srs" | "flagged">) => void;
 }) {
-    return (
-        <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent
-                showCloseButton={false}
-                className="max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 bg-white"
-            >
-                <DialogTitle className="sr-only">Edit card</DialogTitle>
-                {open && (
-                    <InStudyEditorBody
-                        key={locus.id}
-                        locus={locus}
-                        onClose={onClose}
-                        onSave={onSave}
-                    />
-                )}
-            </DialogContent>
-        </Dialog>
-    );
-}
+    const [front, setFront] = useState("");
+    const [back, setBack] = useState("");
+    const [hint, setHint] = useState("");
+    const [tip, setTip] = useState("");
 
-const studyField =
-    "w-full bg-[#F4F8FF] rounded-xl text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 outline-none border-2 border-transparent focus:border-[#4F8EFF]/60 focus:bg-white transition-all";
+    useEffect(() => {
+        if (open) {
+            setFront(locus.front);
+            setBack(locus.back);
+            setHint(locus.hint ?? "");
+            setTip(locus.tip ?? "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, locus.id]);
 
-function InStudyEditorBody({
-                               locus,
-                               onClose,
-                               onSave,
-                           }: {
-    locus: Locus;
-    onClose: () => void;
-    onSave: (data: Omit<Locus, "id" | "srs" | "flagged">) => void;
-}) {
-    const [front, setFront] = useState(locus.front);
-    const [back, setBack] = useState(locus.back);
-    const [hint, setHint] = useState(locus.hint ?? "");
-    const [tip, setTip] = useState(locus.tip ?? "");
     const valid = front.trim().length > 0 && back.trim().length > 0;
-
     const save = () => {
         if (!valid) return;
         onSave({
@@ -823,83 +804,73 @@ function InStudyEditorBody({
     };
 
     return (
-        <div className="flex flex-col max-h-[85dvh]">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#091A7A]/[0.07]">
-                <h2 className="text-[17px] font-bold text-[#091A7A]">Edit card</h2>
-                <motion.button
-                    whileTap={{scale: 0.9}}
-                    onClick={onClose}
-                    aria-label="Close"
-                    className="w-9 h-9 rounded-full bg-[#F4F8FF] flex items-center justify-center text-[#091A7A] text-[18px] leading-none"
-                >
-                    ×
-                </motion.button>
-            </div>
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5 space-y-4">
-                <div>
-                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                        Front (what to recall)
-                    </label>
-                    <Input
-                        value={front}
-                        onChange={(e) => setFront(e.target.value)}
-                        placeholder="e.g., Zeus"
-                        className={`${studyField} px-4 h-12`}
-                        autoFocus
-                    />
-                </div>
-                <div>
-                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                        Back (what it means)
-                    </label>
-                    <Textarea
-                        value={back}
-                        onChange={(e) => setBack(e.target.value)}
-                        placeholder="King of the gods, god of sky and thunder."
-                        rows={3}
-                        className={`${studyField} px-4 py-3 resize-none`}
-                    />
-                </div>
-                <div>
-                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                        Place / image cue (optional)
-                    </label>
-                    <Textarea
-                        value={hint}
-                        onChange={(e) => setHint(e.target.value)}
-                        placeholder="Where you picture it."
-                        rows={2}
-                        className={`${studyField} px-4 py-3 resize-none`}
-                    />
-                </div>
-                <div>
-                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                        Hint / tip (optional)
-                    </label>
-                    <Textarea
-                        value={tip}
-                        onChange={(e) => setTip(e.target.value)}
-                        placeholder="A short nudge you can peek at before flipping."
-                        rows={2}
-                        className={`${studyField} px-4 py-3 resize-none`}
-                    />
-                </div>
-            </div>
-            <div className="px-5 py-4 border-t border-[#091A7A]/[0.07]">
-                <motion.button
-                    whileTap={{scale: valid ? 0.98 : 1}}
+        <KeyboardSheet
+            open={open}
+            onClose={onClose}
+            title="Edit card"
+            footer={
+                <button
                     onClick={save}
                     disabled={!valid}
                     className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
                         valid
-                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
+                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
                             : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
                     }`}
                 >
                     <Check size={18}/>
                     Save card
-                </motion.button>
+                </button>
+            }
+        >
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Front (what to recall)
+                </label>
+                <Input
+                    value={front}
+                    onChange={(e) => setFront(e.target.value)}
+                    placeholder="e.g., Zeus"
+                    enterKeyHint="next"
+                    className={`${studyField} px-4 h-12`}
+                />
             </div>
-        </div>
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Back (what it means)
+                </label>
+                <Textarea
+                    value={back}
+                    onChange={(e) => setBack(e.target.value)}
+                    placeholder="King of the gods, god of sky and thunder."
+                    rows={3}
+                    className={`${studyField} px-4 py-3 resize-none`}
+                />
+            </div>
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Place / image cue (optional)
+                </label>
+                <Textarea
+                    value={hint}
+                    onChange={(e) => setHint(e.target.value)}
+                    placeholder="Where you picture it."
+                    rows={2}
+                    className={`${studyField} px-4 py-3 resize-none`}
+                />
+            </div>
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Hint / tip (optional)
+                </label>
+                <Textarea
+                    value={tip}
+                    onChange={(e) => setTip(e.target.value)}
+                    placeholder="A short nudge you can peek at before flipping."
+                    rows={2}
+                    className={`${studyField} px-4 py-3 resize-none`}
+                />
+            </div>
+        </KeyboardSheet>
     );
 }
