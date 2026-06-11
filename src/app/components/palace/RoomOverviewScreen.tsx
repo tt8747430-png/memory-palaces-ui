@@ -4,7 +4,6 @@ import {toast} from "sonner";
 import {
     ArrowLeft,
     Brain,
-    Check,
     ChevronRight,
     Copy,
     GraduationCap,
@@ -13,7 +12,6 @@ import {
     Pencil,
     RotateCcw,
     SkipForward,
-    Sparkles,
     Star,
     Trash2,
     Volume2,

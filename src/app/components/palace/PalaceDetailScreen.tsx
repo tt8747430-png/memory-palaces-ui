@@ -62,11 +62,14 @@ import {
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
+import {LociPreviewCarousel} from "./LociPreviewCarousel";
 
 interface PalaceDetailScreenProps {
     palaceId: string;
     onBack: () => void;
     onRoomClick?: (roomTitle: string) => void;
+    /** Jump straight into a room's flashcard deck (skips the set page). */
+    onStudyRoom?: (roomTitle: string) => void;
     onQuizClick?: () => void;
     /** Open the loci & questions manager for a specific room. */
     onManageContent?: (roomId: string) => void;
@@ -398,6 +401,7 @@ export function PalaceDetailScreen({
                                        palaceId,
                                        onBack,
                                        onRoomClick,
+                                       onStudyRoom,
                                        onQuizClick,
                                        onManageContent,
                                        onEditPalace,
@@ -425,6 +429,10 @@ export function PalaceDetailScreen({
 
     const rooms = palace.rooms || [];
     const currentRoom = rooms.length > 0 ? getCurrentRoom(rooms) : null;
+    const currentRoomObj = currentRoom
+        ? rooms.find((r) => r.title === currentRoom.room)
+        : undefined;
+    const currentRoomLoci = currentRoomObj?.loci ?? [];
     const totalDuration = rooms.reduce((sum, r) => sum + r.duration, 0);
     const totalLoci = rooms.reduce((sum, r) => sum + (r.loci?.length ?? 0), 0);
     const totalQuestions = rooms.reduce(
@@ -637,36 +645,65 @@ export function PalaceDetailScreen({
                 </div>
             </motion.div>
 
-            {/* Continue */}
+            {/* Continue / loci preview */}
             {currentRoom && (
-                <div className="px-6 mb-4">
-                    <motion.button
-                        whileTap={{scale: 0.98}}
-                        onClick={() => onRoomClick?.(currentRoom.room)}
-                        className="w-full bg-gradient-to-br from-[#ADC8FF]/90 to-[#ADC8FF]/70 backdrop-blur-lg text-[#091A7A] rounded-3xl p-5 shadow-card border border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="text-left">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-white/30 rounded-xl flex items-center justify-center">
-                                        <Play className="w-4 h-4 text-[#091A7A]"/>
-                                    </div>
-                                    <span className="text-subheading font-semibold">
-                                        Continue exploring
-                                    </span>
+                <div className="px-6 mb-5">
+                    {currentRoomLoci.length > 0 ? (
+                        <div className="rounded-3xl bg-white/80 backdrop-blur-lg border border-white/50 shadow-card p-4">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-[12px] font-semibold text-[#3D8FEF]">
+                                        Continue where you left off
+                                    </p>
+                                    <h3 className="text-[16px] font-bold text-[#091A7A] line-clamp-1">
+                                        {currentRoom.room}
+                                    </h3>
                                 </div>
-                                <p className="text-small text-[#091A7A]/80 font-medium">
-                                    {currentRoom.room}
-                                </p>
-                                <p className="text-small text-[#091A7A]/70 font-medium">
-                                    {currentRoom.progress}% completed
-                                </p>
+                                <motion.button
+                                    whileTap={{scale: 0.95}}
+                                    onClick={() => onRoomClick?.(currentRoom.room)}
+                                    className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-[#EAF4FF] px-3 py-2 text-[13px] font-semibold text-[#091A7A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    Open room
+                                    <ChevronRight size={15}/>
+                                </motion.button>
                             </div>
-                            <div className="w-14 h-14 bg-white backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
-                                <Play className="w-6 h-6 text-[#091A7A]"/>
-                            </div>
+                            <LociPreviewCarousel
+                                loci={currentRoomLoci}
+                                direction={settings.studyDirection}
+                                onOpen={() => (onStudyRoom ?? onRoomClick)?.(currentRoom.room)}
+                                openLabel="Study flashcards"
+                            />
                         </div>
-                    </motion.button>
+                    ) : (
+                        <motion.button
+                            whileTap={{scale: 0.98}}
+                            onClick={() => onRoomClick?.(currentRoom.room)}
+                            className="w-full bg-gradient-to-br from-[#ADC8FF]/90 to-[#ADC8FF]/70 backdrop-blur-lg text-[#091A7A] rounded-3xl p-5 shadow-card border border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="text-left">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-8 h-8 bg-white/30 rounded-xl flex items-center justify-center">
+                                            <Play className="w-4 h-4 text-[#091A7A]"/>
+                                        </div>
+                                        <span className="text-subheading font-semibold">
+                                            Open room
+                                        </span>
+                                    </div>
+                                    <p className="text-small text-[#091A7A]/80 font-medium">
+                                        {currentRoom.room}
+                                    </p>
+                                    <p className="text-small text-[#091A7A]/70 font-medium">
+                                        Add cards to start studying
+                                    </p>
+                                </div>
+                                <div className="w-14 h-14 bg-white backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                                    <ChevronRight className="w-6 h-6 text-[#091A7A]"/>
+                                </div>
+                            </div>
+                        </motion.button>
+                    )}
                 </div>
             )}
 

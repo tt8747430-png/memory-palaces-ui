@@ -10,7 +10,9 @@ import {SettingsScreen} from "./SettingsScreen";
 import {ProgressDebugPanel} from "./progress/ProgressDebugPanel";
 import {PalaceDetailScreen} from "./palace/PalaceDetailScreen";
 import {RoomContentScreen} from "./palace/RoomContentScreen";
+import {RoomOverviewScreen} from "./palace/RoomOverviewScreen";
 import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
+import {MatchGameScreen} from "./palace/MatchGameScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
 import {EditPalaceScreen} from "./palace/EditPalaceScreen";
 import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
@@ -89,8 +91,14 @@ export default function HomePage() {
 
     // Full-screen flows, overlaid on top of the tab shell.
     const [selectedPalaceId, setSelectedPalaceId] = useState<string | null>(null);
-    const [selectedRoomTitle, setSelectedRoomTitle] = useState<string | null>(null);
+    // A room opens to its set page ("overview"); from there it can switch into
+    // flashcards or the Match game without leaving the palace.
+    const [roomView, setRoomView] = useState<
+        {roomTitle: string; mode: "overview" | "flashcards" | "match"} | null
+    >(null);
     const [showQuiz, setShowQuiz] = useState(false);
+    // When set, the quiz is scoped to a single room rather than the whole palace.
+    const [quizRoomTitle, setQuizRoomTitle] = useState<string | null>(null);
     const [quizResults, setQuizResults] = useState<QuizResults | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -126,13 +134,13 @@ export default function HomePage() {
         const room = (target.rooms ?? []).find(
             (r) => (r.loci?.length ?? 0) > 0,
         );
-        if (room) setSelectedRoomTitle(room.title);
+        if (room) setRoomView({roomTitle: room.title, mode: "flashcards"});
     };
 
-    // Finishing a room returns to the palace detail (keep the palace selected)
-    // rather than dropping the user back out to the list.
+    // Finishing a room returns to its set page (keep the room open) rather than
+    // dropping the user back out to the palace or the list.
     const handleRoomComplete = () => {
-        setSelectedRoomTitle(null);
+        setRoomView((v) => (v ? {...v, mode: "overview"} : null));
     };
 
     const handleQuizComplete = (results: QuizResults) => {
@@ -166,6 +174,8 @@ export default function HomePage() {
     const handleQuizHome = () => {
         setQuizResults(null);
         setShowQuiz(false);
+        setQuizRoomTitle(null);
+        setRoomView(null);
         setSelectedPalaceId(null);
         setActiveTab("home");
     };
@@ -212,21 +222,6 @@ export default function HomePage() {
         );
     }
 
-    if (selectedRoomTitle) {
-        return (
-            <RoomTrainingScreen
-                onBack={() => setSelectedRoomTitle(null)}
-                onComplete={handleRoomComplete}
-                palaceId={selectedPalaceId ?? undefined}
-                roomTitle={selectedRoomTitle}
-                palaceTitle={
-                    state.palaces.find((p) => p.id === selectedPalaceId)?.name ||
-                    "Memory Palace"
-                }
-            />
-        );
-    }
-
     if (quizResults && selectedPalaceId) {
         return (
             <PalaceQuizCompletionScreen
@@ -242,6 +237,7 @@ export default function HomePage() {
         return (
             <PalaceQuizScreen
                 palaceId={selectedPalaceId}
+                roomTitle={quizRoomTitle ?? undefined}
                 onBack={() => setShowQuiz(false)}
                 onComplete={handleQuizComplete}
             />
@@ -258,13 +254,71 @@ export default function HomePage() {
         );
     }
 
+    if (roomView && selectedPalaceId) {
+        const palaceTitle =
+            state.palaces.find((p) => p.id === selectedPalaceId)?.name || "Memory Palace";
+        const backToOverview = () =>
+            setRoomView((v) => (v ? {...v, mode: "overview"} : null));
+
+        if (roomView.mode === "flashcards") {
+            return (
+                <RoomTrainingScreen
+                    onBack={backToOverview}
+                    onComplete={handleRoomComplete}
+                    palaceId={selectedPalaceId}
+                    roomTitle={roomView.roomTitle}
+                    palaceTitle={palaceTitle}
+                />
+            );
+        }
+
+        if (roomView.mode === "match") {
+            return (
+                <MatchGameScreen
+                    onBack={backToOverview}
+                    onComplete={backToOverview}
+                    palaceId={selectedPalaceId}
+                    roomTitle={roomView.roomTitle}
+                    palaceTitle={palaceTitle}
+                />
+            );
+        }
+
+        return (
+            <RoomOverviewScreen
+                palaceId={selectedPalaceId}
+                roomTitle={roomView.roomTitle}
+                palaceTitle={palaceTitle}
+                onBack={() => setRoomView(null)}
+                onStudy={() =>
+                    setRoomView((v) => (v ? {...v, mode: "flashcards"} : null))
+                }
+                onMatch={() => setRoomView((v) => (v ? {...v, mode: "match"} : null))}
+                onTest={() => {
+                    setQuizRoomTitle(roomView.roomTitle);
+                    setShowQuiz(true);
+                }}
+                onManage={() => {
+                    const r = state.palaces
+                        .find((p) => p.id === selectedPalaceId)
+                        ?.rooms?.find((rm) => rm.title === roomView.roomTitle);
+                    if (r) setManagingContent({roomId: r.id});
+                }}
+            />
+        );
+    }
+
     if (selectedPalaceId) {
         return (
             <PalaceDetailScreen
                 palaceId={selectedPalaceId}
                 onBack={() => setSelectedPalaceId(null)}
-                onRoomClick={(roomTitle) => setSelectedRoomTitle(roomTitle)}
-                onQuizClick={() => setShowQuiz(true)}
+                onRoomClick={(roomTitle) => setRoomView({roomTitle, mode: "overview"})}
+                onStudyRoom={(roomTitle) => setRoomView({roomTitle, mode: "flashcards"})}
+                onQuizClick={() => {
+                    setQuizRoomTitle(null);
+                    setShowQuiz(true);
+                }}
                 onManageContent={(roomId) => setManagingContent({roomId})}
                 onEditPalace={() => setEditingPalaceId(selectedPalaceId)}
             />

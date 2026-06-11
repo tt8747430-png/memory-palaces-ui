@@ -191,6 +191,7 @@ export function RoomTrainingScreen({
 
     const [locked, setLocked] = useState(false);
     const holdTimer = useRef<number | undefined>(undefined);
+    const heldRef = useRef(false);
 
     const resetCardView = () => {
         setFlipped(false);
@@ -355,10 +356,24 @@ export function RoomTrainingScreen({
     };
 
     const bind = useDrag(
-        ({down, movement: [mx, my], velocity: [vx, vy], tap}) => {
+        ({first, down, movement: [mx, my], velocity: [vx, vy], tap}) => {
             if (locked) return;
+            // Press-and-hold (no movement) opens the quick-actions sheet.
+            if (first) {
+                heldRef.current = false;
+                clearHold();
+                holdTimer.current = window.setTimeout(() => {
+                    heldRef.current = true;
+                    impact();
+                    setQuickOpen(true);
+                }, 480);
+            }
             if (tap) {
                 clearHold();
+                if (heldRef.current) {
+                    heldRef.current = false;
+                    return; // long-press already handled; don't also flip
+                }
                 setFlipped((f) => !f);
                 return;
             }
@@ -366,6 +381,12 @@ export function RoomTrainingScreen({
             if (down) {
                 x.set(mx);
                 y.set(my);
+                return;
+            }
+            clearHold();
+            if (heldRef.current) {
+                heldRef.current = false;
+                snapBack();
                 return;
             }
             const ax = Math.abs(mx);
@@ -386,14 +407,6 @@ export function RoomTrainingScreen({
         {filterTaps: true, pointer: {touch: true}},
     );
 
-    const onCardPointerDown = () => {
-        clearHold();
-        holdTimer.current = window.setTimeout(() => {
-            impact();
-            setQuickOpen(true);
-        }, 480);
-    };
-
     // Auto-speak the visible face when enabled.
     useEffect(() => {
         if (!textToSpeech || !current) return;
@@ -405,7 +418,13 @@ export function RoomTrainingScreen({
         speak(direction === "front" ? current.back : current.front);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flipped]);
-    useEffect(() => () => cancelSpeech(), []);
+    useEffect(
+        () => () => {
+            cancelSpeech();
+            if (holdTimer.current) clearTimeout(holdTimer.current);
+        },
+        [],
+    );
 
     // Keyboard shortcuts (desktop / external keyboard).
     useEffect(() => {
@@ -618,9 +637,6 @@ export function RoomTrainingScreen({
                     {/* Active card */}
                     <motion.div
                         {...(bind() as unknown as HTMLMotionProps<"div">)}
-                        onPointerDown={onCardPointerDown}
-                        onPointerUp={clearHold}
-                        onPointerCancel={clearHold}
                         style={{x, y, rotate, scale}}
                         className="relative z-10 touch-none"
                     >
