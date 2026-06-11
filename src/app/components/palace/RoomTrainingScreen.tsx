@@ -1,5 +1,14 @@
-import {useEffect, useMemo, useState} from "react";
-import {AnimatePresence, motion} from "motion/react";
+import {type ReactNode, useEffect, useMemo, useRef, useState} from "react";
+import {
+    animate,
+    AnimatePresence,
+    type HTMLMotionProps,
+    motion,
+    useMotionValue,
+    useReducedMotion,
+    useTransform,
+} from "motion/react";
+import {useDrag} from "@use-gesture/react";
 import {
     ArrowLeft,
     ArrowLeftRight,
@@ -9,6 +18,7 @@ import {
     ChevronRight,
     Eye,
     Flag,
+    Layers,
     Lightbulb,
     MapPin,
     MoreHorizontal,
@@ -17,6 +27,7 @@ import {
     Shuffle,
     SkipForward,
     Sparkles,
+    Volume2,
     Zap,
 } from "lucide-react";
 import {
@@ -27,6 +38,8 @@ import {
     useProgressState,
 } from "../../hooks/useProgressState";
 import {type Grade, isDue, nextIntervalLabel} from "../../utils/srs";
+import {cancelSpeech, speak, speechAvailable} from "../../utils/speech";
+import {impact, success as successHaptic, tick} from "../../utils/haptics";
 import {RiveAnimation} from "../ui/RiveAnimation";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Input} from "../ui/input";
@@ -41,6 +54,7 @@ interface RoomTrainingScreenProps {
 }
 
 type Mode = "review" | "browse";
+type SwipeAction = "right" | "left" | "up" | "down";
 
 const SAMPLE_LOCI: Locus[] = [
     {
@@ -84,17 +98,19 @@ const GRADES: {
     {grade: "easy", label: "Easy", classes: "bg-emerald-50 text-emerald-600 border-emerald-200"},
 ];
 
+function shuffle<T>(input: T[]): T[] {
+    const a = [...input];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
 function orderIds(cards: Locus[], order: CardOrder): string[] {
     const ids = cards.map((c) => c.id);
     if (order === "reverse") return [...ids].reverse();
-    if (order === "shuffle") {
-        const a = [...ids];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
+    if (order === "shuffle") return shuffle(ids);
     return ids;
 }
 
@@ -106,6 +122,7 @@ export function RoomTrainingScreen({
                                        palaceTitle = "Greek Mythology Palace",
                                    }: RoomTrainingScreenProps) {
     const {state, actions} = useProgressState();
+    const reduce = useReducedMotion();
 
     const palace = state.palaces.find((p) => p.id === palaceId);
     const room = (palace?.rooms || []).find((r) => r.title === roomTitle);
@@ -116,10 +133,7 @@ export function RoomTrainingScreen({
     // to a sample deck when the room has no authored loci yet.
     const usingSample = !room || (room.loci?.length ?? 0) === 0;
     const cards: Locus[] = usingSample ? SAMPLE_LOCI : room!.loci!;
-    const byId = useMemo(
-        () => new Map(cards.map((c) => [c.id, c])),
-        [cards],
-    );
+    const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
     const [mode, setMode] = useState<Mode>("review");
     const [direction, setDirection] = useState<StudyDirection>(settings.studyDirection);
@@ -129,30 +143,54 @@ export function RoomTrainingScreen({
     const [showSuccess, setShowSuccess] = useState(false);
     const [editing, setEditing] = useState(false);
     const [optionsOpen, setOptionsOpen] = useState(false);
+    const [quickOpen, setQuickOpen] = useState(false);
+
+    // Persisted study preferences (kept in local state for instant response,
+    // mirrored to the store so they're remembered next session).
+    const [shuffleCards, setShuffleCards] = useState(settings.shuffleCards);
+    const [textToSpeech, setTextToSpeech] = useState(settings.textToSpeech);
+    const [sortIntoPiles, setSortIntoPiles] = useState(settings.sortIntoPiles);
+    const persist = (updates: Parameters<typeof actions.updatePalaceSettings>[1]) => {
+        if (palaceId) actions.updatePalaceSettings(palaceId, updates);
+    };
 
     // In-study editing only works for real authored loci, not the sample deck.
     const canEditCard = !usingSample && !!roomId && !!palaceId;
 
     // Review session: a queue of locus ids. New/due cards lead; "Again" requeues.
-    const [reviewQueue, setReviewQueue] = useState<string[]>(() => {
+    const buildReviewQueue = () => {
         const due = cards.filter((c) => isDue(c.srs));
-        return (due.length > 0 ? due : cards).map((c) => c.id);
-    });
-    const [sessionTotal, setSessionTotal] = useState(() => {
-        const due = cards.filter((c) => isDue(c.srs));
-        return (due.length > 0 ? due : cards).length;
-    });
+        const base = (due.length > 0 ? due : cards).map((c) => c.id);
+        return shuffleCards ? shuffle(base) : base;
+    };
+    const [reviewQueue, setReviewQueue] = useState<string[]>(buildReviewQueue);
+    const [sessionTotal, setSessionTotal] = useState(() => reviewQueue.length);
     const [graded, setGraded] = useState(0);
+    const [piles, setPiles] = useState({learning: 0, known: 0});
 
     // Browse session: an ordered list of ids with a moving pointer.
     const [browseIds, setBrowseIds] = useState<string[]>(() =>
-        orderIds(cards, settings.cardOrder),
+        orderIds(cards, shuffleCards ? "shuffle" : settings.cardOrder),
     );
     const [browsePos, setBrowsePos] = useState(0);
 
-    const currentId =
-        mode === "review" ? reviewQueue[0] : browseIds[browsePos];
+    const currentId = mode === "review" ? reviewQueue[0] : browseIds[browsePos];
     const current = currentId ? byId.get(currentId) : undefined;
+    const nextId = mode === "review" ? reviewQueue[1] : browseIds[browsePos + 1];
+    const nextCard = nextId ? byId.get(nextId) : undefined;
+
+    // --- Gesture motion values ---------------------------------------------
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const scale = useMotionValue(1);
+    const rotate = useTransform(x, [-260, 0, 260], [-10, 0, 10]);
+    const gotItOpacity = useTransform(x, [36, 130], [0, 1]);
+    const learningOpacity = useTransform(x, [-130, -36], [1, 0]);
+    const flagOpacity = useTransform(y, [-130, -40], [1, 0]);
+    const skipOpacity = useTransform(y, [40, 130], [0, 1]);
+
+    const [locked, setLocked] = useState(false);
+    const holdTimer = useRef<number | undefined>(undefined);
 
     const resetCardView = () => {
         setFlipped(false);
@@ -160,7 +198,9 @@ export function RoomTrainingScreen({
     };
 
     const finish = () => {
+        cancelSpeech();
         setShowSuccess(true);
+        successHaptic();
         setTimeout(() => {
             actions.recordTrainingDay();
             actions.addXP(100);
@@ -168,18 +208,28 @@ export function RoomTrainingScreen({
         }, 2400);
     };
 
-    const handleGrade = (grade: Grade) => {
-        if (!flipped || !currentId) return;
+    // Core grade application (no flip guard — used by buttons and swipes alike).
+    const applyGrade = (grade: Grade) => {
+        if (!currentId) return;
         if (!usingSample && roomId && palaceId) {
             actions.reviewLocus(palaceId, roomId, currentId, grade);
         }
         const rest = reviewQueue.slice(1);
-        // "Again" sends the card to the back of the queue this session.
         const next = grade === "again" ? [...rest, currentId] : rest;
         setReviewQueue(next);
         if (grade !== "again") setGraded((g) => g + 1);
+        setPiles((p) =>
+            grade === "again" || grade === "hard"
+                ? {...p, learning: p.learning + 1}
+                : {...p, known: p.known + 1},
+        );
         resetCardView();
         if (next.length === 0) finish();
+    };
+
+    const handleGrade = (grade: Grade) => {
+        if (!flipped) return;
+        applyGrade(grade);
     };
 
     const handleBrowseNav = (delta: number) => {
@@ -187,7 +237,7 @@ export function RoomTrainingScreen({
         resetCardView();
     };
 
-    // Move past the current card without grading it (review) or just advance (browse).
+    // Move past the current card without grading it (review) or advance (browse).
     const handleSkip = () => {
         if (mode === "review") {
             if (reviewQueue.length <= 1) {
@@ -207,6 +257,18 @@ export function RoomTrainingScreen({
         actions.toggleLocusFlag(palaceId!, roomId!, currentId);
     };
 
+    const speakFace = () => {
+        if (!current) return;
+        const face = flipped
+            ? direction === "front"
+                ? current.back
+                : current.front
+            : direction === "front"
+                ? current.front
+                : current.back;
+        speak(face);
+    };
+
     const handleSaveEdit = (data: Omit<Locus, "id" | "srs" | "flagged">) => {
         if (canEditCard && currentId) {
             actions.updateLocus(palaceId!, roomId!, currentId, data);
@@ -215,14 +277,14 @@ export function RoomTrainingScreen({
     };
 
     const restartSession = (nextOrder: CardOrder = order) => {
+        cancelSpeech();
         if (mode === "review") {
-            const due = cards.filter((c) => isDue(c.srs));
-            const base = (due.length > 0 ? due : cards).map((c) => c.id);
-            setReviewQueue(base);
-            setSessionTotal(base.length);
+            setReviewQueue(buildReviewQueue());
+            setSessionTotal(buildReviewQueue().length);
             setGraded(0);
+            setPiles({learning: 0, known: 0});
         } else {
-            setBrowseIds(orderIds(cards, nextOrder));
+            setBrowseIds(orderIds(cards, shuffleCards ? "shuffle" : nextOrder));
             setBrowsePos(0);
         }
         resetCardView();
@@ -232,13 +294,141 @@ export function RoomTrainingScreen({
         setMode(next);
         resetCardView();
         if (next === "browse") {
-            setBrowseIds(orderIds(cards, order));
+            setBrowseIds(orderIds(cards, shuffleCards ? "shuffle" : order));
             setBrowsePos(0);
         }
     };
 
-    const reviewProgress =
-        sessionTotal > 0 ? (graded / sessionTotal) * 100 : 0;
+    // --- Swipe commit -------------------------------------------------------
+    const performAction = (action: SwipeAction) => {
+        if (mode === "review") {
+            if (action === "right") applyGrade("good");
+            else if (action === "left") applyGrade("again");
+            else if (action === "down") handleSkip();
+        } else {
+            if (action === "right") handleBrowseNav(-1);
+            else if (action === "left") handleBrowseNav(1);
+            else if (action === "down") handleSkip();
+        }
+    };
+
+    const snapBack = () => {
+        animate(x, 0, {type: "spring", stiffness: 520, damping: 34});
+        animate(y, 0, {type: "spring", stiffness: 520, damping: 34});
+    };
+
+    const commit = async (action: SwipeAction) => {
+        if (locked || !current) return;
+        // Up = flag toggle: a nudge, not a card change.
+        if (action === "up") {
+            handleFlag();
+            tick();
+            animate(y, 0, {type: "spring", stiffness: 520, damping: 30});
+            animate(x, 0, {type: "spring", stiffness: 520, damping: 30});
+            return;
+        }
+        setLocked(true);
+        impact();
+        const off = 620;
+        const tx = action === "right" ? off : action === "left" ? -off : 0;
+        const ty = action === "down" ? off : 0;
+        const dur = reduce ? 0 : 0.24;
+        await Promise.all([
+            animate(x, tx, {duration: dur, ease: [0.4, 0, 1, 1]}).finished,
+            ty ? animate(y, ty, {duration: dur, ease: [0.4, 0, 1, 1]}).finished : Promise.resolve(),
+        ]);
+        performAction(action);
+        x.jump(0);
+        y.jump(0);
+        if (!reduce) {
+            scale.jump(0.96);
+            animate(scale, 1, {type: "spring", stiffness: 540, damping: 32});
+        }
+        setLocked(false);
+    };
+
+    const clearHold = () => {
+        if (holdTimer.current) {
+            clearTimeout(holdTimer.current);
+            holdTimer.current = undefined;
+        }
+    };
+
+    const bind = useDrag(
+        ({down, movement: [mx, my], velocity: [vx, vy], tap}) => {
+            if (locked) return;
+            if (tap) {
+                clearHold();
+                setFlipped((f) => !f);
+                return;
+            }
+            if (Math.abs(mx) > 6 || Math.abs(my) > 6) clearHold();
+            if (down) {
+                x.set(mx);
+                y.set(my);
+                return;
+            }
+            const ax = Math.abs(mx);
+            const ay = Math.abs(my);
+            const fling = Math.max(vx, vy) > 0.5;
+            if (ax < 80 && ay < 80 && !fling) {
+                snapBack();
+                return;
+            }
+            if (ax >= ay) {
+                commit(mx > 0 ? "right" : "left");
+            } else if (my < 0) {
+                commit("up");
+            } else {
+                commit("down");
+            }
+        },
+        {filterTaps: true, pointer: {touch: true}},
+    );
+
+    const onCardPointerDown = () => {
+        clearHold();
+        holdTimer.current = window.setTimeout(() => {
+            impact();
+            setQuickOpen(true);
+        }, 480);
+    };
+
+    // Auto-speak the visible face when enabled.
+    useEffect(() => {
+        if (!textToSpeech || !current) return;
+        speak(direction === "front" ? current.front : current.back);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentId, textToSpeech]);
+    useEffect(() => {
+        if (!textToSpeech || !current || !flipped) return;
+        speak(direction === "front" ? current.back : current.front);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [flipped]);
+    useEffect(() => () => cancelSpeech(), []);
+
+    // Keyboard shortcuts (desktop / external keyboard).
+    useEffect(() => {
+        if (optionsOpen || quickOpen || editing) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                setFlipped((f) => !f);
+            } else if (e.key === "ArrowRight") commit("right");
+            else if (e.key === "ArrowLeft") commit("left");
+            else if (e.key === "ArrowUp") commit("up");
+            else if (e.key === "ArrowDown") commit("down");
+            else if (mode === "review" && flipped && ["1", "2", "3", "4"].includes(e.key)) {
+                handleGrade(GRADES[Number(e.key) - 1].grade);
+            }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mode, flipped, locked, optionsOpen, quickOpen, editing, currentId]);
+
+    const reviewProgress = sessionTotal > 0 ? (graded / sessionTotal) * 100 : 0;
     const browseProgress =
         browseIds.length > 0 ? ((browsePos + 1) / browseIds.length) * 100 : 0;
     const progress = mode === "review" ? reviewProgress : browseProgress;
@@ -249,14 +439,12 @@ export function RoomTrainingScreen({
         return (
             <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
                 {showSuccess ? (
-                    <SuccessOverlay/>
+                    <SuccessOverlay piles={piles}/>
                 ) : (
                     <>
                         <Sparkles className="w-12 h-12 text-[#FFC71E]"/>
                         <div>
-                            <h2 className="text-2xl font-bold text-[#091A7A] mb-1">
-                                All caught up
-                            </h2>
+                            <h2 className="text-2xl font-bold text-[#091A7A] mb-1">All caught up</h2>
                             <p className="text-[14px] text-[#475569] max-w-[32ch]">
                                 Nothing is due right now. Come back later, or browse the cards.
                             </p>
@@ -283,6 +471,8 @@ export function RoomTrainingScreen({
 
     const prompt = direction === "front" ? current.front : current.back;
     const answer = direction === "front" ? current.back : current.front;
+    const showPiles = mode === "review" && sortIntoPiles;
+    const canSpeak = speechAvailable();
 
     return (
         <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col">
@@ -302,9 +492,7 @@ export function RoomTrainingScreen({
                         <h1 className="text-section-header text-[#091A7A] font-semibold line-clamp-1">
                             {roomTitle}
                         </h1>
-                        <p className="text-[12px] text-[#475569] line-clamp-1">
-                            {palaceTitle}
-                        </p>
+                        <p className="text-[12px] text-[#475569] line-clamp-1">{palaceTitle}</p>
                     </div>
 
                     <motion.button
@@ -344,132 +532,213 @@ export function RoomTrainingScreen({
                 </div>
             </div>
 
-            {/* In-study tools */}
-            <div className="px-6 flex items-center justify-center gap-2">
-                <StudyToolButton
-                    onClick={handleFlag}
-                    disabled={!canEditCard}
-                    active={!!current.flagged}
-                    icon={
-                        <Flag
-                            className={`w-4 h-4 ${current.flagged ? "fill-[#FFC71E] text-[#B8860B]" : ""}`}
+            {/* Pile counters (sort-into-piles mode) */}
+            {showPiles ? (
+                <div className="px-6 flex items-center justify-between">
+                    <PileChip
+                        tone="learning"
+                        count={piles.learning}
+                        label="Still learning"
+                    />
+                    <p className="text-[11px] font-medium text-[#475569]">Swipe to sort</p>
+                    <PileChip tone="known" count={piles.known} label="Known"/>
+                </div>
+            ) : (
+                <div className="px-6 flex items-center justify-center gap-2">
+                    <StudyToolButton
+                        onClick={handleFlag}
+                        disabled={!canEditCard}
+                        active={!!current.flagged}
+                        icon={
+                            <Flag
+                                className={`w-4 h-4 ${current.flagged ? "fill-[#FFC71E] text-[#B8860B]" : ""}`}
+                            />
+                        }
+                        label={current.flagged ? "Flagged" : "Flag"}
+                    />
+                    <StudyToolButton
+                        onClick={() => setEditing(true)}
+                        disabled={!canEditCard}
+                        icon={<Pencil className="w-4 h-4"/>}
+                        label="Edit"
+                    />
+                    {canSpeak && (
+                        <StudyToolButton
+                            onClick={speakFace}
+                            icon={<Volume2 className="w-4 h-4"/>}
+                            label="Listen"
                         />
-                    }
-                    label={current.flagged ? "Flagged" : "Flag"}
-                />
-                <StudyToolButton
-                    onClick={() => setEditing(true)}
-                    disabled={!canEditCard}
-                    icon={<Pencil className="w-4 h-4"/>}
-                    label="Edit"
-                />
-                <StudyToolButton
-                    onClick={handleSkip}
-                    icon={<SkipForward className="w-4 h-4"/>}
-                    label="Skip"
-                />
-            </div>
+                    )}
+                    <StudyToolButton
+                        onClick={handleSkip}
+                        icon={<SkipForward className="w-4 h-4"/>}
+                        label="Skip"
+                    />
+                </div>
+            )}
 
-            {/* Flip card — fixed height so long text scrolls instead of bloating */}
+            {/* Swipe deck */}
             <div className="flex-1 px-6 flex flex-col items-center justify-center min-h-0 py-3">
-                <div className="w-full max-w-md [perspective:1200px]">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentId}
-                            initial={{opacity: 0, scale: 0.94}}
-                            animate={{opacity: 1, scale: 1}}
-                            exit={{opacity: 0, scale: 0.94}}
-                            transition={{duration: 0.25, ease: [0.16, 1, 0.3, 1]}}
-                            className="h-[clamp(300px,52vh,440px)]"
-                        >
+                <div className="relative w-full max-w-md [perspective:1200px]">
+                    {/* Peek card behind, for depth */}
+                    {nextCard && (
+                        <div
+                            aria-hidden
+                            className="absolute inset-x-2 top-3 h-[clamp(300px,52vh,440px)] -z-0 rounded-3xl bg-white/55 border border-white/50 shadow-card"
+                            style={{transform: "translateY(14px) scale(0.95)"}}
+                        />
+                    )}
+
+                    {/* Directional swipe overlays */}
+                    <motion.div
+                        style={{opacity: gotItOpacity}}
+                        className="pointer-events-none absolute left-5 top-5 z-30 rotate-[-12deg] rounded-xl border-2 border-emerald-500 bg-white/90 px-3 py-1.5 text-[15px] font-extrabold uppercase tracking-wide text-emerald-600"
+                    >
+                        {mode === "review" ? "Got it" : "Prev"}
+                    </motion.div>
+                    <motion.div
+                        style={{opacity: learningOpacity}}
+                        className="pointer-events-none absolute right-5 top-5 z-30 rotate-[12deg] rounded-xl border-2 border-amber-500 bg-white/90 px-3 py-1.5 text-[15px] font-extrabold uppercase tracking-wide text-amber-600"
+                    >
+                        {mode === "review" ? "Learning" : "Next"}
+                    </motion.div>
+                    <motion.div
+                        style={{opacity: flagOpacity}}
+                        className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-xl border-2 border-[#B8860B] bg-white/90 px-3 py-1.5 text-[15px] font-extrabold uppercase tracking-wide text-[#B8860B]"
+                    >
+                        Flag
+                    </motion.div>
+                    <motion.div
+                        style={{opacity: skipOpacity}}
+                        className="pointer-events-none absolute left-1/2 bottom-4 z-30 -translate-x-1/2 rounded-xl border-2 border-slate-400 bg-white/90 px-3 py-1.5 text-[15px] font-extrabold uppercase tracking-wide text-slate-500"
+                    >
+                        Skip
+                    </motion.div>
+
+                    {/* Active card */}
+                    <motion.div
+                        {...(bind() as unknown as HTMLMotionProps<"div">)}
+                        onPointerDown={onCardPointerDown}
+                        onPointerUp={clearHold}
+                        onPointerCancel={clearHold}
+                        style={{x, y, rotate, scale}}
+                        className="relative z-10 touch-none"
+                    >
+                        <AnimatePresence mode="wait" initial={false}>
                             <motion.div
-                                onClick={() => setFlipped((f) => !f)}
-                                animate={{rotateY: flipped ? 180 : 0}}
-                                transition={{duration: 0.5, ease: [0.16, 1, 0.3, 1]}}
-                                style={{transformStyle: "preserve-3d"}}
-                                className="relative w-full h-full cursor-pointer"
+                                key={currentId}
+                                initial={reduce ? {opacity: 0} : {opacity: 0, scale: 0.95}}
+                                animate={{opacity: 1, scale: 1}}
+                                exit={reduce ? {opacity: 0} : {opacity: 0, scale: 0.95}}
+                                transition={{duration: 0.2, ease: [0.16, 1, 0.3, 1]}}
+                                className="h-[clamp(300px,52vh,440px)]"
                             >
-                                {/* Front face */}
-                                <div
-                                    style={{backfaceVisibility: "hidden"}}
-                                    className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
+                                <motion.div
+                                    animate={{rotateY: flipped ? 180 : 0}}
+                                    transition={
+                                        reduce ? {duration: 0} : {duration: 0.5, ease: [0.16, 1, 0.3, 1]}
+                                    }
+                                    style={{transformStyle: "preserve-3d"}}
+                                    className="relative w-full h-full cursor-pointer select-none"
                                 >
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
-                                            <MapPin className="w-3 h-3"/>
-                                            {direction === "front" ? "Recall" : "Term"}
-                                        </span>
-                                        {current.flagged && (
-                                            <Flag className="w-4 h-4 fill-[#FFC71E] text-[#B8860B]"/>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center py-2">
-                                        <h2 className="text-[clamp(22px,6vw,30px)] font-bold text-[#091A7A] mb-3 text-balance break-words">
-                                            {prompt}
-                                        </h2>
-
-                                        {current.tip && (
-                                            <div className="mt-1 min-h-[44px] flex items-center justify-center">
-                                                {peek ? (
-                                                    <motion.p
-                                                        initial={{opacity: 0, y: 4}}
-                                                        animate={{opacity: 1, y: 0}}
-                                                        className="text-[13px] text-[#3D6FE0] italic max-w-[36ch]"
-                                                    >
-                                                        {current.tip}
-                                                    </motion.p>
-                                                ) : (
+                                    {/* Front face */}
+                                    <div
+                                        style={{backfaceVisibility: "hidden"}}
+                                        className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
+                                    >
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
+                                                <MapPin className="w-3 h-3"/>
+                                                {direction === "front" ? "Recall" : "Term"}
+                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                {canSpeak && (
                                                     <button
+                                                        onPointerDown={(e) => e.stopPropagation()}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setPeek(true);
+                                                            speak(prompt);
                                                         }}
-                                                        className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7E0] px-3 py-1.5 text-[12px] font-semibold text-[#B8860B] hover:bg-[#FFEFBF] transition-colors"
+                                                        aria-label="Read aloud"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4F8FF] text-[#091A7A] active:scale-90 transition-transform"
                                                     >
-                                                        <Lightbulb className="w-3.5 h-3.5"/>
-                                                        Peek a hint
+                                                        <Volume2 className="w-3.5 h-3.5"/>
                                                     </button>
                                                 )}
+                                                {current.flagged && (
+                                                    <Flag className="w-4 h-4 fill-[#FFC71E] text-[#B8860B]"/>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
+
+                                        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center py-2">
+                                            <h2 className="text-[clamp(22px,6vw,30px)] font-bold text-[#091A7A] mb-3 text-balance break-words">
+                                                {prompt}
+                                            </h2>
+
+                                            {current.tip && (
+                                                <div className="mt-1 min-h-[44px] flex items-center justify-center">
+                                                    {peek ? (
+                                                        <motion.p
+                                                            initial={{opacity: 0, y: 4}}
+                                                            animate={{opacity: 1, y: 0}}
+                                                            className="text-[13px] text-[#3D6FE0] italic max-w-[36ch]"
+                                                        >
+                                                            {current.tip}
+                                                        </motion.p>
+                                                    ) : (
+                                                        <button
+                                                            onPointerDown={(e) => e.stopPropagation()}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setPeek(true);
+                                                            }}
+                                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7E0] px-3 py-1.5 text-[12px] font-semibold text-[#B8860B] hover:bg-[#FFEFBF] transition-colors"
+                                                        >
+                                                            <Lightbulb className="w-3.5 h-3.5"/>
+                                                            Peek a hint
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <p className="text-center text-[12px] text-[#94a3b8]">
+                                            Tap to flip · swipe to sort
+                                        </p>
                                     </div>
 
-                                    <p className="text-center text-[12px] text-[#94a3b8]">
-                                        Tap to flip
-                                    </p>
-                                </div>
-
-                                {/* Back face */}
-                                <div
-                                    style={{
-                                        backfaceVisibility: "hidden",
-                                        transform: "rotateY(180deg)",
-                                    }}
-                                    className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
-                                >
-                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center">
-                                        <p className="text-[clamp(17px,4.5vw,20px)] font-semibold text-[#091A7A] leading-snug text-balance break-words">
-                                            {answer}
-                                        </p>
-                                        {current.hint && (
-                                            <div className="mt-5 w-full rounded-2xl bg-[#ADC8FF]/20 p-4 border border-[#ADC8FF]/30 text-left">
-                                                <div className="flex items-center gap-2 mb-1.5">
-                                                    <MapPin className="w-4 h-4 text-[#091A7A] flex-shrink-0"/>
-                                                    <p className="text-[12px] font-semibold text-[#091A7A]">
-                                                        Where to picture it
+                                    {/* Back face */}
+                                    <div
+                                        style={{
+                                            backfaceVisibility: "hidden",
+                                            transform: "rotateY(180deg)",
+                                        }}
+                                        className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
+                                    >
+                                        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center">
+                                            <p className="text-[clamp(17px,4.5vw,20px)] font-semibold text-[#091A7A] leading-snug text-balance break-words">
+                                                {answer}
+                                            </p>
+                                            {current.hint && (
+                                                <div className="mt-5 w-full rounded-2xl bg-[#ADC8FF]/20 p-4 border border-[#ADC8FF]/30 text-left">
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <MapPin className="w-4 h-4 text-[#091A7A] flex-shrink-0"/>
+                                                        <p className="text-[12px] font-semibold text-[#091A7A]">
+                                                            Where to picture it
+                                                        </p>
+                                                    </div>
+                                                    <p className="text-[13px] text-[#475569] italic leading-relaxed">
+                                                        {current.hint}
                                                     </p>
                                                 </div>
-                                                <p className="text-[13px] text-[#475569] italic leading-relaxed">
-                                                    {current.hint}
-                                                </p>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             </motion.div>
-                        </motion.div>
-                    </AnimatePresence>
+                        </AnimatePresence>
+                    </motion.div>
                 </div>
             </div>
 
@@ -489,25 +758,74 @@ export function RoomTrainingScreen({
                 mode={mode}
                 direction={direction}
                 order={order}
+                shuffleCards={shuffleCards}
+                textToSpeech={textToSpeech}
+                sortIntoPiles={sortIntoPiles}
+                canSpeak={canSpeak}
                 onMode={switchMode}
                 onDirection={(d) => {
                     setDirection(d);
+                    persist({studyDirection: d});
                     resetCardView();
                 }}
                 onOrder={(o) => {
                     setOrder(o);
+                    persist({cardOrder: o});
                     if (mode === "browse") restartSession(o);
+                }}
+                onShuffleCards={(v) => {
+                    setShuffleCards(v);
+                    persist({shuffleCards: v});
+                }}
+                onTextToSpeech={(v) => {
+                    setTextToSpeech(v);
+                    persist({textToSpeech: v});
+                    if (!v) cancelSpeech();
+                }}
+                onSortIntoPiles={(v) => {
+                    setSortIntoPiles(v);
+                    persist({sortIntoPiles: v});
                 }}
                 onRestart={() => restartSession()}
                 onFinish={finish}
             />
 
+            <QuickActionsSheet
+                open={quickOpen}
+                onClose={() => setQuickOpen(false)}
+                flagged={!!current.flagged}
+                canEdit={canEditCard}
+                canSpeak={canSpeak}
+                onFlag={handleFlag}
+                onEdit={() => setEditing(true)}
+                onSpeak={speakFace}
+                onSkip={handleSkip}
+                onRestart={() => restartSession()}
+            />
+
             {/* Footer: grading (review) or navigation (browse) */}
             <div className="px-6 pb-7 pt-2">
                 {mode === "review" ? (
-                    // Grades only appear once the answer is revealed; before that
-                    // the front shows a single "Show answer" action.
-                    flipped ? (
+                    showPiles ? (
+                        <div className="grid grid-cols-2 gap-3">
+                            <motion.button
+                                whileTap={{scale: 0.96}}
+                                onClick={() => commit("left")}
+                                className="flex items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-4 font-semibold text-amber-700"
+                            >
+                                <RotateCcw className="w-5 h-5"/>
+                                Still learning
+                            </motion.button>
+                            <motion.button
+                                whileTap={{scale: 0.96}}
+                                onClick={() => commit("right")}
+                                className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 py-4 font-semibold text-emerald-700"
+                            >
+                                <Check className="w-5 h-5"/>
+                                Got it
+                            </motion.button>
+                        </div>
+                    ) : flipped ? (
                         <motion.div
                             initial={{opacity: 0, y: 8}}
                             animate={{opacity: 1, y: 0}}
@@ -587,12 +905,48 @@ export function RoomTrainingScreen({
                 )}
             </div>
 
-            <AnimatePresence>{showSuccess && <SuccessOverlay/>}</AnimatePresence>
+            <AnimatePresence>{showSuccess && <SuccessOverlay piles={piles}/>}</AnimatePresence>
         </div>
     );
 }
 
-function SuccessOverlay() {
+function PileChip({
+                      tone,
+                      count,
+                      label,
+                  }: {
+    tone: "learning" | "known";
+    count: number;
+    label: string;
+}) {
+    const known = tone === "known";
+    return (
+        <div
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${
+                known
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-amber-200 bg-amber-50"
+            }`}
+        >
+            <span
+                className={`flex h-6 min-w-6 px-1 items-center justify-center rounded-full text-[12px] font-bold text-white ${
+                    known ? "bg-emerald-500" : "bg-amber-500"
+                }`}
+            >
+                {count}
+            </span>
+            <span
+                className={`text-[12px] font-semibold ${
+                    known ? "text-emerald-700" : "text-amber-700"
+                }`}
+            >
+                {label}
+            </span>
+        </div>
+    );
+}
+
+function SuccessOverlay({piles}: {piles?: {learning: number; known: number}}) {
     return (
         <motion.div
             initial={{opacity: 0}}
@@ -623,13 +977,28 @@ function SuccessOverlay() {
                 <Sparkles className="w-5 h-5"/>
                 +100 XP
             </motion.p>
+            {piles && piles.known + piles.learning > 0 && (
+                <motion.div
+                    initial={{y: 16, opacity: 0}}
+                    animate={{y: 0, opacity: 1}}
+                    transition={{delay: 0.7}}
+                    className="mt-4 flex items-center gap-3"
+                >
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[13px] font-semibold text-emerald-700">
+                        <Check className="w-4 h-4"/>
+                        {piles.known} known
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-[13px] font-semibold text-amber-700">
+                        <RotateCcw className="w-4 h-4"/>
+                        {piles.learning} still learning
+                    </span>
+                </motion.div>
+            )}
         </motion.div>
     );
 }
 
 // --- Study options sheet ----------------------------------------------------
-// A bottom sheet rather than a dropdown: dropdowns were unreliable to open on
-// touch here, and full-width segmented controls are far easier to hit on a phone.
 
 function SegmentedControl<T extends string>({
                                                 value,
@@ -662,15 +1031,85 @@ function SegmentedControl<T extends string>({
     );
 }
 
+function ToggleRow({
+                       icon,
+                       label,
+                       description,
+                       checked,
+                       onChange,
+                       disabled,
+                   }: {
+    icon: ReactNode;
+    label: string;
+    description?: string;
+    checked: boolean;
+    onChange: (value: boolean) => void;
+    disabled?: boolean;
+}) {
+    return (
+        <button
+            role="switch"
+            aria-checked={checked}
+            aria-label={label}
+            disabled={disabled}
+            onClick={() => onChange(!checked)}
+            className={`flex w-full items-center justify-between gap-3 rounded-2xl bg-[#F4F8FF] px-4 py-3 text-left transition-transform active:scale-[0.99] ${
+                disabled ? "opacity-50" : ""
+            }`}
+        >
+            <span className="flex min-w-0 items-center gap-3">
+                <span className="text-[#091A7A]">{icon}</span>
+                <span className="min-w-0">
+                    <span className="block text-[14px] font-semibold text-[#091A7A]">{label}</span>
+                    {description && (
+                        <span className="mt-0.5 block text-[12px] leading-snug text-[#475569]">
+                            {description}
+                        </span>
+                    )}
+                </span>
+            </span>
+            <span
+                className={`relative h-7 w-12 flex-shrink-0 rounded-full transition-colors ${
+                    checked ? "bg-[#091A7A]" : "bg-[#CBD5E1]"
+                }`}
+            >
+                <span
+                    className={`absolute top-0.5 block h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
+                        checked ? "translate-x-[22px]" : "translate-x-0.5"
+                    }`}
+                />
+            </span>
+        </button>
+    );
+}
+
+function SheetSection({title, children}: {title: string; children: ReactNode}) {
+    return (
+        <div className="space-y-2">
+            <p className="px-1 text-[12px] font-bold uppercase tracking-wide text-[#94a3b8]">
+                {title}
+            </p>
+            {children}
+        </div>
+    );
+}
+
 function StudyOptionsSheet({
                               open,
                               onClose,
                               mode,
                               direction,
                               order,
+                              shuffleCards,
+                              textToSpeech,
+                              sortIntoPiles,
+                              canSpeak,
                               onMode,
                               onDirection,
                               onOrder,
+                              onShuffleCards,
+                              onTextToSpeech,
+                              onSortIntoPiles,
                               onRestart,
                               onFinish,
                           }: {
@@ -679,9 +1118,16 @@ function StudyOptionsSheet({
     mode: Mode;
     direction: StudyDirection;
     order: CardOrder;
+    shuffleCards: boolean;
+    textToSpeech: boolean;
+    sortIntoPiles: boolean;
+    canSpeak: boolean;
     onMode: (m: Mode) => void;
     onDirection: (d: StudyDirection) => void;
     onOrder: (o: CardOrder) => void;
+    onShuffleCards: (v: boolean) => void;
+    onTextToSpeech: (v: boolean) => void;
+    onSortIntoPiles: (v: boolean) => void;
     onRestart: () => void;
     onFinish: () => void;
 }) {
@@ -689,7 +1135,7 @@ function StudyOptionsSheet({
         <KeyboardSheet
             open={open}
             onClose={onClose}
-            title="Study options"
+            title="Flashcard options"
             footer={
                 <div className="flex gap-2.5">
                     <button
@@ -715,11 +1161,50 @@ function StudyOptionsSheet({
                 </div>
             }
         >
-            <div>
-                <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
-                    <Zap size={15} className="text-[#091A7A]"/>
-                    Mode
-                </p>
+            <SheetSection title="General">
+                <ToggleRow
+                    icon={<Shuffle size={18}/>}
+                    label="Shuffle cards"
+                    description="Start each session in a random order."
+                    checked={shuffleCards}
+                    onChange={onShuffleCards}
+                />
+                <ToggleRow
+                    icon={<Volume2 size={18}/>}
+                    label="Text to speech"
+                    description={
+                        canSpeak
+                            ? "Read the visible card face aloud."
+                            : "Not supported on this device."
+                    }
+                    checked={textToSpeech}
+                    onChange={onTextToSpeech}
+                    disabled={!canSpeak}
+                />
+            </SheetSection>
+
+            <div className="rounded-2xl bg-[#F4F8FF] p-1.5">
+                <ToggleRow
+                    icon={<Layers size={18}/>}
+                    label="Sort into piles"
+                    description="Swipe cards into Still learning / Known piles and track your progress this session."
+                    checked={sortIntoPiles}
+                    onChange={onSortIntoPiles}
+                />
+            </div>
+
+            <SheetSection title="Card orientation">
+                <SegmentedControl
+                    value={direction}
+                    options={[
+                        {value: "front", label: "Term"},
+                        {value: "back", label: "Definition"},
+                    ]}
+                    onChange={onDirection}
+                />
+            </SheetSection>
+
+            <SheetSection title="Mode">
                 <SegmentedControl
                     value={mode}
                     options={[
@@ -728,44 +1213,94 @@ function StudyOptionsSheet({
                     ]}
                     onChange={onMode}
                 />
-            </div>
-            <div>
-                <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
-                    <ArrowLeftRight size={15} className="text-[#091A7A]"/>
-                    Direction
+                {mode === "browse" && (
+                    <div className="pt-1">
+                        <p className="mb-1.5 flex items-center gap-1.5 px-1 text-[12px] font-semibold text-[#091A7A]">
+                            <ArrowLeftRight size={14}/>
+                            Card order
+                        </p>
+                        <SegmentedControl
+                            value={order}
+                            options={[
+                                {value: "inOrder", label: "In order"},
+                                {value: "shuffle", label: "Shuffle"},
+                                {value: "reverse", label: "Reverse"},
+                            ]}
+                            onChange={onOrder}
+                        />
+                    </div>
+                )}
+                <p className="flex items-center gap-1.5 px-1 pt-1 text-[12px] text-[#64748b]">
+                    <BookOpen size={14}/>
+                    {mode === "review"
+                        ? "Spaced review schedules each card by how well you recall it."
+                        : "Browse flips through every card, your way."}
                 </p>
-                <SegmentedControl
-                    value={direction}
-                    options={[
-                        {value: "front", label: "Front first"},
-                        {value: "back", label: "Back first"},
-                    ]}
-                    onChange={onDirection}
-                />
-            </div>
-            {mode === "browse" && (
-                <div>
-                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#091A7A] mb-2">
-                        <Shuffle size={15} className="text-[#091A7A]"/>
-                        Card order
-                    </p>
-                    <SegmentedControl
-                        value={order}
-                        options={[
-                            {value: "inOrder", label: "In order"},
-                            {value: "shuffle", label: "Shuffle"},
-                            {value: "reverse", label: "Reverse"},
-                        ]}
-                        onChange={onOrder}
+            </SheetSection>
+        </KeyboardSheet>
+    );
+}
+
+// --- Press-and-hold quick actions -------------------------------------------
+
+function QuickActionsSheet({
+                              open,
+                              onClose,
+                              flagged,
+                              canEdit,
+                              canSpeak,
+                              onFlag,
+                              onEdit,
+                              onSpeak,
+                              onSkip,
+                              onRestart,
+                          }: {
+    open: boolean;
+    onClose: () => void;
+    flagged: boolean;
+    canEdit: boolean;
+    canSpeak: boolean;
+    onFlag: () => void;
+    onEdit: () => void;
+    onSpeak: () => void;
+    onSkip: () => void;
+    onRestart: () => void;
+}) {
+    const run = (fn: () => void) => () => {
+        fn();
+        onClose();
+    };
+    const row =
+        "flex w-full items-center gap-3.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold text-[#091A7A] bg-[#F4F8FF] active:scale-[0.99] transition-transform";
+    return (
+        <KeyboardSheet open={open} onClose={onClose} title="Quick actions">
+            <div className="space-y-2">
+                <button onClick={run(onFlag)} disabled={!canEdit} className={`${row} disabled:opacity-50`}>
+                    <Flag
+                        size={19}
+                        className={flagged ? "fill-[#FFC71E] text-[#B8860B]" : "text-[#091A7A]"}
                     />
-                </div>
-            )}
-            <p className="text-[12px] text-[#64748b] flex items-center gap-1.5 pt-1">
-                <BookOpen size={14}/>
-                {mode === "review"
-                    ? "Spaced review schedules each card by how well you recall it."
-                    : "Browse flips through every card in order, your way."}
-            </p>
+                    {flagged ? "Remove flag" : "Flag this card"}
+                </button>
+                <button onClick={run(onEdit)} disabled={!canEdit} className={`${row} disabled:opacity-50`}>
+                    <Pencil size={19}/>
+                    Edit card
+                </button>
+                {canSpeak && (
+                    <button onClick={run(onSpeak)} className={row}>
+                        <Volume2 size={19}/>
+                        Read aloud
+                    </button>
+                )}
+                <button onClick={run(onSkip)} className={row}>
+                    <SkipForward size={19}/>
+                    Skip for now
+                </button>
+                <button onClick={run(onRestart)} className={row}>
+                    <RotateCcw size={19}/>
+                    Restart session
+                </button>
+            </div>
         </KeyboardSheet>
     );
 }
@@ -779,7 +1314,7 @@ function StudyToolButton({
                              disabled,
                              active,
                          }: {
-    icon: React.ReactNode;
+    icon: ReactNode;
     label: string;
     onClick: () => void;
     disabled?: boolean;

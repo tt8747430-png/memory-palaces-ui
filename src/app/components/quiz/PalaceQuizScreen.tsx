@@ -24,6 +24,8 @@ interface PalaceQuizScreenProps {
     palaceId: string;
     onBack: () => void;
     onComplete: (results: QuizResults) => void;
+    /** When set, only quiz on this room's questions (room-scoped test). */
+    roomTitle?: string;
 }
 
 export interface QuizResults {
@@ -48,6 +50,7 @@ export function PalaceQuizScreen({
                                      palaceId,
                                      onBack,
                                      onComplete,
+                                     roomTitle,
                                  }: PalaceQuizScreenProps) {
     const {state, actions} = useProgressState();
     const palace = state.palaces.find((p) => p.id === palaceId);
@@ -61,7 +64,7 @@ export function PalaceQuizScreen({
     const [timeLeft, setTimeLeft] = useState(30);
     const [startTime] = useState(Date.now());
     const [questions] = useState<QuizQuestion[]>(() =>
-        buildQuizQuestions(palace, palaceSettings(palace).shuffleQuestions),
+        buildQuizQuestions(palace, palaceSettings(palace).shuffleQuestions, roomTitle),
     );
     // Per-palace "Quiz timer" setting; when off, learners answer at their pace.
     const [timerEnabled] = useState(() => palaceSettings(palace).quizTimer);
@@ -158,6 +161,31 @@ export function PalaceQuizScreen({
     };
 
     if (!palace) return null;
+
+    // Room-scoped quiz on a room with no authored questions yet.
+    if (questions.length === 0) {
+        return (
+            <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#EAF4FF]">
+                    <Brain className="h-8 w-8 text-[#3D8FEF]"/>
+                </div>
+                <div>
+                    <h2 className="mb-1 text-2xl font-bold text-[#091A7A]">No questions yet</h2>
+                    <p className="mx-auto max-w-[34ch] text-[14px] text-[#475569]">
+                        {roomTitle
+                            ? `Add some questions to “${roomTitle}” to test yourself on this room.`
+                            : "Add questions to this palace to start a quiz."}
+                    </p>
+                </div>
+                <button
+                    onClick={onBack}
+                    className="rounded-full bg-[#091A7A] px-6 py-3 text-sm font-semibold text-white shadow-interactive"
+                >
+                    Back
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full bg-gradient-to-b from-[#ADC8FF]/30 via-[#F8FBFF]/50 to-white flex flex-col">
@@ -445,8 +473,12 @@ export function PalaceQuizScreen({
 function buildQuizQuestions(
     palace: Palace | undefined,
     shuffleQuestions: boolean,
+    roomTitle?: string,
 ): QuizQuestion[] {
-    const authored = (palace?.rooms || []).flatMap((room) =>
+    const rooms = roomTitle
+        ? (palace?.rooms || []).filter((r) => r.title === roomTitle)
+        : palace?.rooms || [];
+    const authored = rooms.flatMap((room) =>
         (room.questions || []).map((q) => ({
             id: q.id,
             question: q.prompt,
@@ -456,10 +488,14 @@ function buildQuizQuestions(
             explanation: q.explanation,
         })),
     );
+    // A room-scoped quiz only ever uses that room's authored questions — no
+    // sample fallback, so an empty room reads as "nothing to test yet".
     const built =
         authored.length > 0
             ? authored
-            : generateQuizQuestions(palace?.id || "default");
+            : roomTitle
+                ? []
+                : generateQuizQuestions(palace?.id || "default");
     if (shuffleQuestions && built.length > 1) {
         const a = [...built];
         for (let i = a.length - 1; i > 0; i--) {

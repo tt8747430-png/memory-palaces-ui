@@ -63,6 +63,12 @@ export interface PalaceSettings {
     cardOrder: CardOrder;
     /** Randomize question order in the quiz. */
     shuffleQuestions: boolean;
+    /** Shuffle the flashcard deck at the start of each study session. */
+    shuffleCards: boolean;
+    /** Read the visible card face aloud (Web Speech API) during study. */
+    textToSpeech: boolean;
+    /** Swipe cards into "Still learning" / "Known" piles while studying. */
+    sortIntoPiles: boolean;
 }
 
 export const DEFAULT_SETTINGS: PalaceSettings = {
@@ -70,6 +76,9 @@ export const DEFAULT_SETTINGS: PalaceSettings = {
     studyDirection: "front",
     cardOrder: "inOrder",
     shuffleQuestions: false,
+    shuffleCards: false,
+    textToSpeech: false,
+    sortIntoPiles: true,
 };
 
 /** Read a palace's settings, applying defaults and mapping any legacy keys. */
