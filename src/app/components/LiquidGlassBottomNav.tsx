@@ -84,7 +84,7 @@ export function LiquidGlassBottomNav({
     }, [activeTab]);
 
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-1/2 -translate-x-1/2 z-50">
             <div
                 className="absolute inset-0 bg-gradient-to-t from-[#091A7A]/20 via-[#4F8EFF]/10 to-transparent blur-2xl scale-110 opacity-60"/>
 

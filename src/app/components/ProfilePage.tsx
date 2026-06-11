@@ -1,4 +1,4 @@
-import {AnimatePresence, motion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
 import {Award, Book, Calendar, Crown, Settings, Star, Target, TrendingUp, Trophy, Zap,} from "lucide-react";
 import {ImageWithFallback} from "./ui/ImageWithFallback";
 import {useProgressState} from "../hooks/useProgressState";
@@ -16,17 +16,21 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const {scrollY} = useScroll({container: scrollRef});
     const [activeTab, setActiveTab] = useState<"statistics" | "achievements">("statistics");
+    const reduce = useReducedMotion();
 
-    // Parallax: the large header recedes as you scroll, the compact header fades in.
-    const headerOpacity = useTransform(scrollY, [0, 120], [1, 0]);
-    const headerScale = useTransform(scrollY, [0, 120], [1, 0.95]);
-    const headerY = useTransform(scrollY, [0, 120], [0, 40]);
+    // Parallax: the large header recedes as you scroll, the compact header fades
+    // in. Under reduced motion we keep the opacity crossfade but drop the
+    // scale/translate transforms (the header just scrolls normally).
+    const headerOpacity = useTransform(scrollY, [0, 110], [1, 0]);
+    const headerScale = useTransform(scrollY, [0, 110], reduce ? [1, 1] : [1, 0.95]);
+    const headerY = useTransform(scrollY, [0, 110], reduce ? [0, 0] : [0, 36]);
 
     // Overscroll (negative scrollY on iOS/Mac) gently enlarges the avatar.
-    const imageScale = useTransform(scrollY, [-150, 0], [1.3, 1]);
-    const imageY = useTransform(scrollY, [-150, 0], [20, 0]);
+    const imageScale = useTransform(scrollY, [-150, 0], reduce ? [1, 1] : [1.3, 1]);
+    const imageY = useTransform(scrollY, [-150, 0], reduce ? [0, 0] : [20, 0]);
 
-    const compactHeaderOpacity = useTransform(scrollY, [80, 120], [0, 1]);
+    const compactHeaderOpacity = useTransform(scrollY, [70, 110], [0, 1]);
+    const compactHeaderPointer = useTransform(compactHeaderOpacity, (v) => (v > 0.5 ? "auto" : "none"));
     const headerPointerEvents = useTransform(headerOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
     const levelProgress = {
@@ -109,9 +113,10 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
 
             {/* Sticky compact header — fades in once the large header scrolls away */}
             <motion.div
-                style={{opacity: compactHeaderOpacity}}
+                style={{opacity: compactHeaderOpacity, pointerEvents: compactHeaderPointer}}
                 className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-[#091A7A]/[0.06] shadow-[0_4px_24px_rgba(9,26,122,0.04)]"
             >
+                <div className="h-safe-top"/>
                 <div className="flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-3">
                         <ImageWithFallback
@@ -136,10 +141,13 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                 </div>
             </motion.div>
 
+            {/* Clear the notch before the hero */}
+            <div className="h-safe-top"/>
+
             {/* Large header */}
             <motion.div
                 style={{opacity: headerOpacity, scale: headerScale, y: headerY, pointerEvents: headerPointerEvents}}
-                className="relative px-6 pt-12 pb-8 will-change-transform"
+                className="relative px-6 pt-6 pb-8 will-change-transform origin-top"
             >
                 <div className="flex items-center justify-end mb-4">
                     <motion.button

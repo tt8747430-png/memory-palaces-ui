@@ -1,5 +1,5 @@
-import {useMemo, useState} from "react";
-import {motion} from "motion/react";
+import {useMemo, useRef, useState} from "react";
+import {motion, useScroll, useTransform} from "motion/react";
 import {
   Archive,
   ArchiveRestore,
@@ -193,6 +193,16 @@ export function PalacesPage({
     const [newFolderName, setNewFolderName] = useState("");
     const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
+    // Collapse the header in place on scroll: the big title shrinks and the
+    // view-controls row folds away, while search + create stay pinned.
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const {scrollY} = useScroll({container: scrollRef});
+    const titleScale = useTransform(scrollY, [0, 80], [1, 0.66]);
+    const titleY = useTransform(scrollY, [0, 80], [0, 2]);
+    const controlsHeight = useTransform(scrollY, [0, 80], [56, 0]);
+    const controlsOpacity = useTransform(scrollY, [0, 48], [1, 0]);
+    const headerPadBottom = useTransform(scrollY, [0, 80], [20, 12]);
+
     const safeFolders = folders ?? [];
     const archivedCount = palaces.filter((p) => p.archived).length;
     const favoriteCount = palaces.filter((p) => p.favorite && !p.archived).length;
@@ -294,9 +304,17 @@ export function PalacesPage({
 
                     <div className="h-safe-top relative z-10"/>
 
-                    <div className="px-[20px] pt-[16px] pb-[20px] relative z-10">
-                        <div className="flex items-center justify-between mb-[16px]">
-                            <h1 className="text-[32px] font-bold text-white">Palaces</h1>
+                    <motion.div
+                        style={{paddingBottom: headerPadBottom}}
+                        className="px-[20px] pt-[16px] relative z-10"
+                    >
+                        <div className="flex items-center justify-between">
+                            <motion.h1
+                                style={{scale: titleScale, y: titleY}}
+                                className="text-[32px] font-bold text-white origin-left"
+                            >
+                                Palaces
+                            </motion.h1>
                             <div className="flex items-center gap-3">
                                 <motion.button
                                     whileTap={{scale: 0.92}}
@@ -317,8 +335,11 @@ export function PalacesPage({
                             </div>
                         </div>
 
-                        {/* View Controls */}
-                        <div className="flex items-center gap-[12px]">
+                        {/* View Controls — fold away as the header collapses */}
+                        <motion.div
+                            style={{height: controlsHeight, opacity: controlsOpacity}}
+                            className="overflow-hidden flex items-center gap-[12px] pt-[12px]"
+                        >
                             <div className="flex-1">
                                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")}
                                       className="w-full">
@@ -367,12 +388,12 @@ export function PalacesPage({
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
                     {/* Folder / collection rail */}
                     <div className="px-[20px] py-[14px] border-b border-[#E5E5EA] sticky top-0 bg-white/95 backdrop-blur-md z-10 shadow-sm">
                         <div className="flex gap-[8px] overflow-x-auto scrollbar-hide pb-1">

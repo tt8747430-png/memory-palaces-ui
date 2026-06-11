@@ -95,87 +95,149 @@ export function NotificationsScreen({
         }));
     }, [notifications]);
 
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const header = useCollapsibleHeader(scrollRef);
+
     return (
-        <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col">
-            {/* Header */}
-            <div className="flex-shrink-0">
+        <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white relative">
+            {/* Compact sticky bar — fades in once the big title scrolls away */}
+            <motion.div
+                style={{
+                    opacity: header.compactOpacity,
+                    pointerEvents: header.compactPointerEvents,
+                }}
+                className="fixed top-0 left-0 right-0 z-40 bg-white/85 backdrop-blur-2xl border-b border-[#091A7A]/[0.06] shadow-[0_4px_24px_rgba(9,26,122,0.04)]"
+            >
                 <div className="h-safe-top"/>
-                <div className="flex items-center justify-between gap-3 px-5 pt-2 pb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <motion.button
-                            whileTap={{scale: 0.92}}
+                <div className="flex items-center justify-between gap-2 px-3 py-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <button
                             onClick={onBack}
                             aria-label="Go back"
-                            className="w-11 h-11 flex-shrink-0 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 text-[#091A7A]"
+                            className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[#091A7A] active:scale-95 transition-transform"
                         >
                             <ArrowLeft className="w-5 h-5"/>
-                        </motion.button>
-                        <div className="min-w-0">
-                            <h1 className="text-[20px] font-bold text-[#091A7A] leading-tight">
-                                Notifications
-                            </h1>
-                            <p className="text-[12px] text-[#475569]">
-                                {unreadCount > 0
-                                    ? `${unreadCount} unread`
-                                    : "You're all caught up"}
-                            </p>
-                        </div>
+                        </button>
+                        <h2 className="text-[16px] font-bold text-[#091A7A] truncate">
+                            Notifications
+                        </h2>
                     </div>
-
                     {notifications.length > 0 && (
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <motion.button
-                                whileTap={{scale: 0.94}}
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                            <button
                                 onClick={onMarkAllRead}
                                 disabled={unreadCount === 0}
                                 aria-label="Mark all as read"
-                                className={`h-10 px-3 rounded-full flex items-center gap-1.5 text-[13px] font-semibold border transition-colors ${
-                                    unreadCount === 0
-                                        ? "bg-white/50 border-transparent text-[#94a3b8]"
-                                        : "bg-white border-[#091A7A]/12 text-[#091A7A]"
+                                className={`w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-transform ${
+                                    unreadCount === 0 ? "text-[#94a3b8]" : "text-[#091A7A]"
                                 }`}
                             >
-                                <CheckCheck className="w-4 h-4"/>
-                                Read
-                            </motion.button>
-                            <motion.button
-                                whileTap={{scale: 0.94}}
+                                <CheckCheck className="w-[18px] h-[18px]"/>
+                            </button>
+                            <button
                                 onClick={onClear}
                                 aria-label="Clear all notifications"
-                                className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-[#091A7A]/12 text-[#B91C1C]"
+                                className="w-11 h-11 rounded-full flex items-center justify-center text-[#B91C1C] active:scale-95 transition-transform"
                             >
-                                <Trash2 className="w-4 h-4"/>
-                            </motion.button>
+                                <Trash2 className="w-[18px] h-[18px]"/>
+                            </button>
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
-            {/* List */}
-            {notifications.length === 0 ? (
-                <EmptyState/>
-            ) : (
-                <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-28">
-                    <div className="space-y-6">
-                        {groups.map((group) => (
-                            <section key={group.label} className="space-y-2.5">
-                                <h2 className="px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#64748b]">
-                                    {group.label}
-                                </h2>
-                                <AnimatePresence initial={false}>
-                                    {group.items.map((n) => (
-                                        <NotificationRow
-                                            key={n.id}
-                                            notification={n}
-                                            onRemove={() => onRemove(n.id)}
-                                        />
-                                    ))}
-                                </AnimatePresence>
-                            </section>
-                        ))}
+            {/* Scroll container */}
+            <div ref={scrollRef} className="h-full overflow-y-auto scrollbar-hide">
+                {/* Large header */}
+                <motion.div
+                    style={{
+                        opacity: header.largeOpacity,
+                        scale: header.largeScale,
+                        y: header.largeY,
+                        pointerEvents: header.largePointerEvents,
+                    }}
+                    className="origin-top will-change-transform"
+                >
+                    <div className="h-safe-top"/>
+                    <div className="flex items-center justify-between gap-3 px-5 pt-2 pb-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <motion.button
+                                whileTap={{scale: 0.92}}
+                                onClick={onBack}
+                                aria-label="Go back"
+                                className="w-11 h-11 flex-shrink-0 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-card border border-white/40 text-[#091A7A]"
+                            >
+                                <ArrowLeft className="w-5 h-5"/>
+                            </motion.button>
+                            <div className="min-w-0">
+                                <h1 className="text-[26px] font-bold text-[#091A7A] leading-tight tracking-tight">
+                                    Notifications
+                                </h1>
+                                <p className="text-[12px] text-[#475569]">
+                                    {unreadCount > 0
+                                        ? `${unreadCount} unread`
+                                        : "You're all caught up"}
+                                </p>
+                            </div>
+                        </div>
+
+                        {notifications.length > 0 && (
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <motion.button
+                                    whileTap={{scale: 0.94}}
+                                    onClick={onMarkAllRead}
+                                    disabled={unreadCount === 0}
+                                    aria-label="Mark all as read"
+                                    className={`h-11 px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-semibold border transition-colors ${
+                                        unreadCount === 0
+                                            ? "bg-white/50 border-transparent text-[#94a3b8]"
+                                            : "bg-white border-[#091A7A]/12 text-[#091A7A]"
+                                    }`}
+                                >
+                                    <CheckCheck className="w-4 h-4"/>
+                                    Read
+                                </motion.button>
+                                <motion.button
+                                    whileTap={{scale: 0.94}}
+                                    onClick={onClear}
+                                    aria-label="Clear all notifications"
+                                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white border border-[#091A7A]/12 text-[#B91C1C]"
+                                >
+                                    <Trash2 className="w-4 h-4"/>
+                                </motion.button>
+                            </div>
+                        )}
                     </div>
-                </div>
-            )}
+                </motion.div>
+
+                {/* List or empty */}
+                {notifications.length === 0 ? (
+                    <div className="min-h-[64dvh] flex flex-col">
+                        <EmptyState/>
+                    </div>
+                ) : (
+                    <div className="px-5 pb-28">
+                        <div className="space-y-6">
+                            {groups.map((group) => (
+                                <section key={group.label} className="space-y-2.5">
+                                    <h2 className="px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#64748b]">
+                                        {group.label}
+                                    </h2>
+                                    <AnimatePresence initial={false}>
+                                        {group.items.map((n) => (
+                                            <NotificationRow
+                                                key={n.id}
+                                                notification={n}
+                                                onRemove={() => onRemove(n.id)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </section>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

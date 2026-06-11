@@ -1,5 +1,5 @@
 import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
-import {AnimatePresence, motion} from "motion/react";
+import {AnimatePresence, motion, useScroll, useTransform} from "motion/react";
 import {
     ArrowLeft,
     Check,
@@ -98,6 +98,14 @@ export function RoomContentScreen({
     const [quickBack, setQuickBack] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const quickFrontRef = useRef<HTMLInputElement>(null);
+
+    // Collapse the room title on scroll; tabs + search stay pinned below.
+    const listRef = useRef<HTMLDivElement>(null);
+    const {scrollY} = useScroll({container: listRef});
+    const titleScale = useTransform(scrollY, [0, 70], [1, 0.84]);
+    const titleMb = useTransform(scrollY, [0, 70], [16, 6]);
+    const nameHeight = useTransform(scrollY, [0, 60], [18, 0]);
+    const nameOpacity = useTransform(scrollY, [0, 40], [1, 0]);
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);
@@ -316,14 +324,20 @@ export function RoomContentScreen({
                             />
                         </div>
 
-                        <div className="mb-4">
-                            <p className="text-[13px] font-medium text-white/70 mb-0.5">
+                        <motion.div style={{marginBottom: titleMb}}>
+                            <motion.p
+                                style={{height: nameHeight, opacity: nameOpacity}}
+                                className="text-[13px] font-medium text-white/70 overflow-hidden"
+                            >
                                 {palace.name}
-                            </p>
-                            <h1 className="text-[24px] font-bold text-white leading-tight text-balance">
+                            </motion.p>
+                            <motion.h1
+                                style={{scale: titleScale}}
+                                className="text-[24px] font-bold text-white leading-tight text-balance origin-left"
+                            >
                                 {room.title}
-                            </h1>
-                        </div>
+                            </motion.h1>
+                        </motion.div>
 
                         {/* Tabs */}
                         <Tabs
@@ -419,7 +433,7 @@ export function RoomContentScreen({
                 )}
 
                 {/* List */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide bg-[#EEF4FF] px-5 pt-3 pb-[120px]">
+                <div ref={listRef} className="flex-1 overflow-y-auto scrollbar-hide bg-[#EEF4FF] px-5 pt-3 pb-[120px]">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={tab}
