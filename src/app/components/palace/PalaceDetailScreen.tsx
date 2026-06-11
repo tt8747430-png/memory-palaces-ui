@@ -1,4 +1,4 @@
-import {useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
 import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
@@ -61,6 +61,7 @@ import {
 } from "../ui/dropdown-menu";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
+import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Drawer} from "vaul";
 
 interface PalaceDetailScreenProps {
@@ -413,8 +414,7 @@ export function PalaceDetailScreen({
     const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
     const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
 
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const header = useCollapsibleHeader(scrollRef, {distance: 150});
+    const header = useCollapsibleHeader({distance: 150});
 
     if (!palace) {
         return (
@@ -444,7 +444,7 @@ export function PalaceDetailScreen({
 
     return (
         <div
-            ref={scrollRef}
+            ref={header.ref}
             className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto"
         >
             {/* Compact sticky bar — fades in once the banner scrolls away */}
@@ -777,7 +777,6 @@ export function PalaceDetailScreen({
             {/* Room editor */}
             <RoomEditorDrawer
                 editor={roomEditor}
-                roomCount={rooms.length}
                 onClose={() => setRoomEditor(null)}
                 onCreate={(data) => {
                     actions.createRoom(palaceId, {
@@ -1180,13 +1179,11 @@ function PalaceSettingsSheet({
 
 function RoomEditorDrawer({
                               editor,
-                              roomCount,
                               onClose,
                               onCreate,
                               onSave,
                           }: {
     editor: {mode: "add"} | {mode: "edit"; room: StateRoom} | null;
-    roomCount: number;
     onClose: () => void;
     onCreate: (data: {
         title: string;
@@ -1205,21 +1202,23 @@ function RoomEditorDrawer({
     ) => void;
 }) {
     const editing = editor?.mode === "edit" ? editor.room : null;
+    const open = !!editor;
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [duration, setDuration] = useState(10);
     const [isUnlocked, setIsUnlocked] = useState(true);
-    // Re-seed the form whenever a different editor target opens.
-    const [seededFor, setSeededFor] = useState<string | null>(null);
-    const key = editor ? (editing ? editing.id : "add") : null;
-    if (editor && key !== seededFor) {
-        setSeededFor(key);
-        setTitle(editing?.title ?? "");
-        setDescription(editing?.description ?? "");
-        setDuration(editing?.duration ?? 10);
-        setIsUnlocked(editing ? editing.isUnlocked : roomCount === 0 ? true : true);
-    }
+
+    // Re-seed the form each time a target opens (the sheet stays mounted).
+    useEffect(() => {
+        if (open) {
+            setTitle(editing?.title ?? "");
+            setDescription(editing?.description ?? "");
+            setDuration(editing?.duration ?? 10);
+            setIsUnlocked(editing ? editing.isUnlocked : true);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, editing?.id]);
 
     const valid = title.trim().length > 0 && description.trim().length > 0;
 
@@ -1235,98 +1234,78 @@ function RoomEditorDrawer({
         else onCreate(data);
     };
 
+    const fieldCls =
+        "w-full bg-[#F4F8FF] rounded-xl px-4 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none";
+
     return (
-        <Drawer.Root
-            open={!!editor}
-            onOpenChange={(o) => {
-                if (!o) {
-                    setSeededFor(null);
-                    onClose();
-                }
-            }}
-        >
-            <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 bg-[#091A7A]/40 z-[100]"/>
-                <Drawer.Content
-                    aria-describedby={undefined}
-                    className="bg-white flex flex-col rounded-t-[20px] mt-24 fixed bottom-0 left-0 right-0 z-[101] outline-none max-h-[88%]"
+        <KeyboardSheet
+            open={open}
+            onClose={onClose}
+            title={editing ? "Edit room" : "New room"}
+            footer={
+                <button
+                    onClick={submit}
+                    disabled={!valid}
+                    className={`w-full py-3.5 rounded-2xl font-semibold transition-colors ${
+                        valid
+                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
+                            : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                    }`}
                 >
-                    <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-[#091A7A]/15 mt-3 mb-1"/>
-                    <Drawer.Title className="px-5 pt-3 pb-4 text-[20px] font-bold text-[#091A7A]">
-                        {editing ? "Edit room" : "New room"}
-                    </Drawer.Title>
-
-                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 space-y-4">
-                        <div>
-                            <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                                Room name
-                            </label>
-                            <Input
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="e.g., The Entrance Hall"
-                                autoFocus
-                                className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                                Description
-                            </label>
-                            <Textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="What does this room hold?"
-                                rows={3}
-                                className="w-full bg-[#F4F8FF] rounded-xl px-4 py-3 text-[15px] text-[#091A7A] placeholder:text-[#091A7A]/40 border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none resize-none"
-                            />
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1">
-                                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                                    Duration (min)
-                                </label>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    value={duration}
-                                    onChange={(e) => setDuration(Number(e.target.value))}
-                                    className="w-full bg-[#F4F8FF] rounded-xl px-4 h-12 text-[15px] text-[#091A7A] border-2 border-transparent focus:border-[#4F8EFF]/60 outline-none"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
-                                    Unlocked
-                                </label>
-                                <div className="h-12 flex items-center justify-between rounded-xl bg-[#F4F8FF] px-4">
-                                    <span className="text-[14px] text-[#475569]">
-                                        {isUnlocked ? "Available" : "Locked"}
-                                    </span>
-                                    <Switch
-                                        checked={isUnlocked}
-                                        onCheckedChange={setIsUnlocked}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                    {editing ? "Save changes" : "Add room"}
+                </button>
+            }
+        >
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Room name
+                </label>
+                <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., The Entrance Hall"
+                    enterKeyHint="next"
+                    className={`${fieldCls} h-12`}
+                />
+            </div>
+            <div>
+                <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                    Description
+                </label>
+                <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="What does this room hold?"
+                    rows={3}
+                    className={`${fieldCls} py-3 resize-none`}
+                />
+            </div>
+            <div className="flex items-center gap-4">
+                <div className="flex-1">
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Duration (min)
+                    </label>
+                    <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        value={duration}
+                        onChange={(e) => setDuration(Number(e.target.value))}
+                        className={`${fieldCls} h-12`}
+                    />
+                </div>
+                <div className="flex-1">
+                    <label className="block text-[13px] font-semibold text-[#091A7A] mb-1.5">
+                        Unlocked
+                    </label>
+                    <div className="h-12 flex items-center justify-between rounded-xl bg-[#F4F8FF] px-4">
+                        <span className="text-[14px] text-[#475569]">
+                            {isUnlocked ? "Available" : "Locked"}
+                        </span>
+                        <Switch checked={isUnlocked} onCheckedChange={setIsUnlocked}/>
                     </div>
-
-                    <div className="p-5">
-                        <motion.button
-                            whileTap={{scale: valid ? 0.98 : 1}}
-                            onClick={submit}
-                            disabled={!valid}
-                            className={`w-full py-3.5 rounded-2xl font-semibold transition-colors ${
-                                valid
-                                    ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)]"
-                                    : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
-                            }`}
-                        >
-                            {editing ? "Save changes" : "Add room"}
-                        </motion.button>
-                    </div>
-                </Drawer.Content>
-            </Drawer.Portal>
-        </Drawer.Root>
+                </div>
+            </div>
+        </KeyboardSheet>
     );
 }

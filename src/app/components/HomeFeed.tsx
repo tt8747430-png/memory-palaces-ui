@@ -1,4 +1,3 @@
-import {useRef} from "react";
 import {motion} from "motion/react";
 import {BellRing} from "lucide-react";
 import {DynamicBackground} from "./DynamicBackground";
@@ -53,8 +52,7 @@ export function HomeFeed({
                              onCreatePalace,
                              onPalaceClick,
                          }: HomeFeedProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const header = useCollapsibleHeader(scrollRef);
+    const header = useCollapsibleHeader();
 
     return (
         <div className="size-full relative">
@@ -107,7 +105,7 @@ export function HomeFeed({
 
             {/* Scroll container */}
             <div
-                ref={scrollRef}
+                ref={header.ref}
                 className="size-full overflow-y-auto scrollbar-hide relative z-10 pb-[140px]"
             >
                 <motion.div

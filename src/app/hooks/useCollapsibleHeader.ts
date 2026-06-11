@@ -1,13 +1,45 @@
-import {type RefObject} from "react";
+import {useCallback, useRef} from "react";
 import {
     type MotionValue,
+    useMotionValue,
     useReducedMotion,
-    useScroll,
     useTransform,
 } from "motion/react";
 
+/**
+ * Track a scroll container's vertical offset as a MotionValue, wiring the
+ * listener through a **callback ref**.
+ *
+ * Why not motion's `useScroll({container})`: that reads the ref once when the
+ * hook first runs and never re-attaches. On a surface that stays mounted but is
+ * shown via a flag (Settings is rendered as `<SettingsScreen open={...}/>` and
+ * toggled), the scroll node doesn't exist on first run, so the listener binds to
+ * nothing and the header never collapses. A callback ref fires on every mount
+ * and unmount, so tracking attaches the moment the node appears.
+ */
+export function useContainerScroll() {
+    const scrollY = useMotionValue(0);
+    const detach = useRef<(() => void) | null>(null);
+
+    const ref = useCallback(
+        (node: HTMLElement | null) => {
+            detach.current?.();
+            detach.current = null;
+            if (!node) return;
+            const onScroll = () => scrollY.set(node.scrollTop);
+            onScroll();
+            node.addEventListener("scroll", onScroll, {passive: true});
+            detach.current = () => node.removeEventListener("scroll", onScroll);
+        },
+        [scrollY],
+    );
+
+    return {ref, scrollY};
+}
+
 export interface CollapsibleHeader {
-    /** Raw vertical scroll position of the container. */
+    /** Attach to the scroll container: `<div ref={header.ref}>`. */
+    ref: (node: HTMLElement | null) => void;
     scrollY: MotionValue<number>;
     /** Large hero header: fades + scales + drifts up as you scroll. */
     largeOpacity: MotionValue<number>;
@@ -20,18 +52,15 @@ export interface CollapsibleHeader {
 }
 
 /**
- * Scroll-driven header collapse, the shared mechanism behind the app's
- * collapsing headers (modelled on the profile page). Pass the scroll
- * container's ref; read the motion values onto a large hero header and a
- * compact sticky bar. Pages that collapse in place can use `scrollY` directly.
+ * Scroll-driven header collapse shared across the app's pages. Spread `ref` onto
+ * the scroll container, then read the motion values onto a large hero header and
+ * a compact sticky bar. Reduced motion keeps the opacity crossfade but drops the
+ * scale/translate parallax.
  */
-export function useCollapsibleHeader(
-    container: RefObject<HTMLDivElement | null>,
-    {distance = 120}: {distance?: number} = {},
-): CollapsibleHeader {
-    const {scrollY} = useScroll({container});
-    // Keep the opacity crossfade (an allowed reduced-motion alternative) but
-    // drop the scale/translate parallax when the user prefers reduced motion.
+export function useCollapsibleHeader({
+                                         distance = 120,
+                                     }: {distance?: number} = {}): CollapsibleHeader {
+    const {ref, scrollY} = useContainerScroll();
     const reduce = useReducedMotion();
 
     const largeOpacity = useTransform(scrollY, [0, distance], [1, 0]);
@@ -51,6 +80,7 @@ export function useCollapsibleHeader(
     );
 
     return {
+        ref,
         scrollY,
         largeOpacity,
         largeScale,

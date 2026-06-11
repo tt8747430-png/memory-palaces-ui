@@ -1,8 +1,9 @@
-import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
 import {Award, Book, Calendar, Crown, Settings, Star, Target, TrendingUp, Trophy, Zap,} from "lucide-react";
 import {ImageWithFallback} from "./ui/ImageWithFallback";
 import {useProgressState} from "../hooks/useProgressState";
-import {useMemo, useRef, useState} from "react";
+import {useContainerScroll} from "../hooks/useCollapsibleHeader";
+import {useMemo, useState} from "react";
 
 interface ProfilePageProps {
     onOpenSettings: () => void;
@@ -13,8 +14,7 @@ const PROFILE_IMAGE =
 
 export function ProfilePage({onOpenSettings}: ProfilePageProps) {
     const {state} = useProgressState();
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const {scrollY} = useScroll({container: scrollRef});
+    const {ref: scrollRef, scrollY} = useContainerScroll();
     const [activeTab, setActiveTab] = useState<"statistics" | "achievements">("statistics");
     const reduce = useReducedMotion();
 

@@ -1,4 +1,4 @@
-import {useMemo, useRef} from "react";
+import {useMemo} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
@@ -95,8 +95,7 @@ export function NotificationsScreen({
         }));
     }, [notifications]);
 
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const header = useCollapsibleHeader(scrollRef);
+    const header = useCollapsibleHeader();
 
     return (
         <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white relative">
@@ -147,7 +146,7 @@ export function NotificationsScreen({
             </motion.div>
 
             {/* Scroll container */}
-            <div ref={scrollRef} className="h-full overflow-y-auto scrollbar-hide">
+            <div ref={header.ref} className="h-full overflow-y-auto scrollbar-hide">
                 {/* Large header */}
                 <motion.div
                     style={{

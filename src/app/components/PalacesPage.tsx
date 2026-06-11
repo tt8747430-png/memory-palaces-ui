@@ -1,4 +1,4 @@
-import {useMemo, useRef, useState} from "react";
+import {useMemo, useState} from "react";
 import {motion} from "motion/react";
 import {useCollapsibleHeader} from "../hooks/useCollapsibleHeader";
 import {
@@ -196,8 +196,7 @@ export function PalacesPage({
 
     // Scroll-away header: the navy hero recedes and a compact bar fades in that
     // keeps Palaces + search + create pinned at the top.
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const header = useCollapsibleHeader(scrollRef, {distance: 110});
+    const header = useCollapsibleHeader({distance: 110});
 
     const safeFolders = folders ?? [];
     const archivedCount = palaces.filter((p) => p.archived).length;
@@ -325,7 +324,7 @@ export function PalacesPage({
                 </motion.div>
 
                 {/* Scroll container holds the receding hero + content */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-hide">
+                <div ref={header.ref} className="flex-1 overflow-y-auto scrollbar-hide">
                     {/* Hero header — recedes on scroll */}
                     <motion.div
                         style={{

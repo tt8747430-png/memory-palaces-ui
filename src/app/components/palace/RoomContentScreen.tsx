@@ -1,5 +1,5 @@
 import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
-import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
 import {
     ArrowLeft,
     Check,
@@ -32,6 +32,7 @@ import {
     useProgressState,
 } from "../../hooks/useProgressState";
 import {srsStatus, type SrsStatus} from "../../utils/srs";
+import {useContainerScroll} from "../../hooks/useCollapsibleHeader";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {EmptyState} from "../ui/EmptyState";
@@ -100,8 +101,7 @@ export function RoomContentScreen({
     const quickFrontRef = useRef<HTMLInputElement>(null);
 
     // Collapse the room title on scroll; tabs + search stay pinned below.
-    const listRef = useRef<HTMLDivElement>(null);
-    const {scrollY} = useScroll({container: listRef});
+    const {ref: listRef, scrollY} = useContainerScroll();
     const reduceMotion = useReducedMotion();
     const titleScale = useTransform(scrollY, [0, 70], reduceMotion ? [1, 1] : [1, 0.84]);
     const titleMb = useTransform(scrollY, [0, 70], reduceMotion ? [16, 16] : [16, 6]);

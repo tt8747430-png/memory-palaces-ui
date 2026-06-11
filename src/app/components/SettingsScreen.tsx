@@ -1,4 +1,4 @@
-import {AnimatePresence, motion, useReducedMotion, useScroll, useTransform} from "motion/react";
+import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
 import {
   ArrowLeft,
   Bell,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import {type ChangeEvent, useEffect, useRef, useState} from "react";
 import {useLocalStorage} from "../hooks/useLocalStorage";
+import {useContainerScroll} from "../hooks/useCollapsibleHeader";
 import {Skeleton} from "./ui/Skeleton";
 import {ProgressUtils} from "../utils/progressUtils";
 import {EditProfileScreen} from "./settings/EditProfileScreen";
@@ -100,9 +101,8 @@ export function SettingsScreen({
     const [phoneNumber, setPhoneNumber] = useState("");
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const {ref: scrollRef, scrollY} = useContainerScroll();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const {scrollY} = useScroll({container: scrollRef});
     const reduce = useReducedMotion();
 
     // Hero recedes as you scroll; the compact bar fades in. Reduced motion keeps
