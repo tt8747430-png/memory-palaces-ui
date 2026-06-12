@@ -21,8 +21,8 @@ later" comments unless explicitly requested.
 
 📋 Task:
 
-/impeccable craft add more customizability for the palaces like not only the preset icons or names but also custom images or somethin like that and other features
+/impeccable craft finish the settings functions, finish the forgot password screen, for the flashcards also add the posibility to chose the anki styles spaced repetition like this was har very hard, easy or other options.
 
-disable the text selection when clicking on controls like the browser does. in pwa mode we dont need this
+/impeccable extract improve the design  systedm and reduce the code duplicaton
 
-/impeccable craft merge the pages where i click on the play button for the specific room with the page of where i need to manage the pages so that there a no different pages. and also improve the room card for the specific room improve the layout and the features. and also why i need to click onto the play button or the manage button to get to the room details page. why cant i just click onto the room card itself.  add collapsible hearder also to the room detail page. and also run /impeccable clarify and distill on this
+/impeccable craft  improved the striek overview using this examples and best practices and all of the homepage and the homepage functions should be working like view all palaces and other features . /Users/kristianbraila/Downloads/IMG_1780.PNG /Users/kristianbraila/Downloads/IMG_1779.PNG

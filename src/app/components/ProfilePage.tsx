@@ -1,5 +1,5 @@
 import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
-import {Award, Book, Calendar, Crown, Settings, Star, Target, TrendingUp, Trophy, Zap,} from "lucide-react";
+import {Award, Book, Calendar, Crown, Settings, Snowflake, Star, Target, TrendingUp, Trophy, Zap,} from "lucide-react";
 import {ImageWithFallback} from "./ui/ImageWithFallback";
 import {useProgressState} from "../hooks/useProgressState";
 import {useContainerScroll} from "../hooks/useCollapsibleHeader";
@@ -89,7 +89,7 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                 title: "Perfectionist",
                 description: "Scored 100% on a quiz",
                 icon: Target,
-                earned: false,
+                earned: state.bestQuizAccuracy >= 100,
             },
             {
                 id: 6,
@@ -99,7 +99,13 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                 earned: state.totalRoomsCompleted >= 10,
             },
         ];
-    }, [state.palaces, state.streakCount, state.userXP, state.totalRoomsCompleted]);
+    }, [
+        state.palaces,
+        state.streakCount,
+        state.userXP,
+        state.totalRoomsCompleted,
+        state.bestQuizAccuracy,
+    ]);
 
     const earnedCount = achievements.filter((a) => a.earned).length;
 
@@ -248,8 +254,17 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                                             initial={{opacity: 0, y: 10}}
                                             animate={{opacity: 1, y: 0}}
                                             transition={{delay: index * 0.04, ease: [0.22, 1, 0.36, 1], duration: 0.35}}
-                                            className="p-4 bg-white rounded-[22px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.04]"
+                                            className="relative p-4 bg-white rounded-[22px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.04]"
                                         >
+                                            {stat.label === "Current Streak" && state.streakFreezes > 0 && (
+                                                <span
+                                                    className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-[#EAF4FF] px-2 py-0.5 text-[11px] font-semibold text-[#1E5FBF]"
+                                                    aria-label={`${state.streakFreezes} streak ${state.streakFreezes === 1 ? "freeze" : "freezes"} available`}
+                                                >
+                                                    <Snowflake className="w-3 h-3"/>
+                                                    {state.streakFreezes}
+                                                </span>
+                                            )}
                                             <div
                                                 className="w-11 h-11 bg-[#EAF4FF] rounded-[14px] flex items-center justify-center mb-4">
                                                 <stat.icon className="w-[22px] h-[22px] text-[#091A7A]" strokeWidth={2.2}/>

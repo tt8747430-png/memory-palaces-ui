@@ -1,5 +1,6 @@
 import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
 import {
+  Accessibility,
   ArrowLeft,
   Bell,
   ChevronRight,
@@ -17,9 +18,11 @@ import {
   Trash2,
   UploadCloud,
   User,
+  Vibrate,
+  Volume2,
 } from "lucide-react";
 import {type ChangeEvent, useEffect, useRef, useState} from "react";
-import {useLocalStorage} from "../hooks/useLocalStorage";
+import {type Preferences, usePreferences} from "../hooks/usePreferences";
 import {useContainerScroll} from "../hooks/useCollapsibleHeader";
 import {Skeleton} from "./ui/Skeleton";
 import {ProgressUtils} from "../utils/progressUtils";
@@ -55,6 +58,8 @@ interface SettingsItem {
     action?: "navigate" | "toggle" | "danger" | "function" | "select";
     color?: string;
     enabled?: boolean;
+    /** For toggles: the preference key this row reads and writes. */
+    prefKey?: keyof Preferences;
     navigationTarget?: string;
     options?: { value: string; label: string }[];
     selectedValue?: string;
@@ -92,12 +97,12 @@ export function SettingsScreen({
         }, 550);
         return () => clearTimeout(timer);
     }, []);
-    // Preferences persist across sessions so toggling them actually sticks.
-    // Dark mode is stored for a future iteration; it intentionally does not yet
-    // apply a theme (the app is a daylight design), so no surface breaks.
-    const [darkMode, setDarkMode] = useLocalStorage("mindscape:darkMode", false);
-    const [notifications, setNotifications] = useLocalStorage("mindscape:notifications", true);
-    const [language, setLanguage] = useLocalStorage("mindscape:language", "en");
+    // Preferences persist across sessions and drive real behavior: Sound
+    // effects, Haptics and Reduced motion are wired through usePreferences (it
+    // syncs the sound/haptics utils and the root MotionConfig), Notifications
+    // gates in-app toasts in HomePage. Dark Mode is kept and stored for a future
+    // theme; it intentionally does not yet repaint the daylight design.
+    const {preferences, setPreference} = usePreferences();
     const [phoneNumber, setPhoneNumber] = useState("");
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
@@ -180,20 +185,43 @@ export function SettingsScreen({
                 {
                     icon: Bell,
                     label: "Notifications",
-                    enabled: notifications,
+                    enabled: preferences.notifications,
                     action: "toggle",
+                    prefKey: "notifications",
+                },
+                {
+                    icon: Volume2,
+                    label: "Sound effects",
+                    enabled: preferences.soundEffects,
+                    action: "toggle",
+                    prefKey: "soundEffects",
+                },
+                {
+                    icon: Vibrate,
+                    label: "Haptics",
+                    enabled: preferences.haptics,
+                    action: "toggle",
+                    prefKey: "haptics",
+                },
+                {
+                    icon: Accessibility,
+                    label: "Reduced motion",
+                    enabled: preferences.reducedMotion,
+                    action: "toggle",
+                    prefKey: "reducedMotion",
                 },
                 {
                     icon: Moon,
                     label: "Dark Mode",
-                    enabled: darkMode,
+                    enabled: preferences.darkMode,
                     action: "toggle",
+                    prefKey: "darkMode",
                 },
                 {
                     icon: Globe,
                     label: "Language",
                     action: "select",
-                    selectedValue: language,
+                    selectedValue: preferences.language,
                     onSelect: (val) => handleLanguageChange(val || "en"),
                     options: [
                         {value: "en", label: "English"},
@@ -290,17 +318,17 @@ export function SettingsScreen({
         },
     ];
 
-    const handleToggle = (label: string) => {
-        if (label === "Dark Mode") {
-            setDarkMode(!darkMode);
-        } else if (label === "Notifications") {
-            setNotifications(!notifications);
+    const handleToggle = (item: SettingsItem) => {
+        if (!item.prefKey) return;
+        const current = preferences[item.prefKey];
+        if (typeof current === "boolean") {
+            setPreference(item.prefKey, !current);
         }
     };
 
     const handleItemClick = (item: SettingsItem) => {
         if (item.action === "toggle") {
-            handleToggle(item.label);
+            handleToggle(item);
         } else if (item.action === "navigate" && item.navigationTarget) {
             setCurrentScreen(item.navigationTarget as NavigationScreen);
         } else if (item.action === "danger") {
@@ -329,7 +357,7 @@ export function SettingsScreen({
     };
 
     const handleLanguageChange = (newLanguage: string) => {
-        setLanguage(newLanguage);
+        setPreference("language", newLanguage);
         toast.success("Language updated");
     };
 
@@ -526,7 +554,7 @@ export function SettingsScreen({
                                         {item.action === "toggle" && (
                                             <Switch
                                                 checked={item.enabled || false}
-                                                onCheckedChange={() => handleToggle(item.label)}
+                                                onCheckedChange={() => handleToggle(item)}
                                             />
                                         )}
                                         {item.action === "select" && item.options && (

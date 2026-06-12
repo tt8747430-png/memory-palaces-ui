@@ -1,14 +1,17 @@
 import {motion} from "motion/react";
-import {ArrowLeft, Award, Brain, ExternalLink, Heart, Users} from "lucide-react";
+import {ArrowLeft, Book, Brain, ExternalLink, Flame, Heart, Trophy} from "lucide-react";
+import {useProgressState} from "../../hooks/useProgressState";
 
 interface AboutScreenProps {
     onBack: () => void;
 }
 
 export function AboutScreen({onBack}: AboutScreenProps) {
+    const {state} = useProgressState();
+
     const appInfo = [
         {label: "Version", value: "1.0.0"},
-        {label: "Build", value: "2026.06.09"},
+        {label: "Build", value: "2026.06.12"},
         {label: "License", value: "MIT"},
     ];
 
@@ -18,10 +21,12 @@ export function AboutScreen({onBack}: AboutScreenProps) {
         {label: "Open Source Licenses", url: "https://mindscape.app/licenses"},
     ];
 
+    // Honest, personal evidence instead of fabricated global vanity metrics
+    // (PRODUCT: "show real evidence; never fake progress").
     const stats = [
-        {icon: Users, label: "Active Users", value: "50K+"},
-        {icon: Award, label: "Palaces Created", value: "100K+"},
-        {icon: Heart, label: "User Rating", value: "4.9"},
+        {icon: Book, label: "Your palaces", value: state.palaces.length.toString()},
+        {icon: Trophy, label: "Rooms done", value: state.totalRoomsCompleted.toString()},
+        {icon: Flame, label: "Day streak", value: state.streakCount.toString()},
     ];
 
     return (

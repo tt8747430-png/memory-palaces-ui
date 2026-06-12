@@ -1,5 +1,4 @@
-import {useEffect, useState} from "react";
-import {motion} from "motion/react";
+import {motion, useReducedMotion} from "motion/react";
 import {
     ArrowRight,
     CheckCircle2,
@@ -13,6 +12,7 @@ import {
     TrendingUp,
     Trophy,
 } from "lucide-react";
+import type {LucideIcon} from "lucide-react";
 import {QuizResults} from "./PalaceQuizScreen";
 import {useProgressState} from "../../hooks/useProgressState";
 
@@ -23,6 +23,22 @@ interface PalaceQuizCompletionScreenProps {
     onNextPalace: () => void;
 }
 
+interface Performance {
+    level: string;
+    Icon: LucideIcon;
+    note: string;
+}
+
+function performanceFor(accuracy: number): Performance {
+    if (accuracy >= 90)
+        return {level: "Excellent", Icon: Trophy, note: "Near-perfect recall."};
+    if (accuracy >= 80)
+        return {level: "Great", Icon: Star, note: "Strong, dependable recall."};
+    if (accuracy >= 70)
+        return {level: "Good", Icon: TrendingUp, note: "Solid. A bit more will lock it in."};
+    return {level: "Keep practicing", Icon: Target, note: "Another pass will move the needle."};
+}
+
 export function PalaceQuizCompletionScreen({
                                                results,
                                                onBack,
@@ -30,38 +46,10 @@ export function PalaceQuizCompletionScreen({
                                                onNextPalace,
                                            }: PalaceQuizCompletionScreenProps) {
     const {state} = useProgressState();
-    const palace = state.palaces.find(
-        (p) => p.id === results.palaceId,
-    );
-    const [showConfetti, setShowConfetti] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(
-            () => setShowConfetti(false),
-            3000,
-        );
-        return () => clearTimeout(timer);
-    }, []);
-
-    const getPerformanceLevel = () => {
-        if (results.accuracy >= 90)
-            return {
-                level: "Excellent",
-                color: "emerald",
-                emoji: "🏆",
-            };
-        if (results.accuracy >= 80)
-            return {level: "Great", color: "blue", emoji: "⭐"};
-        if (results.accuracy >= 70)
-            return {level: "Good", color: "orange", emoji: "👍"};
-        return {
-            level: "Keep Practicing",
-            color: "gray",
-            emoji: "💪",
-        };
-    };
-
-    const performance = getPerformanceLevel();
+    const reduce = useReducedMotion();
+    const palace = state.palaces.find((p) => p.id === results.palaceId);
+    const performance = performanceFor(results.accuracy);
+    const PerfIcon = performance.Icon;
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -69,279 +57,184 @@ export function PalaceQuizCompletionScreen({
         return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
 
-    const Confetti = () => (
-        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-            {[...Array(50)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{
-                        y: -100,
-                        x: Math.random() * window.innerWidth,
-                        rotate: 0,
-                        opacity: 1,
-                    }}
-                    animate={{
-                        y: window.innerHeight + 100,
-                        rotate: 360,
-                        opacity: 0,
-                    }}
-                    transition={{
-                        duration: Math.random() * 3 + 2,
-                        delay: Math.random() * 2,
-                        ease: "easeOut",
-                    }}
-                    className={`absolute w-3 h-3 ${
-                        i % 4 === 0
-                            ? "bg-yellow-400"
-                            : i % 4 === 1
-                                ? "bg-blue-400"
-                                : i % 4 === 2
-                                    ? "bg-emerald-400"
-                                    : "bg-purple-400"
-                    } rounded-full`}
-                />
-            ))}
-        </div>
-    );
+    const stats: {
+        Icon: LucideIcon;
+        label: string;
+        value: string;
+        tile: string;
+        chip: string;
+    }[] = [
+        {
+            Icon: Target,
+            label: "Accuracy",
+            value: `${results.accuracy}%`,
+            tile: "bg-[#ECFDF5] border-[#10B981]/15",
+            chip: "bg-[#D1FAE5] text-[#047857]",
+        },
+        {
+            Icon: Clock,
+            label: "Time",
+            value: formatTime(results.timeSpent),
+            tile: "bg-[#EAF4FF] border-[#3D8FEF]/15",
+            chip: "bg-[#D7E9FF] text-[#1E5FBF]",
+        },
+        {
+            Icon: CheckCircle2,
+            label: "Correct",
+            value: `${results.score}/${results.totalQuestions}`,
+            tile: "bg-[#091A7A]/[0.04] border-[#091A7A]/10",
+            chip: "bg-[#091A7A]/10 text-[#091A7A]",
+        },
+        {
+            Icon: TrendingUp,
+            label: "XP gained",
+            value: `+${results.xpGained}`,
+            tile: "bg-[#FFF6DC] border-[#FFC71E]/30",
+            chip: "bg-[#FBE6AE] text-[#A9791A]",
+        },
+    ];
 
     return (
-        <div
-            className="h-full bg-gradient-to-br from-[#ADC8FF]/20 via-white to-[#E8F2FF]/30 relative overflow-hidden flex flex-col">
-            {showConfetti && <Confetti/>}
-
-            {/* Background Elements */}
+        <div className="h-full bg-gradient-to-br from-[#ADC8FF]/25 via-white to-[#E8F2FF]/40 relative overflow-hidden flex flex-col">
+            {/* One soft, navy-tinted ambient field — atmosphere, not confetti. */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <motion.div
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.1, 0.2, 0.1],
-                    }}
-                    transition={{duration: 8, repeat: Infinity}}
-                    className="absolute -top-20 -right-20 w-60 h-60 bg-gradient-to-br from-[#091A7A]/10 to-[#4F8EFF]/10 rounded-full blur-3xl"
-                />
+                <div className="absolute -top-24 -right-16 w-72 h-72 bg-[#4F8EFF]/10 rounded-full blur-3xl"/>
             </div>
 
-            {/* Content — scrolls when it outgrows short screens */}
-            <div className="relative z-10 flex-1 overflow-y-auto px-6 py-8">
-                {/* Trophy Section */}
+            <div className="relative z-10 flex-1 overflow-y-auto px-6 pt-12 pb-8">
+                {/* Medal — the rationed celebration: a single spring pop. */}
                 <div className="text-center mb-8">
                     <motion.div
-                        initial={{scale: 0, rotate: -180}}
+                        initial={reduce ? false : {scale: 0, rotate: -120}}
                         animate={{scale: 1, rotate: 0}}
-                        transition={{
-                            type: "spring",
-                            stiffness: 200,
-                            damping: 15,
-                            delay: 0.3,
-                        }}
-                        className="mb-6 inline-block"
+                        transition={{type: "spring", stiffness: 200, damping: 16, delay: 0.15}}
+                        className="relative mb-6 inline-flex"
                     >
-                        <div className="relative">
-                            <div
-                                className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/25">
-                                <Trophy className="w-12 h-12 text-white"/>
-                            </div>
-                            <motion.div
-                                animate={{rotate: 360}}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                }}
-                                className="absolute inset-0"
-                            >
-                                <Sparkles className="absolute -top-2 left-2 w-4 h-4 text-yellow-400"/>
-                                <Sparkles className="absolute top-2 -right-2 w-5 h-5 text-orange-400"/>
-                                <Sparkles className="absolute -bottom-2 right-2 w-3 h-3 text-yellow-500"/>
-                                <Sparkles className="absolute bottom-2 -left-2 w-4 h-4 text-orange-300"/>
-                            </motion.div>
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] flex items-center justify-center shadow-[0_16px_36px_rgba(9,26,122,0.30)] ring-4 ring-[#FFC71E]/35">
+                            <PerfIcon className="w-11 h-11 text-white" strokeWidth={2}/>
                         </div>
+                        <Sparkles className="absolute -top-1.5 -right-1.5 w-6 h-6 text-[#FFC71E] fill-[#FFC71E]/40"/>
                     </motion.div>
 
                     <motion.div
-                        initial={{opacity: 0, y: 30}}
+                        initial={reduce ? false : {opacity: 0, y: 16}}
                         animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.6}}
+                        transition={{delay: 0.35}}
                     >
-                        <h1 className="text-2xl font-bold text-[#091A7A] mb-2">
-                            Quiz Complete! 🎉
+                        <h1 className="text-2xl font-bold text-[#091A7A] mb-2 text-balance">
+                            Quiz complete
                         </h1>
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                            <span className="text-3xl">{palace?.icon}</span>
-                            <p className="text-lg text-gray-600">
-                                {palace?.name}
-                            </p>
-                        </div>
-                        <div
-                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-                                performance.color === "emerald"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : performance.color === "blue"
-                                        ? "bg-blue-100 text-blue-700"
-                                        : performance.color === "orange"
-                                            ? "bg-orange-100 text-orange-700"
-                                            : "bg-gray-100 text-gray-700"
-                            }`}
-                        >
-                            <span>{performance.emoji}</span>
-                            <span>{performance.level}</span>
+                        {palace && (
+                            <div className="flex items-center justify-center gap-2 mb-3">
+                                <span className="text-2xl">{palace.icon}</span>
+                                <p className="text-[15px] font-medium text-[#091A7A]/70">
+                                    {palace.name}
+                                </p>
+                            </div>
+                        )}
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-[#ADC8FF]/40 shadow-[0_4px_14px_rgba(9,26,122,0.06)]">
+                            <PerfIcon className="w-4 h-4 text-[#091A7A]"/>
+                            <span className="text-sm font-semibold text-[#091A7A]">
+                                {performance.level}
+                            </span>
+                            <span className="text-sm text-[#091A7A]/55">·</span>
+                            <span className="text-sm text-[#091A7A]/65">{performance.note}</span>
                         </div>
                     </motion.div>
                 </div>
 
-                {/* Stats Card */}
+                {/* Performance stats */}
                 <motion.div
-                    initial={{opacity: 0, y: 40}}
+                    initial={reduce ? false : {opacity: 0, y: 24}}
                     animate={{opacity: 1, y: 0}}
-                    transition={{delay: 0.8}}
-                    className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/40 mb-6"
+                    transition={{delay: 0.5}}
+                    className="bg-white rounded-3xl p-6 shadow-card border border-[#091A7A]/[0.04] mb-5"
                 >
-                    <h2 className="text-lg font-semibold text-[#091A7A] text-center mb-6">
-                        Your Performance
-                    </h2>
-
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-xl mb-2 flex items-center justify-center">
-                                <Target className="w-5 h-5 text-emerald-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">
-                                Accuracy
-                            </p>
-                            <p className="text-xl font-bold text-[#091A7A]">
-                                {results.accuracy}%
-                            </p>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
-                            <div className="w-10 h-10 bg-blue-100 rounded-xl mb-2 flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-blue-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">Time</p>
-                            <p className="text-xl font-bold text-[#091A7A]">
-                                {formatTime(results.timeSpent)}
-                            </p>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-green-50 border border-green-100">
-                            <div className="w-10 h-10 bg-green-100 rounded-xl mb-2 flex items-center justify-center">
-                                <CheckCircle2 className="w-5 h-5 text-green-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">
-                                Correct
-                            </p>
-                            <p className="text-xl font-bold text-[#091A7A]">
-                                {results.score}/{results.totalQuestions}
-                            </p>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-purple-50 border border-purple-100">
-                            <div className="w-10 h-10 bg-purple-100 rounded-xl mb-2 flex items-center justify-center">
-                                <TrendingUp className="w-5 h-5 text-purple-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">
-                                XP Gained
-                            </p>
-                            <p className="text-xl font-bold text-[#091A7A]">
-                                +{results.xpGained}
-                            </p>
-                        </div>
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-section-header text-[#091A7A]">Your performance</h2>
+                        <span className="text-[12px] font-medium text-[#091A7A]/55">
+                            Best: {state.bestQuizAccuracy}%
+                        </span>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="mb-2">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
-                            <span>Palace Mastery</span>
-                            <span className="font-medium">
-                {palace?.progress}%
-              </span>
+                    <div className="grid grid-cols-2 gap-3.5 mb-6">
+                        {stats.map((stat) => (
+                            <div
+                                key={stat.label}
+                                className={`p-4 rounded-2xl border ${stat.tile}`}
+                            >
+                                <div
+                                    className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center ${stat.chip}`}
+                                >
+                                    <stat.Icon className="w-5 h-5"/>
+                                </div>
+                                <p className="text-[12px] font-medium text-[#091A7A]/60 mb-1">
+                                    {stat.label}
+                                </p>
+                                <p className="text-[22px] font-bold text-[#091A7A] tracking-tight">
+                                    {stat.value}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Palace mastery */}
+                    <div>
+                        <div className="flex justify-between text-[12px] mb-1.5">
+                            <span className="font-medium text-[#091A7A]/70">Palace mastery</span>
+                            <span className="font-semibold text-[#091A7A]">{palace?.progress ?? 0}%</span>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-[#091A7A]/[0.06] rounded-full overflow-hidden">
                             <motion.div
                                 initial={{width: 0}}
-                                animate={{width: `${palace?.progress}%`}}
-                                transition={{duration: 1, delay: 1}}
+                                animate={{width: `${palace?.progress ?? 0}%`}}
+                                transition={{duration: 0.9, delay: 0.7, ease: [0.16, 1, 0.3, 1]}}
                                 className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full"
                             />
                         </div>
                     </div>
-                </motion.div>
 
-                {/* Rewards */}
-                <motion.div
-                    initial={{opacity: 0, y: 40}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{delay: 1}}
-                    className="bg-gradient-to-r from-[#091A7A]/5 to-[#4F8EFF]/5 backdrop-blur-xl rounded-3xl p-6 border border-[#ADC8FF]/30 mb-6"
-                >
-                    <h3 className="font-semibold text-[#091A7A] mb-4 text-center">
-                        Rewards Earned
-                    </h3>
-
-                    <div className="flex items-center justify-center gap-8">
-                        <div className="text-center">
-                            <div
-                                className="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center mb-2 mx-auto">
-                                <Star className="w-6 h-6 text-yellow-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">XP</p>
-                            <p className="font-bold text-[#091A7A]">
-                                +{results.xpGained}
-                            </p>
-                        </div>
-
-                        <div className="text-center">
-                            <div
-                                className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mb-2 mx-auto">
-                                <Flame className="w-6 h-6 text-orange-600"/>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">
-                                Streak
-                            </p>
-                            <p className="font-bold text-[#091A7A]">
-                                {state.streakCount} days
-                            </p>
-                        </div>
+                    {/* Streak — kept as one line; XP already lives in the grid above. */}
+                    <div className="mt-5 flex items-center justify-center gap-2 text-[13px] font-medium text-[#091A7A]/70">
+                        <Flame className="w-4 h-4 text-orange-500 fill-orange-400/40"/>
+                        {state.streakCount}-day streak going
                     </div>
                 </motion.div>
 
-                {/* Action Buttons */}
-                <div className="mt-8 space-y-3">
+                {/* Actions */}
+                <div className="space-y-3">
                     <motion.button
-                        initial={{opacity: 0, y: 30}}
+                        initial={reduce ? false : {opacity: 0, y: 20}}
                         animate={{opacity: 1, y: 0}}
-                        transition={{delay: 1.2}}
-                        whileHover={{scale: 1.02}}
+                        transition={{delay: 0.74}}
                         whileTap={{scale: 0.98}}
                         onClick={onNextPalace}
-                        className="w-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white py-4 rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white py-4 rounded-2xl font-semibold shadow-interactive flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                     >
-                        <span>Continue Learning</span>
+                        <span>Continue learning</span>
                         <ArrowRight className="w-5 h-5"/>
                     </motion.button>
 
                     <div className="flex gap-3">
                         <motion.button
-                            initial={{opacity: 0, y: 30}}
+                            initial={reduce ? false : {opacity: 0, y: 20}}
                             animate={{opacity: 1, y: 0}}
-                            transition={{delay: 1.3}}
-                            whileHover={{scale: 1.02}}
+                            transition={{delay: 0.82}}
                             whileTap={{scale: 0.98}}
                             onClick={onRetake}
-                            className="flex-1 bg-white/90 backdrop-blur-xl border border-white/40 text-[#091A7A] py-3 rounded-2xl font-medium shadow-sm flex items-center justify-center gap-2"
+                            className="flex-1 bg-white border border-[#091A7A]/10 text-[#091A7A] py-3 rounded-2xl font-medium shadow-card flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             <RotateCcw className="w-4 h-4"/>
                             <span>Retake</span>
                         </motion.button>
 
                         <motion.button
-                            initial={{opacity: 0, y: 30}}
+                            initial={reduce ? false : {opacity: 0, y: 20}}
                             animate={{opacity: 1, y: 0}}
-                            transition={{delay: 1.4}}
-                            whileHover={{scale: 1.02}}
+                            transition={{delay: 0.9}}
                             whileTap={{scale: 0.98}}
                             onClick={onBack}
-                            className="flex-1 bg-white/90 backdrop-blur-xl border border-white/40 text-[#091A7A] py-3 rounded-2xl font-medium shadow-sm flex items-center justify-center gap-2"
+                            className="flex-1 bg-white border border-[#091A7A]/10 text-[#091A7A] py-3 rounded-2xl font-medium shadow-card flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
                         >
                             <Home className="w-4 h-4"/>
                             <span>Home</span>

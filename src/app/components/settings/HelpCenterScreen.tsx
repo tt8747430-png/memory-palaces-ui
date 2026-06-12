@@ -33,19 +33,23 @@ const helpCategories = [
         items: [
             {
                 q: "How XP and levels work",
-                a: "You earn XP by completing training sessions and quizzes. Accumulate XP to level up and unlock new customization options."
+                a: "You earn XP for studying flashcards, finishing quizzes, and clearing your Daily Review. XP adds up to raise your level, a simple measure of how much practice you've put in."
             },
             {
                 q: "Building training streaks",
-                a: "Complete at least one training session per day to build your streak. Longer streaks earn you bonus XP multipliers."
+                a: "Train at least once a day to grow your streak. Miss a single day and a streak freeze (shown by the snowflake on your streak) is spent automatically to keep the chain alive. You earn another freeze at every 7-day milestone."
             },
             {
-                q: "Completing rooms and palaces",
-                a: "A room is completed when you finish its associated quiz. Complete all rooms to master the palace."
+                q: "What is Daily Review?",
+                a: "Daily Review gathers every card that's due across all your palaces into one session, scheduled by spaced repetition. It appears on Home whenever cards are due, the fastest way to keep memories fresh."
+            },
+            {
+                q: "Map vs. List in a palace",
+                a: "Inside a palace, switch the rooms between a journey Map (a walkable route that mirrors the method of loci) and a List (best for reordering and editing). Your choice is remembered."
             },
             {
                 q: "Taking quizzes effectively",
-                a: "Take quizzes regularly spaced out over time. Active recall is the most effective way to solidify your memory."
+                a: "Quiz yourself in short sessions spread over time. Active recall, not rereading, is what moves information into long-term memory."
             },
         ],
     },
@@ -53,20 +57,20 @@ const helpCategories = [
         title: "Account & Settings",
         items: [
             {
-                q: "Managing your account",
-                a: "Access Account Settings from your Profile tab to manage personal details and linked accounts."
-            },
-            {
-                q: "Privacy and data settings",
-                a: "You can control what data is shared and manage your visibility from the Privacy Settings menu."
+                q: "Sound, haptics, and reduced motion",
+                a: "Settings > Preferences lets you turn answer/complete sounds and vibration on or off, and force reduced motion if animations are distracting. Each takes effect immediately."
             },
             {
                 q: "Notification preferences",
-                a: "Customize push and email notifications in Settings > Notifications to stay updated on your training schedule."
+                a: "Turn the in-app milestone toasts (level-ups, streaks, completions) on or off with the Notifications switch in Settings. The bell screen keeps a full history either way."
             },
             {
-                q: "Changing your password",
-                a: "Navigate to Settings > Security > Change Password. You will need your current password to set a new one."
+                q: "Managing your account",
+                a: "Open Edit Profile from the top of Settings to update your name and avatar."
+            },
+            {
+                q: "Privacy and data settings",
+                a: "Mindscape runs entirely on your device. Use Privacy Settings to manage visibility options, and Data Management to export, import, or restore your progress."
             },
         ],
     },
@@ -74,20 +78,20 @@ const helpCategories = [
         title: "Troubleshooting",
         items: [
             {
-                q: "App not loading properly",
-                a: "Try force closing the app and clearing your cache. If the issue persists, reinstall the application."
+                q: "Where is my data stored?",
+                a: "Everything is saved locally on this device; there's no account server. Use Settings > Data Management > Export Progress regularly so you have a backup file."
             },
             {
                 q: "Progress not saving",
-                a: "Ensure you have a stable internet connection. Progress is synced automatically when you are online."
+                a: "Progress saves automatically after each session. If a write fails (private browsing or a full disk can block storage), free up space or leave private mode, then try again."
             },
             {
-                q: "Audio or video issues",
-                a: "Check your device's volume and media settings. Make sure you haven't muted the app in your system settings."
+                q: "Moving to a new device",
+                a: "Export your progress to a .json file on the old device, then use Import Progress on the new one to bring everything across."
             },
             {
-                q: "Login problems",
-                a: "If you forgot your password, use the 'Forgot Password' link on the login screen. For other issues, contact support."
+                q: "Audio not playing",
+                a: "Check Settings > Preferences > Sound effects is on, then your device's volume and mute switch. Sounds are intentionally short and quiet."
             },
         ],
     },

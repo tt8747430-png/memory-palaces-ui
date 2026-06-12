@@ -5,13 +5,17 @@ import {
     Brain,
     CheckCircle,
     Clock,
+    Flame,
     MoreVertical,
     RotateCcw,
     SkipForward,
     X,
     XCircle,
+    Zap,
 } from "lucide-react";
 import {type Palace, palaceSettings, useProgressState} from "../../hooks/useProgressState";
+import {impact} from "../../utils/haptics";
+import {playComplete, playCorrect, playWrong} from "../../utils/sound";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,6 +65,8 @@ export function PalaceQuizScreen({
     >(null);
     const [showFeedback, setShowFeedback] = useState(false);
     const [score, setScore] = useState(0);
+    // Consecutive correct answers, for the in-flow "on a roll" indicator.
+    const [correctStreak, setCorrectStreak] = useState(0);
     const [timeLeft, setTimeLeft] = useState(30);
     const [startTime] = useState(Date.now());
     const [questions] = useState<QuizQuestion[]>(() =>
@@ -90,6 +96,8 @@ export function PalaceQuizScreen({
 
     const handleTimeUp = () => {
         setShowFeedback(true);
+        setCorrectStreak(0);
+        playWrong();
         setTimeout(() => handleNextQuestion(), 2000);
     };
 
@@ -106,7 +114,13 @@ export function PalaceQuizScreen({
 
         if (isCorrect) {
             setScore((prev) => prev + 1);
+            setCorrectStreak((prev) => prev + 1);
             actions.addXP(20);
+            impact();
+            playCorrect();
+        } else {
+            setCorrectStreak(0);
+            playWrong();
         }
 
         setTimeout(() => handleNextQuestion(), 2500);
@@ -132,6 +146,8 @@ export function PalaceQuizScreen({
         );
         const xpGained = score * 20;
 
+        actions.recordQuizResult(accuracy);
+        playComplete();
         if (accuracy >= 80) {
             actions.recordTrainingDay();
         }
@@ -151,6 +167,7 @@ export function PalaceQuizScreen({
         setSelectedAnswer(null);
         setShowFeedback(false);
         setScore(0);
+        setCorrectStreak(0);
         setTimeLeft(30);
     };
 
@@ -404,29 +421,41 @@ export function PalaceQuizScreen({
                                     : "bg-red-50/95 border-red-200"
                             }`}
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-start gap-2.5">
                                 {selectedAnswer === currentQ.correctAnswer ? (
                                     <>
-                                        <CheckCircle className="w-5 h-5 text-emerald-600"/>
-                                        <div>
-                                            <p className="font-semibold text-emerald-700">
-                                                Correct! +20 XP
-                                            </p>
-                                            <p className="text-sm text-emerald-600">
-                                                {currentQ.explanation || "Great job!"}
+                                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5"/>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <p className="font-semibold text-emerald-700">
+                                                    Correct
+                                                </p>
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF6DC] px-2 py-0.5 text-[12px] font-semibold text-[#A9791A]">
+                                                    <Zap size={11} className="fill-[#FFC71E] text-[#FFC71E]"/>
+                                                    +20 XP
+                                                </span>
+                                                {correctStreak >= 2 && (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[12px] font-semibold text-orange-700">
+                                                        <Flame size={11} className="fill-orange-500 text-orange-500"/>
+                                                        {correctStreak} in a row
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="mt-1 text-sm text-emerald-700/90">
+                                                {currentQ.explanation || "Well recalled."}
                                             </p>
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <XCircle className="w-5 h-5 text-red-600"/>
-                                        <div>
-                                            <p className="font-semibold text-red-700">
+                                        <XCircle className="w-5 h-5 text-[#EF4444] flex-shrink-0 mt-0.5"/>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-[#B42318]">
                                                 Not quite
                                             </p>
-                                            <p className="text-sm text-red-600">
+                                            <p className="mt-1 text-sm text-[#B42318]/85">
                                                 {currentQ.explanation ||
-                                                    "Try again next time!"}
+                                                    "Review this one and it'll stick next time."}
                                             </p>
                                         </div>
                                     </>

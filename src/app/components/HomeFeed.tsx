@@ -1,5 +1,5 @@
 import {motion} from "motion/react";
-import {BellRing} from "lucide-react";
+import {BellRing, ChevronRight, Layers} from "lucide-react";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {ImageWithFallback} from "./ui/ImageWithFallback";
@@ -17,6 +17,7 @@ interface HomeFeedProps {
     currentLevel: number;
     currentProgress: number;
     streakCount: number;
+    streakFreezes: number;
     hasPalaces: boolean;
     unreadCount: number;
     recentXPGain: number;
@@ -27,6 +28,9 @@ interface HomeFeedProps {
     onStartTraining: () => void;
     onCreatePalace: () => void;
     onPalaceClick: (palaceId: string) => void;
+    /** Loci due for review across all palaces today. */
+    dueCount: number;
+    onDailyReview: () => void;
 }
 
 /**
@@ -41,6 +45,7 @@ export function HomeFeed({
                              currentLevel,
                              currentProgress,
                              streakCount,
+                             streakFreezes,
                              hasPalaces,
                              unreadCount,
                              recentXPGain,
@@ -51,6 +56,8 @@ export function HomeFeed({
                              onStartTraining,
                              onCreatePalace,
                              onPalaceClick,
+                             dueCount,
+                             onDailyReview,
                          }: HomeFeedProps) {
     const header = useCollapsibleHeader();
 
@@ -142,7 +149,33 @@ export function HomeFeed({
                         hasPalaces={hasPalaces}
                         onCreatePalace={onCreatePalace}
                     />
-                    <TrainingStreak streakCount={streakCount}/>
+                    {dueCount > 0 && (
+                        <motion.button
+                            initial={{opacity: 0, y: 12}}
+                            animate={{opacity: 1, y: 0}}
+                            transition={{ease: [0.16, 1, 0.3, 1], duration: 0.35}}
+                            whileTap={{scale: 0.98}}
+                            onClick={onDailyReview}
+                            className="w-full flex items-center gap-4 rounded-3xl bg-white p-4 shadow-card border border-[#091A7A]/[0.05] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                        >
+                            <div className="relative flex-shrink-0">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] flex items-center justify-center shadow-[0_6px_16px_rgba(9,26,122,0.22)]">
+                                    <Layers className="w-6 h-6 text-white"/>
+                                </div>
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 bg-[#FFC71E] rounded-full border-2 border-white text-[11px] font-bold text-[#5C4708] flex items-center justify-center leading-none">
+                                    {dueCount > 99 ? "99+" : dueCount}
+                                </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-[15px] font-bold text-[#091A7A]">Daily Review</h3>
+                                <p className="text-[13px] font-medium text-[#091A7A]/60">
+                                    {dueCount} {dueCount === 1 ? "card" : "cards"} due across your palaces
+                                </p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-[#091A7A]/40 flex-shrink-0"/>
+                        </motion.button>
+                    )}
+                    <TrainingStreak streakCount={streakCount} freezes={streakFreezes}/>
                     <TrainingCalendar/>
                     <PalacesOverview
                         onPalaceClick={onPalaceClick}

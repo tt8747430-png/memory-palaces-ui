@@ -5,10 +5,20 @@
  * crossings and commits with a physical tick.
  *
  * Honors a user preference for reduced motion by skipping vibration when the
- * `prefers-reduced-motion` query matches.
+ * `prefers-reduced-motion` query matches, and the in-app Haptics toggle via
+ * `setHapticsEnabled` (synced from the preferences store).
  */
 
+/** Module-level mirror of the user's Haptics preference; defaults on. */
+let hapticsEnabled = true;
+
+/** Sync the Haptics preference; called by the preferences store on change. */
+export function setHapticsEnabled(enabled: boolean): void {
+    hapticsEnabled = enabled;
+}
+
 function canVibrate(): boolean {
+    if (!hapticsEnabled) return false;
     if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") {
         return false;
     }

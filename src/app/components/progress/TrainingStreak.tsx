@@ -1,12 +1,15 @@
 import {motion} from "motion/react";
-import {Flame} from "lucide-react";
+import {Flame, Snowflake} from "lucide-react";
 
 interface TrainingStreakProps {
     streakCount: number;
+    /** Streak freezes in reserve; each forgives one missed day. */
+    freezes?: number;
 }
 
 export function TrainingStreak({
                                    streakCount,
+                                   freezes = 0,
                                }: TrainingStreakProps) {
     const days = [
         "Mon",
@@ -45,11 +48,23 @@ export function TrainingStreak({
             Training Streak
           </span>
                 </div>
-                <div
-                    className="px-3 py-1.5 bg-gradient-to-r from-[#F59E0B]/20 to-[#F59E0B]/10 rounded-[50px] border border-[#F59E0B]/20">
+                <div className="flex items-center gap-2">
+                    {freezes > 0 && (
+                        <div
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-[#EAF4FF] rounded-[50px] border border-[#ADC8FF]/40"
+                            aria-label={`${freezes} streak ${freezes === 1 ? "freeze" : "freezes"} available`}
+                            title={`${freezes} streak ${freezes === 1 ? "freeze" : "freezes"} — each forgives one missed day`}
+                        >
+                            <Snowflake className="w-3.5 h-3.5 text-[#3D8FEF]"/>
+                            <span className="text-xs font-semibold text-[#1E5FBF]">{freezes}</span>
+                        </div>
+                    )}
+                    <div
+                        className="px-3 py-1.5 bg-gradient-to-r from-[#F59E0B]/20 to-[#F59E0B]/10 rounded-[50px] border border-[#F59E0B]/20">
           <span className="text-xs font-medium text-[#8A5A00]">
             {streakCount} days
           </span>
+                    </div>
                 </div>
             </div>
 

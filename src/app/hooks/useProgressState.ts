@@ -175,6 +175,10 @@ export interface ProgressState {
     currentLevel: number;
     streakCount: number;
     lastTrainingDate: string | null;
+    /** Streak freezes in reserve; one is spent to forgive a single missed day. */
+    streakFreezes: number;
+    /** Highest quiz accuracy ever achieved (0–100); powers the Perfectionist badge. */
+    bestQuizAccuracy: number;
     palaces: Palace[];
     folders: Folder[];
     trainingDays: string[];
@@ -182,6 +186,9 @@ export interface ProgressState {
     totalRoomsCompleted: number;
     notifications: AppNotification[];
 }
+
+/** Most streak freezes a learner can stockpile. */
+const MAX_STREAK_FREEZES = 2;
 
 /**
  * Recompute a palace's room-derived stats from its rooms. Every mutation that
@@ -242,7 +249,7 @@ function seedNotifications(): AppNotification[] {
         make(7, {
             type: "streak",
             title: "5-day streak",
-            subtitle: "You're on a roll — keep the chain alive.",
+            subtitle: "You're on a roll. Keep the chain alive.",
         }),
         make(95, {
             type: "level-up",
@@ -262,6 +269,8 @@ function seedNotifications(): AppNotification[] {
 function isLegacy(state: ProgressState): boolean {
     if (state.folders === undefined) return true;
     if (state.notifications === undefined) return true;
+    if (state.streakFreezes === undefined) return true;
+    if (state.bestQuizAccuracy === undefined) return true;
     return state.palaces.some((p) => {
         const lp = p as LegacyPalace;
         if (lp.floors !== undefined && lp.rooms === undefined) return true;
@@ -294,6 +303,8 @@ function migrateState(state: ProgressState): ProgressState {
         palaces,
         folders: state.folders ?? [],
         notifications: state.notifications ?? seedNotifications(),
+        streakFreezes: state.streakFreezes ?? 1,
+        bestQuizAccuracy: state.bestQuizAccuracy ?? 0,
     };
 }
 
@@ -393,6 +404,8 @@ const DEFAULT_STATE: ProgressState = {
     currentProgress: 65,
     totalRoomsCompleted: 87,
     notifications: seedNotifications(),
+    streakFreezes: 1,
+    bestQuizAccuracy: 0,
 };
 
 export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
@@ -518,37 +531,76 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             if (prev.trainingDays.includes(today)) return prev;
 
             const newTrainingDays = [...prev.trainingDays, today].slice(-7);
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split("T")[0];
+            const dayStr = (offset: number) => {
+                const d = new Date();
+                d.setDate(d.getDate() - offset);
+                return d.toISOString().split("T")[0];
+            };
+            const yesterdayStr = dayStr(1);
+            const dayBeforeStr = dayStr(2);
 
             const isConsecutive =
                 prev.lastTrainingDate === yesterdayStr ||
                 prev.lastTrainingDate === today;
-            newStreakCount = isConsecutive ? prev.streakCount + 1 : 1;
-            isNewStreak = isConsecutive && newStreakCount > prev.streakCount;
+            // Exactly one day was missed: a freeze in reserve forgives it and
+            // keeps the chain alive instead of resetting to 1.
+            const canFreeze =
+                !isConsecutive &&
+                prev.lastTrainingDate === dayBeforeStr &&
+                prev.streakFreezes > 0;
+            const continued = isConsecutive || canFreeze;
+
+            newStreakCount = continued ? prev.streakCount + 1 : 1;
+            isNewStreak = continued && newStreakCount > prev.streakCount;
             const isMilestone = isNewStreak && newStreakCount % 7 === 0;
+
+            // Spend a freeze when one rescued the streak; restock at milestones.
+            let streakFreezes = prev.streakFreezes - (canFreeze ? 1 : 0);
+            if (isMilestone) {
+                streakFreezes = Math.min(MAX_STREAK_FREEZES, streakFreezes + 1);
+            }
+
+            const drafts: NotificationDraft[] = [];
+            if (canFreeze) {
+                drafts.push({
+                    type: "streak",
+                    title: "Streak saved",
+                    subtitle: `A freeze kept your ${newStreakCount}-day streak alive.`,
+                });
+            }
+            if (isMilestone) {
+                drafts.push({
+                    type: "streak",
+                    title: "Streak milestone",
+                    subtitle: `${newStreakCount}-day streak. Incredible focus.`,
+                });
+            }
 
             return {
                 ...prev,
                 trainingDays: newTrainingDays,
                 lastTrainingDate: today,
                 streakCount: newStreakCount,
-                notifications: isMilestone
-                    ? appendNotifications(prev.notifications, [
-                        {
-                            type: "streak",
-                            title: "Streak milestone",
-                            subtitle: `${newStreakCount}-day streak — incredible focus.`,
-                        },
-                    ])
-                    : prev.notifications,
+                streakFreezes,
+                notifications:
+                    drafts.length > 0
+                        ? appendNotifications(prev.notifications, drafts)
+                        : prev.notifications,
             };
         });
 
         if (isNewStreak && newStreakCount > 1) {
             onEvent?.({type: "streak", data: {streakCount: newStreakCount}});
         }
+    };
+
+    /** Record a quiz's accuracy, keeping the all-time best (drives badges). */
+    const recordQuizResult = (accuracy: number) => {
+        setState((prev) =>
+            accuracy > prev.bestQuizAccuracy
+                ? {...prev, bestQuizAccuracy: Math.round(accuracy)}
+                : prev,
+        );
     };
 
     const updatePalaceProgress = (palaceId: string, progress: number) => {
@@ -1181,6 +1233,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             addXP,
             completeRoom,
             recordTrainingDay,
+            recordQuizResult,
             updatePalaceProgress,
             pushNotification,
             markAllNotificationsRead,

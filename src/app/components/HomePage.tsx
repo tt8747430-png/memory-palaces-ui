@@ -16,18 +16,31 @@ import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
 import {EditPalaceScreen} from "./palace/EditPalaceScreen";
 import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
 import {PalaceQuizCompletionScreen} from "./quiz/PalaceQuizCompletionScreen";
+import {DailyReviewScreen} from "./DailyReviewScreen";
 import {ProgressNotification} from "./notifications/ProgressNotification";
 import {NotificationsScreen} from "./notifications/NotificationsScreen";
 import {SaveIndicator} from "./notifications/SaveIndicator";
 import {ProgressEvent, useProgressState} from "../hooks/useProgressState";
 import {useNotifications} from "../hooks/useNotifications";
 import {useSaveStatus} from "../hooks/useSaveStatus";
+import {usePreferences} from "../hooks/usePreferences";
+import {countDueLoci} from "../utils/dueCards";
 
 type Tab = "home" | "palaces" | "profile";
 
 export default function HomePage() {
     const notifications = useNotifications();
     const saveStatus = useSaveStatus();
+    const {preferences} = usePreferences();
+
+    // Show an in-app milestone toast, unless the user has turned notifications
+    // off in Settings. The persistent bell-screen log is unaffected; this only
+    // gates the transient popups.
+    const showMilestone = (
+        data: Parameters<typeof notifications.showNotification>[0],
+    ) => {
+        if (preferences.notifications) notifications.showNotification(data);
+    };
 
     // Transient toast/celebration UI. The persistent notification log is written
     // inside the store actions themselves (see useProgressState), so here we only
@@ -44,7 +57,7 @@ export default function HomePage() {
                 break;
 
             case "level-up":
-                notifications.showNotification({
+                showMilestone({
                     type: "level-up",
                     title: "Level Up!",
                     subtitle: `You reached level ${event.data.newLevel}`,
@@ -54,7 +67,7 @@ export default function HomePage() {
 
             case "streak":
                 if (event.data.streakCount && event.data.streakCount % 7 === 0) {
-                    notifications.showNotification({
+                    showMilestone({
                         type: "streak",
                         title: "Streak Milestone!",
                         subtitle: `${event.data.streakCount} day streak!`,
@@ -63,7 +76,7 @@ export default function HomePage() {
                 break;
 
             case "room-complete":
-                notifications.showNotification({
+                showMilestone({
                     type: "room-complete",
                     title: "Room Complete!",
                     subtitle: event.data.palaceName,
@@ -72,7 +85,7 @@ export default function HomePage() {
                 break;
 
             case "palace-complete":
-                notifications.showNotification({
+                showMilestone({
                     type: "palace-complete",
                     title: "Palace Mastered!",
                     subtitle: `Completed ${event.data.palaceName}`,
@@ -100,11 +113,13 @@ export default function HomePage() {
     const [quizRoomTitle, setQuizRoomTitle] = useState<string | null>(null);
     const [quizResults, setQuizResults] = useState<QuizResults | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [showDailyReview, setShowDailyReview] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
 
     const unreadCount = state.notifications.filter((n) => !n.read).length;
+    const dueCount = countDueLoci(state.palaces);
     // Dev-only: floating debug widget with destructive controls. Gate on DEV so
     // it never ships in production.
     const showDebug = import.meta.env.DEV;
@@ -148,7 +163,7 @@ export default function HomePage() {
             subtitle: `${results.accuracy}% accuracy`,
             xpGain: results.xpGained,
         });
-        notifications.showNotification({
+        showMilestone({
             type: "quiz-complete",
             title: "Quiz Complete!",
             subtitle: `${results.accuracy}% accuracy`,
@@ -236,6 +251,15 @@ export default function HomePage() {
                 roomTitle={quizRoomTitle ?? undefined}
                 onBack={() => setShowQuiz(false)}
                 onComplete={handleQuizComplete}
+            />
+        );
+    }
+
+    if (showDailyReview) {
+        return (
+            <DailyReviewScreen
+                onBack={() => setShowDailyReview(false)}
+                onComplete={() => setShowDailyReview(false)}
             />
         );
     }
@@ -356,6 +380,7 @@ export default function HomePage() {
                         currentLevel={state.currentLevel}
                         currentProgress={state.currentProgress}
                         streakCount={state.streakCount}
+                        streakFreezes={state.streakFreezes}
                         hasPalaces={state.palaces.length > 0}
                         unreadCount={unreadCount}
                         recentXPGain={recentXPGain}
@@ -366,6 +391,8 @@ export default function HomePage() {
                         onStartTraining={handleStartTraining}
                         onCreatePalace={() => setShowCreatePalace(true)}
                         onPalaceClick={(id) => setSelectedPalaceId(id)}
+                        dueCount={dueCount}
+                        onDailyReview={() => setShowDailyReview(true)}
                     />
                 );
         }

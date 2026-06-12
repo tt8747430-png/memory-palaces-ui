@@ -63,8 +63,11 @@ import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {LociPreviewCarousel} from "./LociPreviewCarousel";
+import {RoomJourneyMap} from "./RoomJourneyMap";
 import {PalaceCover} from "../cards/PalaceCover";
 import {isDue, srsStatus} from "../../utils/srs";
+import {usePreferences} from "../../hooks/usePreferences";
+import {List, Map as MapIcon} from "lucide-react";
 
 interface PalaceDetailScreenProps {
     palaceId: string;
@@ -404,6 +407,7 @@ export function PalaceDetailScreen({
                                        onEditPalace,
                                    }: PalaceDetailScreenProps) {
     const {state, actions} = useProgressState();
+    const {preferences, setPreference} = usePreferences();
     const palace = state.palaces.find((p) => p.id === palaceId);
 
     const [showInsights, setShowInsights] = useState(false);
@@ -763,8 +767,43 @@ export function PalaceDetailScreen({
                     />
                 ) : (
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between px-1">
-                            <h2 className="text-section-header text-[#091A7A]">Rooms</h2>
+                        <div className="flex items-center justify-between gap-3 px-1">
+                            <div
+                                role="tablist"
+                                aria-label="Room view"
+                                className="inline-flex items-center rounded-full bg-[#091A7A]/[0.05] p-1"
+                            >
+                                {(
+                                    [
+                                        {key: "map", label: "Map", Icon: MapIcon},
+                                        {key: "list", label: "List", Icon: List},
+                                    ] as const
+                                ).map(({key, label, Icon}) => {
+                                    const active = preferences.roomView === key;
+                                    return (
+                                        <motion.button
+                                            key={key}
+                                            role="tab"
+                                            aria-selected={active}
+                                            whileTap={{scale: 0.95}}
+                                            onClick={() => setPreference("roomView", key)}
+                                            className={`relative inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
+                                                active ? "text-[#091A7A]" : "text-[#091A7A]/45"
+                                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40`}
+                                        >
+                                            {active && (
+                                                <motion.span
+                                                    layoutId="roomViewPill"
+                                                    className="absolute inset-0 rounded-full bg-white shadow-[0_4px_12px_rgba(9,26,122,0.10)]"
+                                                    transition={{type: "spring", stiffness: 420, damping: 34}}
+                                                />
+                                            )}
+                                            <Icon size={14} className="relative z-10"/>
+                                            <span className="relative z-10">{label}</span>
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
                             <motion.button
                                 whileTap={{scale: 0.95}}
                                 onClick={() => setRoomEditor({mode: "add"})}
@@ -775,20 +814,24 @@ export function PalaceDetailScreen({
                             </motion.button>
                         </div>
 
-                        {rooms.map((room, roomIndex) => (
-                            <SwipeableRoomCard
-                                key={room.id}
-                                room={room}
-                                roomIndex={roomIndex}
-                                palaceId={palaceId}
-                                canMoveUp={roomIndex > 0}
-                                canMoveDown={roomIndex < rooms.length - 1}
-                                onEditRoom={(r) => setRoomEditor({mode: "edit", room: r})}
-                                onDeleteRoom={(rId) => setDeleteRoomId(rId)}
-                                onRoomClick={onRoomClick}
-                                onMoveRoom={(rId, dir) => actions.moveRoom(palaceId, rId, dir)}
-                            />
-                        ))}
+                        {preferences.roomView === "map" ? (
+                            <RoomJourneyMap rooms={rooms} onOpenRoom={(t) => onRoomClick?.(t)}/>
+                        ) : (
+                            rooms.map((room, roomIndex) => (
+                                <SwipeableRoomCard
+                                    key={room.id}
+                                    room={room}
+                                    roomIndex={roomIndex}
+                                    palaceId={palaceId}
+                                    canMoveUp={roomIndex > 0}
+                                    canMoveDown={roomIndex < rooms.length - 1}
+                                    onEditRoom={(r) => setRoomEditor({mode: "edit", room: r})}
+                                    onDeleteRoom={(rId) => setDeleteRoomId(rId)}
+                                    onRoomClick={onRoomClick}
+                                    onMoveRoom={(rId, dir) => actions.moveRoom(palaceId, rId, dir)}
+                                />
+                            ))
+                        )}
                     </div>
                 )}
             </div>
