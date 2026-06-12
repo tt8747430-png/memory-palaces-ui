@@ -8,10 +8,12 @@ export default function LoginScreen({
                                         onClose,
                                         onSignup,
                                         onSignIn,
+                                        onForgotPassword,
                                     }: {
     onClose?: () => void;
     onSignup?: () => void;
     onSignIn?: () => void;
+    onForgotPassword?: () => void;
 }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -320,6 +322,7 @@ export default function LoginScreen({
                         <motion.button
                             whileTap={{scale: 0.95}}
                             type="button"
+                            onClick={onForgotPassword}
                             className="text-small font-medium text-[#091A7A] px-3 py-2 bg-gradient-to-r from-[#ADC8FF]/10 to-[#091A7A]/5 rounded-[12px] border border-white/20 animate-touch min-h-[44px]"
                             style={{fontFamily: "Lexend, sans-serif"}}
                         >

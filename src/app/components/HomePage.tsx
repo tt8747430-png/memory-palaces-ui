@@ -17,6 +17,8 @@ import {EditPalaceScreen} from "./palace/EditPalaceScreen";
 import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
 import {PalaceQuizCompletionScreen} from "./quiz/PalaceQuizCompletionScreen";
 import {DailyReviewScreen} from "./DailyReviewScreen";
+import {StatsScreen} from "./StatsScreen";
+import {StreakHistorySheet} from "./progress/StreakHistorySheet";
 import {ProgressNotification} from "./notifications/ProgressNotification";
 import {NotificationsScreen} from "./notifications/NotificationsScreen";
 import {SaveIndicator} from "./notifications/SaveIndicator";
@@ -24,6 +26,7 @@ import {ProgressEvent, useProgressState} from "../hooks/useProgressState";
 import {useNotifications} from "../hooks/useNotifications";
 import {useSaveStatus} from "../hooks/useSaveStatus";
 import {usePreferences} from "../hooks/usePreferences";
+import {useProfile} from "../hooks/useProfile";
 import {countDueLoci} from "../utils/dueCards";
 
 type Tab = "home" | "palaces" | "profile";
@@ -32,6 +35,7 @@ export default function HomePage() {
     const notifications = useNotifications();
     const saveStatus = useSaveStatus();
     const {preferences} = usePreferences();
+    const {profile, firstName, initials} = useProfile();
 
     // Show an in-app milestone toast, unless the user has turned notifications
     // off in Settings. The persistent bell-screen log is unaffected; this only
@@ -114,6 +118,8 @@ export default function HomePage() {
     const [quizResults, setQuizResults] = useState<QuizResults | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showDailyReview, setShowDailyReview] = useState(false);
+    const [showStats, setShowStats] = useState(false);
+    const [showStreakHistory, setShowStreakHistory] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
@@ -264,6 +270,10 @@ export default function HomePage() {
         );
     }
 
+    if (showStats) {
+        return <StatsScreen onBack={() => setShowStats(false)}/>;
+    }
+
     if (roomView && selectedPalaceId) {
         const palaceTitle =
             state.palaces.find((p) => p.id === selectedPalaceId)?.name || "Memory Palace";
@@ -369,18 +379,26 @@ export default function HomePage() {
                 );
 
             case "profile":
-                return <ProfilePage onOpenSettings={() => setShowSettings(true)}/>;
+                return (
+                    <ProfilePage
+                        onOpenSettings={() => setShowSettings(true)}
+                        onOpenStats={() => setShowStats(true)}
+                    />
+                );
 
             default:
                 return (
                     <HomeFeed
-                        userName="Memory Master"
-                        profileImage="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
+                        userName={firstName}
+                        profileImage={profile.avatar}
+                        initials={initials}
                         userXP={state.userXP}
                         currentLevel={state.currentLevel}
                         currentProgress={state.currentProgress}
                         streakCount={state.streakCount}
+                        longestStreak={state.longestStreak}
                         streakFreezes={state.streakFreezes}
+                        trainingDays={state.trainingDays}
                         hasPalaces={state.palaces.length > 0}
                         unreadCount={unreadCount}
                         recentXPGain={recentXPGain}
@@ -391,6 +409,8 @@ export default function HomePage() {
                         onStartTraining={handleStartTraining}
                         onCreatePalace={() => setShowCreatePalace(true)}
                         onPalaceClick={(id) => setSelectedPalaceId(id)}
+                        onViewAllPalaces={() => setActiveTab("palaces")}
+                        onViewStreakHistory={() => setShowStreakHistory(true)}
                         dueCount={dueCount}
                         onDailyReview={() => setShowDailyReview(true)}
                     />
@@ -424,6 +444,15 @@ export default function HomePage() {
             />
 
             <SettingsScreen open={showSettings} onOpenChange={setShowSettings}/>
+
+            <StreakHistorySheet
+                open={showStreakHistory}
+                onClose={() => setShowStreakHistory(false)}
+                onMoreStats={() => {
+                    setShowStreakHistory(false);
+                    setShowStats(true);
+                }}
+            />
 
             <AnimatePresence>
                 {showCreatePalace && (

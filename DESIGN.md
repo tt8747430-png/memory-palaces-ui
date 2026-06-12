@@ -214,6 +214,21 @@ Depth is **soft ambient navy glow**, not hard shadow and not flat. White cards a
 ### Navigation — Liquid Glass Bottom Nav
 The signature component. A fixed, floating, rounded-[40px] glass bar with three tabs (Home, Palaces, Profile). A frosted navy-gradient body (`backdrop-blur`) sits over an ambient navy/action-blue glow. The active tab is marked by a spring-animated white pill (rounded-[24px]) that slides between items, with the active icon/label flipping to navy and inactive items white at ~70% opacity. Active state is also reinforced by a small navy dot, so it never relies on color alone. Press feedback is `whileTap={{ scale: 0.92 }}`.
 
+### Shared primitives (`src/app/components/ui/`)
+
+These exist so common patterns stop being re-derived inline. Reach for them before hand-rolling.
+
+- **`ScreenHeader`** — the frosted compact top bar (safe-area spacer + back button + truncating title + optional right `actions`). Pass `style` from `useCollapsibleHeader` for the parallax-collapse variant on hero screens, or use the default static bar (`fixed={false}` for in-flow) on sub-screens.
+- **`IconButton`** — circular icon-only button. Variants `glass` (floating white on the gradient), `tint` (pale-blue on white), `solid` (navy), `ghost` (translucent white over dark). Sizes `sm`/`md`/`lg`; `md`+ clear the 44px target. Requires `aria-label`.
+- **`GlassCard`** — frosted card. `tone="sky"` is the blue gradient glass for hero/stat cards; `tone="card"` is the lighter `.bg-card-glass` panel.
+- **`Chip`** — compact info/status pill. Tones `info`/`neutral`/`navy`/`amber`/`emerald`/`gold`, each picked to clear AA contrast at 11–12px (do **not** use bright `#3D8FEF` text on `#EAF4FF`, which fails). `SrsStatusChip` (in `cards/`) maps a card's spaced-repetition status to a Chip.
+- **`Avatar`** — photo with a navy-gradient initials fallback; size/shape via `className`. Pair with `useProfile`'s `initials`.
+- **`GradeButtons`** (`cards/`) — the shared Again / Hard / Good / Easy rating row with per-grade interval previews, used by both the daily review and per-room flashcards.
+
+### Motion vocabulary (`src/app/utils/motion.ts`)
+
+Standardized press scales and curves so feedback is consistent: `tap` (0.97, default), `tapSmall` (0.94, icons/chips), `tapCard` (0.98, large surfaces), `tapNav` (0.92, nav). Easings `easeOutQuart` / `easeOutExpo`; springs `springSnappy` / `springGentle`. Spread onto a `motion` element (`<motion.button {...tap}>`).
+
 ## 6. Do's and Don'ts
 
 ### Do:

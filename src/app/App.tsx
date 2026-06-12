@@ -2,12 +2,13 @@ import {useState} from "react";
 import {MotionConfig} from "motion/react";
 import LoginScreen from "./components/LoginScreen";
 import SignupScreen from "./components/SignupScreen";
+import {ForgotPasswordScreen} from "./components/ForgotPasswordScreen";
 import HomePage from "./components/HomePage";
 import {OpeningAnimation} from "./components/OpeningAnimation";
 import {WelcomeSuccessScreen} from "./components/WelcomeSuccessScreen";
 import {usePreferences} from "./hooks/usePreferences";
 
-type Screen = "opening" | "login" | "signup" | "success" | "home";
+type Screen = "opening" | "login" | "signup" | "forgot-password" | "success" | "home";
 
 export default function App() {
     const {preferences} = usePreferences();
@@ -56,8 +57,13 @@ export default function App() {
                 <LoginScreen
                     onSignup={() => setCurrentScreen("signup")}
                     onSignIn={handleSignIn}
+                    onForgotPassword={() => setCurrentScreen("forgot-password")}
                 />
             );
+        }
+
+        if (currentScreen === "forgot-password") {
+            return <ForgotPasswordScreen onBack={() => setCurrentScreen("login")}/>;
         }
 
         if (currentScreen === "signup") {

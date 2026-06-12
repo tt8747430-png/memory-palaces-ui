@@ -21,8 +21,8 @@ later" comments unless explicitly requested.
 
 📋 Task:
 
-/impeccable craft finish the settings functions, finish the forgot password screen, for the flashcards also add the posibility to chose the anki styles spaced repetition like this was har very hard, easy or other options.
+/impeccable layout distill and polish and harden the quizes screen. the back button doesnt have enought space and the header takes to much space. /impeccable craft and also improve the design and features.
 
-/impeccable extract improve the design  systedm and reduce the code duplicaton
+/impeccable harden polish and distill and remove all the hardcoded data. only the real data is taken now. and also finish the clear data options from the settings pages.
 
-/impeccable craft  improved the striek overview using this examples and best practices and all of the homepage and the homepage functions should be working like view all palaces and other features . /Users/kristianbraila/Downloads/IMG_1780.PNG /Users/kristianbraila/Downloads/IMG_1779.PNG
+/impeccable distil and polish and harden the home page to look more premium. and to have better features and functionality.

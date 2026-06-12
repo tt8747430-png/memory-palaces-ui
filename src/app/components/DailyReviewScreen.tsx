@@ -2,23 +2,18 @@ import {useMemo, useState} from "react";
 import {AnimatePresence, motion, useReducedMotion} from "motion/react";
 import {ArrowLeft, Check, Eye, Layers, MapPin, Sparkles} from "lucide-react";
 import {useProgressState} from "../hooks/useProgressState";
-import {type Grade, nextIntervalLabel} from "../utils/srs";
+import {type Grade} from "../utils/srs";
 import {getDueLoci} from "../utils/dueCards";
 import {impact, success as successHaptic, tick} from "../utils/haptics";
 import {playComplete} from "../utils/sound";
 import {RiveAnimation} from "./ui/RiveAnimation";
+import {GradeButtons} from "./cards/GradeButtons";
+import {SrsStatusChip} from "./cards/SrsStatusChip";
 
 interface DailyReviewScreenProps {
     onBack: () => void;
     onComplete: () => void;
 }
-
-const GRADES: {grade: Grade; label: string; classes: string}[] = [
-    {grade: "again", label: "Again", classes: "bg-red-50 text-red-600 border-red-200"},
-    {grade: "hard", label: "Hard", classes: "bg-amber-50 text-amber-600 border-amber-200"},
-    {grade: "good", label: "Good", classes: "bg-[#EAF4FF] text-[#091A7A] border-[#ADC8FF]"},
-    {grade: "easy", label: "Easy", classes: "bg-emerald-50 text-emerald-600 border-emerald-200"},
-];
 
 /** XP for a finished review: rewards effort, capped so it can't be farmed. */
 function earnedXp(reviewed: number): number {
@@ -117,7 +112,7 @@ export function DailyReviewScreen({onBack, onComplete}: DailyReviewScreenProps) 
                         </p>
                     </div>
                     <div className="w-12 h-12 flex items-center justify-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-[12px] font-semibold text-[#3D8FEF] shadow-card">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-[12px] font-semibold text-[#1E5FBF] shadow-card">
                             <Layers className="w-3.5 h-3.5"/>
                             {queue.length}
                         </span>
@@ -167,10 +162,15 @@ export function DailyReviewScreen({onBack, onComplete}: DailyReviewScreenProps) 
                                     style={{backfaceVisibility: "hidden"}}
                                     className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
                                 >
-                                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
-                                        <MapPin className="w-3 h-3"/>
-                                        {current?.palaceName} · {current?.roomTitle}
-                                    </span>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#1E5FBF]">
+                                            <MapPin className="w-3 h-3 flex-shrink-0"/>
+                                            <span className="truncate">
+                                                {current?.palaceName} · {current?.roomTitle}
+                                            </span>
+                                        </span>
+                                        <SrsStatusChip srs={current?.locus.srs}/>
+                                    </div>
                                     <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center text-center py-2">
                                         <h2 className="text-[clamp(22px,6vw,30px)] font-bold text-[#091A7A] mb-3 text-balance break-words">
                                             {current?.locus.front}
@@ -217,30 +217,7 @@ export function DailyReviewScreen({onBack, onComplete}: DailyReviewScreenProps) 
             {/* Footer */}
             <div className="px-6 pb-7 pt-2">
                 {flipped ? (
-                    <motion.div
-                        initial={{opacity: 0, y: 8}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.2}}
-                    >
-                        <p className="text-center text-[12px] font-medium text-[#475569] mb-2.5">
-                            How well did you recall it?
-                        </p>
-                        <div className="grid grid-cols-4 gap-2.5">
-                            {GRADES.map(({grade, label, classes}) => (
-                                <motion.button
-                                    key={grade}
-                                    whileTap={{scale: 0.94}}
-                                    onClick={() => handleGrade(grade)}
-                                    className={`flex flex-col items-center gap-0.5 rounded-2xl border py-2.5 transition-all ${classes}`}
-                                >
-                                    <span className="text-[14px] font-bold">{label}</span>
-                                    <span className="text-[10px] font-medium opacity-70">
-                                        {nextIntervalLabel(current?.locus.srs, grade)}
-                                    </span>
-                                </motion.button>
-                            ))}
-                        </div>
-                    </motion.div>
+                    <GradeButtons srs={current?.locus.srs} onGrade={handleGrade}/>
                 ) : (
                     <motion.button
                         whileTap={{scale: 0.98}}

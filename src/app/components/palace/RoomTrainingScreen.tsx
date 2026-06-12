@@ -37,13 +37,15 @@ import {
     type StudyDirection,
     useProgressState,
 } from "../../hooks/useProgressState";
-import {type Grade, isDue, nextIntervalLabel} from "../../utils/srs";
+import {type Grade, isDue} from "../../utils/srs";
 import {cancelSpeech, speak, speechAvailable} from "../../utils/speech";
 import {impact, success as successHaptic, tick} from "../../utils/haptics";
 import {RiveAnimation} from "../ui/RiveAnimation";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
+import {GradeButtons, GRADE_META} from "../cards/GradeButtons";
+import {SrsStatusChip} from "../cards/SrsStatusChip";
 
 interface RoomTrainingScreenProps {
     onBack: () => void;
@@ -85,17 +87,6 @@ const SAMPLE_LOCI: Locus[] = [
         hint: "Apollo playing a golden lyre as the sun rises.",
         tip: "A-pollo plays — music and light.",
     },
-];
-
-const GRADES: {
-    grade: Grade;
-    label: string;
-    classes: string;
-}[] = [
-    {grade: "again", label: "Again", classes: "bg-red-50 text-red-600 border-red-200"},
-    {grade: "hard", label: "Hard", classes: "bg-amber-50 text-amber-600 border-amber-200"},
-    {grade: "good", label: "Good", classes: "bg-[#EAF4FF] text-[#091A7A] border-[#ADC8FF]"},
-    {grade: "easy", label: "Easy", classes: "bg-emerald-50 text-emerald-600 border-emerald-200"},
 ];
 
 function shuffle<T>(input: T[]): T[] {
@@ -439,7 +430,7 @@ export function RoomTrainingScreen({
             else if (e.key === "ArrowUp") commit("up");
             else if (e.key === "ArrowDown") commit("down");
             else if (mode === "review" && flipped && ["1", "2", "3", "4"].includes(e.key)) {
-                handleGrade(GRADES[Number(e.key) - 1].grade);
+                handleGrade(GRADE_META[Number(e.key) - 1].grade);
             }
         };
         window.addEventListener("keydown", onKey);
@@ -663,10 +654,13 @@ export function RoomTrainingScreen({
                                         className="absolute inset-0 bg-white/95 backdrop-blur-xl rounded-3xl p-7 shadow-elevated border border-white/60 flex flex-col"
                                     >
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#3D8FEF]">
-                                                <MapPin className="w-3 h-3"/>
-                                                {direction === "front" ? "Recall" : "Term"}
-                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-semibold text-[#1E5FBF]">
+                                                    <MapPin className="w-3 h-3"/>
+                                                    {direction === "front" ? "Recall" : "Term"}
+                                                </span>
+                                                {mode === "review" && <SrsStatusChip srs={current.srs}/>}
+                                            </div>
                                             <div className="flex items-center gap-1.5">
                                                 {canSpeak && (
                                                     <button
@@ -842,30 +836,7 @@ export function RoomTrainingScreen({
                             </motion.button>
                         </div>
                     ) : flipped ? (
-                        <motion.div
-                            initial={{opacity: 0, y: 8}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.2}}
-                        >
-                            <p className="text-center text-[12px] font-medium text-[#475569] mb-2.5">
-                                How well did you recall it?
-                            </p>
-                            <div className="grid grid-cols-4 gap-2.5">
-                                {GRADES.map(({grade, label, classes}) => (
-                                    <motion.button
-                                        key={grade}
-                                        whileTap={{scale: 0.94}}
-                                        onClick={() => handleGrade(grade)}
-                                        className={`flex flex-col items-center gap-0.5 rounded-2xl border py-2.5 transition-all ${classes}`}
-                                    >
-                                        <span className="text-[14px] font-bold">{label}</span>
-                                        <span className="text-[10px] font-medium opacity-70">
-                                            {nextIntervalLabel(current.srs, grade)}
-                                        </span>
-                                    </motion.button>
-                                ))}
-                            </div>
-                        </motion.div>
+                        <GradeButtons srs={current.srs} onGrade={handleGrade}/>
                     ) : (
                         <motion.button
                             whileTap={{scale: 0.98}}
@@ -1202,8 +1173,8 @@ function StudyOptionsSheet({
             <div className="rounded-2xl bg-[#F4F8FF] p-1.5">
                 <ToggleRow
                     icon={<Layers size={18}/>}
-                    label="Sort into piles"
-                    description="Swipe cards into Still learning / Known piles and track your progress this session."
+                    label="Simple sort (no grades)"
+                    description="Rate cards with a fast two-way swipe into Still learning / Known. Turn this off to use full Again / Hard / Good / Easy spaced repetition."
                     checked={sortIntoPiles}
                     onChange={onSortIntoPiles}
                 />

@@ -40,13 +40,15 @@ There is no routing library. Navigation is plain React state:
 - **`useProgressState`** (`src/app/hooks/`) is the central app store — it owns palaces, XP, level, streak, training days, and notifications. It defines the core domain types (`Palace`, `Floor`, `Room`, `ProgressState`). Components receive `state` and `actions` props from `HomePage`; mutations flow back up through callbacks.
 - It emits `ProgressEvent`s (`xp-gain`, `level-up`, `streak`, `room-complete`, `palace-complete`) which `HomePage.handleProgressEvent` turns into toast/notification UI and save indicators.
 - **`useLocalStorage`** is the persistence primitive (JSON serialize + cross-tab `storage` event sync). Build new persisted state on top of it rather than touching `localStorage` directly.
-- Other hooks: `useSaveStatus` (save indicator + level math), `useNotifications`, `useProgressState`. Util `progressUtils.ts` holds progress calculations.
+- Other hooks: `useSaveStatus` (save indicator + level math), `useNotifications`, `usePreferences` (`mindscape:preferences` — sound/haptics/reduced-motion/privacy), `useProfile` (`mindscape:profile` — name/email/bio/avatar). Util `progressUtils.ts` holds progress calculations.
+- **Spaced repetition already exists — don't rebuild it.** `utils/srs.ts` is an SM-2 scheduler (grades `again`/`hard`/`good`/`easy`; `schedule`, `isDue`, `srsStatus`, `nextIntervalLabel`), `utils/dueCards.ts` builds the due queue, and `Locus.srs` persists per card. It's surfaced in `DailyReviewScreen` and `RoomTrainingScreen` (review mode) via the shared `components/cards/GradeButtons`.
 
 ### Component organization (`src/app/components/`)
 
 - Top-level files are full screens/pages (e.g. `HomePage`, `PalacesPage`, `ProfilePage`, `LoginScreen`).
 - Feature subfolders group related screens: `palace/`, `quiz/`, `progress/`, `settings/`, `auth/`, `cards/`, `search/`, `notifications/`, `3d-icons/`.
 - `ui/` holds shadcn/base-ui primitives and shared wrappers (`button`, `dialog`, `select`, `StatusBar`, `RiveAnimation`, `SmoothScrollProvider`, etc.). `ui/utils.ts` and `utils/utils.ts` both export `cn` (clsx + tailwind-merge).
+- Reuse the app primitives before hand-rolling: `ScreenHeader` (frosted back+title bar), `IconButton`, `GlassCard`, `Chip`, `Avatar`; plus `cards/GradeButtons` + `cards/SrsStatusChip`. Collapsing hero→compact header logic is the `useCollapsibleHeader` hook. Motion presets (tap/spring/easing) live in `utils/motion.ts`; streak date helpers in `utils/streak.ts`.
 - Providers are mounted once in `src/main.tsx`: `MotionConfig reducedMotion="user"`, `TooltipProvider`, `SmoothScrollProvider`, `Toaster`.
 
 ### Styling system

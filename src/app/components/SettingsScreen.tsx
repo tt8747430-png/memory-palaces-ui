@@ -39,7 +39,6 @@ import {ImageWithFallback} from "./ui/ImageWithFallback";
 import {Switch} from "./ui/switch";
 import {toast} from "sonner";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "./ui/dialog";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "./ui/select";
 import {Tooltip, TooltipContent, TooltipTrigger} from "./ui/tooltip";
 
 interface SettingsScreenProps {
@@ -57,7 +56,7 @@ interface SettingsItem {
     icon: any;
     label: string;
     value?: string;
-    action?: "navigate" | "toggle" | "danger" | "function" | "select";
+    action?: "navigate" | "toggle" | "danger" | "function";
     color?: string;
     enabled?: boolean;
     /** For toggles: the preference key this row reads and writes. */
@@ -65,9 +64,6 @@ interface SettingsItem {
     /** Marks a planned-but-inactive setting: shows a "Soon" chip, inert control. */
     comingSoon?: boolean;
     navigationTarget?: string;
-    options?: { value: string; label: string }[];
-    selectedValue?: string;
-    onSelect?: (val: string | null) => void;
     onClick?: () => void;
 }
 
@@ -564,34 +560,7 @@ export function SettingsScreen({
                                                 onCheckedChange={() => handleToggle(item)}
                                             />
                                         )}
-                                        {item.action === "select" && item.options && (
-                                            <div onClick={(e) => e.stopPropagation()}>
-                                                <Select
-                                                    value={item.selectedValue}
-                                                    onValueChange={(val) => item.onSelect?.(val)}
-                                                >
-                                                    <SelectTrigger
-                                                        className="w-auto min-w-[100px] h-8 bg-transparent border-none shadow-none text-right focus:ring-0 text-[#091A7A]/70 hover:text-[#091A7A] text-[15px] font-medium p-0 pr-1 transition-colors">
-                                                        <SelectValue/>
-                                                    </SelectTrigger>
-                                                    <SelectContent
-                                                        align="end"
-                                                        className="rounded-xl border border-[#091A7A]/10 shadow-xl"
-                                                    >
-                                                        {item.options.map((opt) => (
-                                                            <SelectItem
-                                                                key={opt.value}
-                                                                value={opt.value}
-                                                                className="font-medium rounded-lg text-[14px]"
-                                                            >
-                                                                {opt.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
-                                        {item.action === "navigate" && (
+                                        {!item.comingSoon && item.action === "navigate" && (
                                             <ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>
                                         )}
                                     </div>
