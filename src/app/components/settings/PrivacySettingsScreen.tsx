@@ -1,65 +1,59 @@
 import {motion} from "motion/react";
 import {ArrowLeft, Bell, Eye, Lock, MapPin, Shield, Users} from "lucide-react";
-import {useState} from "react";
+import {type ComponentType} from "react";
 import {Switch} from "../ui/switch";
+import {type PrivacySettings, usePreferences} from "../../hooks/usePreferences";
 
 interface PrivacySettingsScreenProps {
     onBack: () => void;
 }
 
-interface PrivacySetting {
-    id: string;
+interface PrivacyRow {
+    key: keyof PrivacySettings;
     label: string;
     description: string;
-    icon: any;
-    enabled: boolean;
+    icon: ComponentType<{className?: string}>;
 }
 
-export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
-    const [settings, setSettings] = useState<PrivacySetting[]>([
-        {
-            id: "profile-visibility",
-            label: "Profile Visibility",
-            description: "Make your profile visible to other users",
-            icon: Eye,
-            enabled: true,
-        },
-        {
-            id: "activity-sharing",
-            label: "Activity Sharing",
-            description: "Share your learning progress with friends",
-            icon: Users,
-            enabled: false,
-        },
-        {
-            id: "location-access",
-            label: "Location Access",
-            description: "Allow location-based features",
-            icon: MapPin,
-            enabled: false,
-        },
-        {
-            id: "notification-tracking",
-            label: "Notification Tracking",
-            description: "Track notification engagement for analytics",
-            icon: Bell,
-            enabled: true,
-        },
-        {
-            id: "data-encryption",
-            label: "Data Encryption",
-            description: "Encrypt your personal data (recommended)",
-            icon: Lock,
-            enabled: true,
-        },
-    ]);
+const PRIVACY_ROWS: PrivacyRow[] = [
+    {
+        key: "profileVisibility",
+        label: "Profile Visibility",
+        description: "Make your profile visible to other users",
+        icon: Eye,
+    },
+    {
+        key: "activitySharing",
+        label: "Activity Sharing",
+        description: "Share your learning progress with friends",
+        icon: Users,
+    },
+    {
+        key: "locationAccess",
+        label: "Location Access",
+        description: "Allow location-based features",
+        icon: MapPin,
+    },
+    {
+        key: "notificationTracking",
+        label: "Notification Tracking",
+        description: "Track notification engagement for analytics",
+        icon: Bell,
+    },
+    {
+        key: "dataEncryption",
+        label: "Data Encryption",
+        description: "Encrypt your personal data (recommended)",
+        icon: Lock,
+    },
+];
 
-    const toggleSetting = (id: string) => {
-        setSettings(prev =>
-            prev.map(setting =>
-                setting.id === id ? {...setting, enabled: !setting.enabled} : setting
-            )
-        );
+export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
+    const {preferences, setPreference} = usePreferences();
+    const privacy = preferences.privacy;
+
+    const toggleSetting = (key: keyof PrivacySettings) => {
+        setPreference("privacy", {...privacy, [key]: !privacy[key]});
     };
 
     return (
@@ -94,30 +88,31 @@ export function PrivacySettingsScreen({onBack}: PrivacySettingsScreenProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-8">
                 <div className="px-6 space-y-3">
-                    {settings.map((setting) => (
+                    {PRIVACY_ROWS.map((row) => (
                         <div
-                            key={setting.id}
+                            key={row.key}
                             className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card p-5"
                         >
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-4 flex-1">
                                     <div
                                         className="w-11 h-11 bg-[#ADC8FF]/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                                        <setting.icon className="w-5 h-5 text-[#091A7A]"/>
+                                        <row.icon className="w-5 h-5 text-[#091A7A]"/>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-semibold text-[#091A7A] mb-1">
-                                            {setting.label}
+                                            {row.label}
                                         </h3>
                                         <p className="text-sm text-[#091A7A]/70 leading-relaxed">
-                                            {setting.description}
+                                            {row.description}
                                         </p>
                                     </div>
                                 </div>
 
                                 <Switch
-                                    checked={setting.enabled}
-                                    onCheckedChange={() => toggleSetting(setting.id)}
+                                    checked={privacy[row.key]}
+                                    onCheckedChange={() => toggleSetting(row.key)}
+                                    aria-label={row.label}
                                 />
                             </div>
                         </div>

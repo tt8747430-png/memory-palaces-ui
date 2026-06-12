@@ -15,6 +15,23 @@ import {setSoundEnabled} from "../utils/sound";
  * persisted but intentionally not applied (the app is a daylit design); the
  * toggle stays so the preference survives for a future theme.
  */
+/** Privacy & security switches surfaced on the dedicated privacy sub-screen. */
+export interface PrivacySettings {
+    profileVisibility: boolean;
+    activitySharing: boolean;
+    locationAccess: boolean;
+    notificationTracking: boolean;
+    dataEncryption: boolean;
+}
+
+export const DEFAULT_PRIVACY: PrivacySettings = {
+    profileVisibility: true,
+    activitySharing: false,
+    locationAccess: false,
+    notificationTracking: true,
+    dataEncryption: true,
+};
+
 export interface Preferences {
     /** Play short confirmation tones on answers and session completion. */
     soundEffects: boolean;
@@ -30,6 +47,8 @@ export interface Preferences {
     language: string;
     /** Default room view inside a palace: spatial journey map or list. */
     roomView: "map" | "list";
+    /** Privacy & security switches (persisted as a group). */
+    privacy: PrivacySettings;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -40,6 +59,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     darkMode: false,
     language: "en",
     roomView: "map",
+    privacy: DEFAULT_PRIVACY,
 };
 
 const PREFERENCES_KEY = "mindscape:preferences";
@@ -75,6 +95,8 @@ function withLegacyFallback(stored: Partial<Preferences>): Preferences {
             readLegacy<string>(LEGACY_KEYS.language) ??
             DEFAULT_PREFERENCES.language,
         ...stored,
+        // Always a complete object even if an older save predates a switch.
+        privacy: {...DEFAULT_PRIVACY, ...stored.privacy},
     };
 }
 

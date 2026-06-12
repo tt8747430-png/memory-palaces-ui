@@ -1,19 +1,34 @@
 import {AnimatePresence, motion, useReducedMotion, useTransform} from "motion/react";
-import {Award, Book, Calendar, Crown, Settings, Snowflake, Star, Target, TrendingUp, Trophy, Zap,} from "lucide-react";
-import {ImageWithFallback} from "./ui/ImageWithFallback";
+import {
+    Award,
+    BarChart3,
+    Book,
+    Calendar,
+    ChevronRight,
+    Crown,
+    Settings,
+    Snowflake,
+    Star,
+    Target,
+    TrendingUp,
+    Trophy,
+    Zap,
+} from "lucide-react";
+import {Avatar} from "./ui/Avatar";
 import {useProgressState} from "../hooks/useProgressState";
+import {useProfile} from "../hooks/useProfile";
 import {useContainerScroll} from "../hooks/useCollapsibleHeader";
 import {useMemo, useState} from "react";
 
 interface ProfilePageProps {
     onOpenSettings: () => void;
+    /** Open the full Stats screen ("View full stats"). */
+    onOpenStats: () => void;
 }
 
-const PROFILE_IMAGE =
-    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop";
-
-export function ProfilePage({onOpenSettings}: ProfilePageProps) {
+export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
     const {state} = useProgressState();
+    const {profile, initials} = useProfile();
     const {ref: scrollRef, scrollY} = useContainerScroll();
     const [activeTab, setActiveTab] = useState<"statistics" | "achievements">("statistics");
     const reduce = useReducedMotion();
@@ -125,14 +140,15 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                 <div className="h-safe-top"/>
                 <div className="flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-3">
-                        <ImageWithFallback
-                            src={PROFILE_IMAGE}
-                            alt="Profile"
-                            className="w-9 h-9 rounded-full object-cover border border-[#091A7A]/10"
-                            style={{objectPosition: "center 20%"}}
+                        <Avatar
+                            src={profile.avatar}
+                            name={profile.name}
+                            initials={initials}
+                            className="w-9 h-9 rounded-full border border-[#091A7A]/10"
+                            initialsClassName="text-[12px]"
                         />
                         <div>
-                            <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">Memory Master</h2>
+                            <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">{profile.name}</h2>
                             <p className="text-[11px] font-medium text-[#091A7A]/60">Level {levelProgress.currentLevel}</p>
                         </div>
                     </div>
@@ -170,11 +186,12 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                     <motion.div style={{scale: imageScale, y: imageY}} className="relative origin-bottom">
                         <div
                             className="absolute inset-0 bg-gradient-to-tr from-[#091A7A] to-[#4F8EFF] rounded-[2rem] blur-xl opacity-25 transform scale-90 translate-y-2"/>
-                        <ImageWithFallback
-                            src={PROFILE_IMAGE}
-                            alt="Profile"
-                            className="relative w-[104px] h-[104px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] object-cover bg-white"
-                            style={{objectPosition: "center 20%"}}
+                        <Avatar
+                            src={profile.avatar}
+                            name={profile.name}
+                            initials={initials}
+                            className="relative w-[104px] h-[104px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)]"
+                            initialsClassName="text-[40px]"
                         />
                         <div
                             className="absolute -bottom-2.5 -right-2.5 px-3 py-1 bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-xl shadow-[0_6px_16px_rgba(9,26,122,0.30)] border border-white/30">
@@ -185,7 +202,7 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                     </motion.div>
 
                     <div className="space-y-1">
-                        <h1 className="text-[26px] font-bold text-[#091A7A] tracking-tight">Memory Master</h1>
+                        <h1 className="text-[26px] font-bold text-[#091A7A] tracking-tight">{profile.name}</h1>
                         <p className="text-[14px] text-[#091A7A]/70 font-medium">{subtitle}</p>
                     </div>
 
@@ -274,6 +291,26 @@ export function ProfilePage({onOpenSettings}: ProfilePageProps) {
                                         </motion.div>
                                     ))}
                                 </div>
+
+                                <motion.button
+                                    initial={{opacity: 0, y: 10}}
+                                    animate={{opacity: 1, y: 0}}
+                                    transition={{delay: 0.18, ease: [0.22, 1, 0.36, 1], duration: 0.35}}
+                                    whileTap={{scale: 0.98}}
+                                    onClick={onOpenStats}
+                                    className="w-full flex items-center gap-3.5 p-4 bg-white rounded-[22px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.04] text-left transition-colors hover:bg-[#091A7A]/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    <div className="w-11 h-11 bg-[#EAF4FF] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                                        <BarChart3 className="w-[22px] h-[22px] text-[#091A7A]" strokeWidth={2.2}/>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[15px] font-bold text-[#091A7A]">View full stats</p>
+                                        <p className="text-[13px] font-medium text-[#091A7A]/65">
+                                            Streak history, accuracy, and your training calendar
+                                        </p>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-[#091A7A]/40 flex-shrink-0"/>
+                                </motion.button>
                             </motion.div>
                         )}
 

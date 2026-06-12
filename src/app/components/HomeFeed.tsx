@@ -2,7 +2,7 @@ import {motion} from "motion/react";
 import {BellRing, ChevronRight, Layers} from "lucide-react";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
-import {ImageWithFallback} from "./ui/ImageWithFallback";
+import {Avatar} from "./ui/Avatar";
 import {ProgressHeader} from "./progress/ProgressHeader";
 import {PalaceProgressCard} from "./progress/PalaceProgressCard";
 import {TrainingStreak} from "./progress/TrainingStreak";
@@ -12,12 +12,16 @@ import {useCollapsibleHeader} from "../hooks/useCollapsibleHeader";
 
 interface HomeFeedProps {
     userName: string;
-    profileImage: string;
+    profileImage: string | null;
+    initials: string;
     userXP: number;
     currentLevel: number;
     currentProgress: number;
     streakCount: number;
+    longestStreak: number;
     streakFreezes: number;
+    /** ISO date strings of every day trained; drives the streak week + calendar. */
+    trainingDays: string[];
     hasPalaces: boolean;
     unreadCount: number;
     recentXPGain: number;
@@ -28,6 +32,10 @@ interface HomeFeedProps {
     onStartTraining: () => void;
     onCreatePalace: () => void;
     onPalaceClick: (palaceId: string) => void;
+    /** Jump to the Palaces tab (the home "View all" affordance). */
+    onViewAllPalaces: () => void;
+    /** Open the training-history sheet from the streak card. */
+    onViewStreakHistory: () => void;
     /** Loci due for review across all palaces today. */
     dueCount: number;
     onDailyReview: () => void;
@@ -41,11 +49,14 @@ interface HomeFeedProps {
 export function HomeFeed({
                              userName,
                              profileImage,
+                             initials,
                              userXP,
                              currentLevel,
                              currentProgress,
                              streakCount,
+                             longestStreak,
                              streakFreezes,
+                             trainingDays,
                              hasPalaces,
                              unreadCount,
                              recentXPGain,
@@ -56,6 +67,8 @@ export function HomeFeed({
                              onStartTraining,
                              onCreatePalace,
                              onPalaceClick,
+                             onViewAllPalaces,
+                             onViewStreakHistory,
                              dueCount,
                              onDailyReview,
                          }: HomeFeedProps) {
@@ -80,11 +93,12 @@ export function HomeFeed({
                         onClick={onProfileClick}
                         className="flex items-center gap-3 active:scale-[0.98] transition-transform"
                     >
-                        <ImageWithFallback
+                        <Avatar
                             src={profileImage}
-                            alt="Profile"
-                            className="w-9 h-9 rounded-full object-cover border border-[#091A7A]/10"
-                            style={{objectPosition: "center 20%"}}
+                            name={userName}
+                            initials={initials}
+                            className="w-9 h-9 rounded-full border border-[#091A7A]/10"
+                            initialsClassName="text-[12px]"
                         />
                         <div className="text-left">
                             <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">
@@ -127,6 +141,7 @@ export function HomeFeed({
                     <ProgressHeader
                         profileImage={profileImage}
                         userName={userName}
+                        initials={initials}
                         userXP={userXP}
                         recentXPGain={recentXPGain}
                         showXPAnimation={showXPAnimation}
@@ -175,11 +190,18 @@ export function HomeFeed({
                             <ChevronRight className="w-5 h-5 text-[#091A7A]/40 flex-shrink-0"/>
                         </motion.button>
                     )}
-                    <TrainingStreak streakCount={streakCount} freezes={streakFreezes}/>
+                    <TrainingStreak
+                        streakCount={streakCount}
+                        longestStreak={longestStreak}
+                        freezes={streakFreezes}
+                        trainingDays={trainingDays}
+                        onViewHistory={onViewStreakHistory}
+                    />
                     <TrainingCalendar/>
                     <PalacesOverview
                         onPalaceClick={onPalaceClick}
                         onCreatePalace={onCreatePalace}
+                        onViewAll={onViewAllPalaces}
                     />
                 </div>
             </div>

@@ -1,11 +1,13 @@
 import {AnimatePresence, motion} from "motion/react";
-import {ImageWithFallback} from "../ui/ImageWithFallback";
+import {Avatar} from "../ui/Avatar";
 import {BellRing, Brain, Plus, Zap} from "lucide-react";
 import {useEffect, useState} from "react";
 
 interface ProgressHeaderProps {
-    profileImage: string;
+    profileImage: string | null;
     userName: string;
+    /** Initials for the avatar fallback when no photo is set. */
+    initials: string;
     userXP: number;
     recentXPGain?: number;
     showXPAnimation?: boolean;
@@ -23,6 +25,7 @@ interface ProgressHeaderProps {
 export function ProgressHeader({
                                    profileImage,
                                    userName,
+                                   initials,
                                    userXP,
                                    recentXPGain,
                                    showXPAnimation,
@@ -93,11 +96,12 @@ export function ProgressHeader({
                             className="relative cursor-pointer"
                         >
                             <div className="relative">
-                                <ImageWithFallback
+                                <Avatar
                                     src={profileImage}
-                                    alt="Profile"
-                                    className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-card"
-                                    style={{objectPosition: "center 20%"}}
+                                    name={userName}
+                                    initials={initials}
+                                    className="w-14 h-14 rounded-full border-2 border-white shadow-card"
+                                    initialsClassName="text-[18px]"
                                 />
                                 <div
                                     className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full border-2 border-white shadow-sm flex items-center justify-center">

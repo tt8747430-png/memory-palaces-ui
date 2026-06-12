@@ -23,7 +23,9 @@ import {
 } from "lucide-react";
 import {type ChangeEvent, useEffect, useRef, useState} from "react";
 import {type Preferences, usePreferences} from "../hooks/usePreferences";
+import {useProfile} from "../hooks/useProfile";
 import {useContainerScroll} from "../hooks/useCollapsibleHeader";
+import {Chip} from "./ui/Chip";
 import {Skeleton} from "./ui/Skeleton";
 import {ProgressUtils} from "../utils/progressUtils";
 import {EditProfileScreen} from "./settings/EditProfileScreen";
@@ -60,6 +62,8 @@ interface SettingsItem {
     enabled?: boolean;
     /** For toggles: the preference key this row reads and writes. */
     prefKey?: keyof Preferences;
+    /** Marks a planned-but-inactive setting: shows a "Soon" chip, inert control. */
+    comingSoon?: boolean;
     navigationTarget?: string;
     options?: { value: string; label: string }[];
     selectedValue?: string;
@@ -103,8 +107,15 @@ export function SettingsScreen({
     // gates in-app toasts in HomePage. Dark Mode is kept and stored for a future
     // theme; it intentionally does not yet repaint the daylight design.
     const {preferences, setPreference} = usePreferences();
+    const {profile, initials} = useProfile();
     const [phoneNumber, setPhoneNumber] = useState("");
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+    // A lightweight @handle derived from the email's local part, falling back to
+    // a slug of the display name, so the hero stays in sync with the profile.
+    const handle = (profile.email.split("@")[0] || profile.name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "");
 
     const {ref: scrollRef, scrollY} = useContainerScroll();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,7 +179,7 @@ export function SettingsScreen({
                 {
                     icon: Mail,
                     label: "Email",
-                    value: "memory@master.com",
+                    value: profile.email,
                 },
                 {
                     icon: Smartphone,
@@ -213,28 +224,14 @@ export function SettingsScreen({
                 {
                     icon: Moon,
                     label: "Dark Mode",
-                    enabled: preferences.darkMode,
-                    action: "toggle",
-                    prefKey: "darkMode",
+                    value: "A night theme is in the works",
+                    comingSoon: true,
                 },
                 {
                     icon: Globe,
                     label: "Language",
-                    action: "select",
-                    selectedValue: preferences.language,
-                    onSelect: (val) => handleLanguageChange(val || "en"),
-                    options: [
-                        {value: "en", label: "English"},
-                        {value: "es", label: "Spanish"},
-                        {value: "fr", label: "French"},
-                        {value: "de", label: "German"},
-                        {value: "it", label: "Italian"},
-                        {value: "pt", label: "Portuguese"},
-                        {value: "ru", label: "Russian"},
-                        {value: "ja", label: "Japanese"},
-                        {value: "ko", label: "Korean"},
-                        {value: "zh", label: "Chinese"},
-                    ],
+                    value: "English",
+                    comingSoon: true,
                 },
             ],
         },
@@ -327,6 +324,10 @@ export function SettingsScreen({
     };
 
     const handleItemClick = (item: SettingsItem) => {
+        if (item.comingSoon) {
+            toast("Coming soon", {description: `${item.label} isn't available yet.`});
+            return;
+        }
         if (item.action === "toggle") {
             handleToggle(item);
         } else if (item.action === "navigate" && item.navigationTarget) {
@@ -354,11 +355,6 @@ export function SettingsScreen({
 
     const handlePasswordChanged = () => {
         toast.success("Password changed successfully");
-    };
-
-    const handleLanguageChange = (newLanguage: string) => {
-        setPreference("language", newLanguage);
-        toast.success("Language updated");
     };
 
     const handlePhoneConnected = (phone: string) => {
@@ -433,12 +429,20 @@ export function SettingsScreen({
                     <div className="relative">
                         <div
                             className="absolute inset-0 bg-gradient-to-tr from-[#091A7A] to-[#4F8EFF] rounded-[2rem] blur-xl opacity-20 transform scale-90 translate-y-2"/>
-                        <ImageWithFallback
-                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop"
-                            alt="Profile"
-                            className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] object-cover bg-white"
-                            style={{objectPosition: "center 20%"}}
-                        />
+                        {profile.avatar ? (
+                            <ImageWithFallback
+                                src={profile.avatar}
+                                alt={profile.name}
+                                className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] object-cover bg-white"
+                            />
+                        ) : (
+                            <div
+                                className="relative w-[88px] h-[88px] rounded-[2rem] border-[3px] border-white shadow-[0_12px_32px_rgba(9,26,122,0.18)] bg-gradient-to-br from-[#091A7A] to-[#4F8EFF] flex items-center justify-center text-white text-[30px] font-bold"
+                                aria-label={profile.name}
+                            >
+                                {initials}
+                            </div>
+                        )}
                         <Tooltip>
                             <TooltipTrigger
                                 render={
@@ -461,10 +465,10 @@ export function SettingsScreen({
 
                     <div className="flex flex-col items-center gap-0.5 mt-2">
                         <h1 className="text-[22px] font-bold text-[#091A7A] tracking-tight">
-                            Memory Master
+                            {profile.name}
                         </h1>
                         <p className="text-[14px] text-[#091A7A]/65 font-medium">
-                            @memorymaster
+                            @{handle}
                         </p>
                     </div>
                 </motion.div>
@@ -551,7 +555,10 @@ export function SettingsScreen({
                                     </div>
 
                                     <div className="flex items-center gap-2 flex-shrink-0">
-                                        {item.action === "toggle" && (
+                                        {item.comingSoon && (
+                                            <Chip tone="gold" size="sm">Soon</Chip>
+                                        )}
+                                        {!item.comingSoon && item.action === "toggle" && (
                                             <Switch
                                                 checked={item.enabled || false}
                                                 onCheckedChange={() => handleToggle(item)}

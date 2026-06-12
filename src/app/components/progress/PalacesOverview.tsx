@@ -12,6 +12,8 @@ interface PalacesOverviewProps {
     loading?: boolean;
     /** Wires the first-run empty state's "Create palace" action. */
     onCreatePalace?: () => void;
+    /** Navigate to the full Palaces tab (the "View all" / "See All" action). */
+    onViewAll?: () => void;
 }
 
 export function PalacesOverview({
@@ -19,6 +21,7 @@ export function PalacesOverview({
                                     variant = "circular",
                                     loading = false,
                                     onCreatePalace,
+                                    onViewAll,
                                 }: PalacesOverviewProps) {
     const {state} = useProgressState();
     const palaces = state.palaces;
@@ -42,7 +45,8 @@ export function PalacesOverview({
                         animate={{opacity: 1, x: 0}}
                         transition={{delay: 0.4}}
                         whileTap={{scale: 0.95}}
-                        className="text-sm font-semibold text-[#3d8fef] flex items-center gap-1 hover:gap-2 transition-all"
+                        onClick={onViewAll}
+                        className="text-sm font-semibold text-[#1E5FBF] flex items-center gap-1 hover:gap-2 transition-all"
                     >
                         See All
                         <ChevronRight className="w-4 h-4"/>
@@ -101,9 +105,11 @@ export function PalacesOverview({
                 </h3>
                 <motion.button
                     whileTap={{scale: 0.98}}
-                    className="text-xs font-medium text-[#091A7A] px-3 py-1 rounded-[50px] transition-colors duration-200 hover:bg-white/20"
+                    onClick={onViewAll}
+                    className="text-xs font-semibold text-[#1E5FBF] flex items-center gap-1 px-3 py-1.5 rounded-[50px] transition-all duration-200 hover:bg-white/30 hover:gap-1.5"
                 >
                     View all
+                    <ChevronRight className="w-3.5 h-3.5"/>
                 </motion.button>
             </div>
 

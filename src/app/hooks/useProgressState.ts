@@ -174,6 +174,8 @@ export interface ProgressState {
     userXP: number;
     currentLevel: number;
     streakCount: number;
+    /** Longest streak ever reached; never decreases. Powers the history sheet. */
+    longestStreak: number;
     lastTrainingDate: string | null;
     /** Streak freezes in reserve; one is spent to forgive a single missed day. */
     streakFreezes: number;
@@ -271,6 +273,7 @@ function isLegacy(state: ProgressState): boolean {
     if (state.notifications === undefined) return true;
     if (state.streakFreezes === undefined) return true;
     if (state.bestQuizAccuracy === undefined) return true;
+    if (state.longestStreak === undefined) return true;
     return state.palaces.some((p) => {
         const lp = p as LegacyPalace;
         if (lp.floors !== undefined && lp.rooms === undefined) return true;
@@ -305,6 +308,7 @@ function migrateState(state: ProgressState): ProgressState {
         notifications: state.notifications ?? seedNotifications(),
         streakFreezes: state.streakFreezes ?? 1,
         bestQuizAccuracy: state.bestQuizAccuracy ?? 0,
+        longestStreak: state.longestStreak ?? state.streakCount ?? 0,
     };
 }
 
@@ -312,6 +316,7 @@ const DEFAULT_STATE: ProgressState = {
     userXP: 2450,
     currentLevel: 12,
     streakCount: 5,
+    longestStreak: 5,
     lastTrainingDate: null,
     palaces: [
         {
@@ -530,7 +535,9 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         setState((prev) => {
             if (prev.trainingDays.includes(today)) return prev;
 
-            const newTrainingDays = [...prev.trainingDays, today].slice(-7);
+            // Keep up to a year of history so the calendar and streak sheet are
+            // accurate; older days fall off the bottom.
+            const newTrainingDays = [...prev.trainingDays, today].slice(-365);
             const dayStr = (offset: number) => {
                 const d = new Date();
                 d.setDate(d.getDate() - offset);
@@ -581,6 +588,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
                 trainingDays: newTrainingDays,
                 lastTrainingDate: today,
                 streakCount: newStreakCount,
+                longestStreak: Math.max(prev.longestStreak, newStreakCount),
                 streakFreezes,
                 notifications:
                     drafts.length > 0
@@ -665,7 +673,14 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
     };
 
     const setStreak = (count: number) => {
-        setState((prev) => ({...prev, streakCount: Math.max(0, Math.round(count))}));
+        setState((prev) => {
+            const streakCount = Math.max(0, Math.round(count));
+            return {
+                ...prev,
+                streakCount,
+                longestStreak: Math.max(prev.longestStreak, streakCount),
+            };
+        });
     };
 
     const clearTrainingDays = () => {
@@ -674,6 +689,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             trainingDays: [],
             lastTrainingDate: null,
             streakCount: 0,
+            longestStreak: 0,
         }));
     };
 
