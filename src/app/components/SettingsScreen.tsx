@@ -175,7 +175,7 @@ export function SettingsScreen({
                 {
                     icon: Mail,
                     label: "Email",
-                    value: profile.email,
+                    value: profile.email || "Not set",
                 },
                 {
                     icon: Smartphone,
@@ -461,10 +461,10 @@ export function SettingsScreen({
 
                     <div className="flex flex-col items-center gap-0.5 mt-2">
                         <h1 className="text-[22px] font-bold text-[#091A7A] tracking-tight">
-                            {profile.name}
+                            {profile.name || "Your name"}
                         </h1>
                         <p className="text-[14px] text-[#091A7A]/65 font-medium">
-                            @{handle}
+                            @{handle || "you"}
                         </p>
                     </div>
                 </motion.div>

@@ -1,4 +1,4 @@
-import {type ReactNode, useMemo} from "react";
+import {type ReactNode, useMemo, useState} from "react";
 import {motion} from "motion/react";
 import {toast} from "sonner";
 import {
@@ -9,6 +9,7 @@ import {
     Layers,
     MoreHorizontal,
     RotateCcw,
+    Trash2,
     Zap,
 } from "lucide-react";
 import {useProgressState} from "../../hooks/useProgressState";
@@ -23,6 +24,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 interface RoomDetailScreenProps {
     palaceId: string;
@@ -58,6 +69,7 @@ export function RoomDetailScreen({
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     const header = useCollapsibleHeader({distance: 150});
 
@@ -114,6 +126,7 @@ export function RoomDetailScreen({
                             actions.markLociKnown(palaceId, roomId, loci.map((l) => l.id));
                             toast.success("Marked all as known");
                         }}
+                        onDelete={() => setDeleteOpen(true)}
                     />
                 </div>
             </motion.div>
@@ -150,6 +163,7 @@ export function RoomDetailScreen({
                             actions.markLociKnown(palaceId, roomId, loci.map((l) => l.id));
                             toast.success("Marked all as known");
                         }}
+                        onDelete={() => setDeleteOpen(true)}
                     />
                 </div>
 
@@ -234,6 +248,40 @@ export function RoomDetailScreen({
                     <RoomContentEditor palaceId={palaceId} roomId={roomId}/>
                 </div>
             </div>
+
+            {/* Delete this room */}
+            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <AlertDialogContent className="sm:max-w-[360px] rounded-3xl!">
+                    <AlertDialogHeader>
+                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Trash2 size={26} className="text-red-600"/>
+                        </div>
+                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
+                            Delete “{roomTitle}”?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center text-[#475569]">
+                            This removes the room and its cards and questions. It can't be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
+                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
+                            Keep room
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                actions.deleteRoom(palaceId, roomId);
+                                setDeleteOpen(false);
+                                toast.success("Room deleted");
+                                onBack();
+                            }}
+                            className="flex-1 py-3.5 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
@@ -243,11 +291,13 @@ export function RoomDetailScreen({
 function RoomMenu({
                       onResetAll,
                       onMarkAllKnown,
+                      onDelete,
                       disabled,
                       big = false,
                   }: {
     onResetAll: () => void;
     onMarkAllKnown: () => void;
+    onDelete: () => void;
     disabled: boolean;
     big?: boolean;
 }) {
@@ -278,13 +328,20 @@ function RoomMenu({
                     <GraduationCap size={16} className="text-[#047857]"/>
                     Mark all as known
                 </DropdownMenuItem>
-                <DropdownMenuSeparator/>
                 <DropdownMenuItem
                     onClick={onResetAll}
                     className={`${item} ${disabled ? "pointer-events-none opacity-40" : ""}`}
                 >
                     <RotateCcw size={16} className="text-[#091A7A]"/>
                     Reset all progress
+                </DropdownMenuItem>
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem
+                    onClick={onDelete}
+                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
+                >
+                    <Trash2 size={16} className="text-red-600"/>
+                    Delete room
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

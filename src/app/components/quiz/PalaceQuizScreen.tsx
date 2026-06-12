@@ -23,6 +23,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {IconButton} from "../ui/IconButton";
 
 interface PalaceQuizScreenProps {
     palaceId: string;
@@ -179,7 +180,7 @@ export function PalaceQuizScreen({
 
     if (!palace) return null;
 
-    // Room-scoped quiz on a room with no authored questions yet.
+    // No authored questions yet (palace-wide or room-scoped): a real empty state.
     if (questions.length === 0) {
         return (
             <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
@@ -206,117 +207,87 @@ export function PalaceQuizScreen({
 
     return (
         <div className="h-full bg-gradient-to-b from-[#ADC8FF]/30 via-[#F8FBFF]/50 to-white flex flex-col">
-            {/* Header */}
-            <div className="p-6 flex items-center justify-between">
-                <motion.button
-                    whileHover={{scale: 1.05}}
-                    whileTap={{scale: 0.95}}
-                    onClick={onBack}
-                    className="w-12 h-12 bg-white/95 backdrop-blur-xl rounded-full flex items-center justify-center shadow-lg border border-white/40"
-                >
-                    <ArrowLeft className="w-5 h-5 text-[#091A7A]"/>
-                </motion.button>
+            {/* Header — one compact block: controls row + tight progress */}
+            <div className="h-safe-top"/>
+            <div className="px-4 pt-2 pb-3">
+                <div className="flex items-center gap-2.5">
+                    <IconButton aria-label="Go back" variant="glass" size="md" onClick={onBack}>
+                        <ArrowLeft className="w-5 h-5"/>
+                    </IconButton>
 
-                <div className="flex items-center gap-2">
-                    <div className="text-2xl">{palace.icon}</div>
-                    <h1 className="font-semibold text-[#091A7A]">
-                        {palace.name} Quiz
+                    <h1 className="flex-1 min-w-0 flex items-center justify-center gap-1.5 text-[15px] font-bold text-[#091A7A]">
+                        <span className="text-[17px] leading-none flex-shrink-0">{palace.icon}</span>
+                        <span className="truncate">{roomTitle ?? `${palace.name} Quiz`}</span>
                     </h1>
-                </div>
 
-                <div className="flex items-center gap-2">
-                    {timerEnabled && (
-                        <motion.div
-                            animate={{
-                                scale: timeLeft <= 5 ? [1, 1.1, 1] : 1,
-                                backgroundColor:
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {timerEnabled && (
+                            <motion.div
+                                animate={{scale: timeLeft <= 5 ? [1, 1.1, 1] : 1}}
+                                transition={{
+                                    duration: timeLeft <= 5 ? 0.5 : 0,
+                                    repeat: timeLeft <= 5 ? Infinity : 0,
+                                }}
+                                className={`flex items-center gap-1 px-2.5 h-9 rounded-full border shadow-sm tabular-nums ${
                                     timeLeft <= 5
-                                        ? [
-                                            "rgba(255,255,255,0.95)",
-                                            "rgba(239,68,68,0.2)",
-                                            "rgba(255,255,255,0.95)",
-                                        ]
-                                        : "rgba(255,255,255,0.95)",
-                            }}
-                            transition={{
-                                duration: timeLeft <= 5 ? 0.5 : 0,
-                                repeat: timeLeft <= 5 ? Infinity : 0,
-                            }}
-                            className="flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-xl rounded-full border border-white/40 shadow-md"
-                        >
-                            <Clock
-                                className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
+                                        ? "bg-red-50 border-red-200 text-red-600"
+                                        : "bg-white/95 border-white/40 text-[#091A7A]"
+                                }`}
+                            >
+                                <Clock className="w-3.5 h-3.5"/>
+                                <span className="text-[13px] font-semibold">{timeLeft}s</span>
+                            </motion.div>
+                        )}
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                render={
+                                    <IconButton aria-label="Quiz options" variant="glass" size="md">
+                                        <MoreVertical className="w-5 h-5"/>
+                                    </IconButton>
+                                }
                             />
-                            <span
-                                className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-500" : "text-[#091A7A]"}`}
-                            >
-                                {timeLeft}s
-                            </span>
-                        </motion.div>
-                    )}
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={
-                                <motion.button
-                                    whileTap={{scale: 0.92}}
-                                    aria-label="Quiz options"
-                                    className="w-12 h-12 bg-white/95 backdrop-blur-xl rounded-full flex items-center justify-center shadow-lg border border-white/40 text-[#091A7A] outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                            <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
+                                <DropdownMenuItem
+                                    onClick={skipQuestion}
+                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
                                 >
-                                    <MoreVertical className="w-5 h-5"/>
-                                </motion.button>
-                            }
-                        />
-                        <DropdownMenuContent align="end" className="w-[180px] rounded-[16px] p-1.5">
-                            <DropdownMenuItem
-                                onClick={skipQuestion}
-                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
-                            >
-                                <SkipForward size={16} className="text-[#091A7A]"/>
-                                Skip question
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={restartQuiz}
-                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
-                            >
-                                <RotateCcw size={16} className="text-[#091A7A]"/>
-                                Restart quiz
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator/>
-                            <DropdownMenuItem
-                                onClick={onBack}
-                                className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
-                            >
-                                <X size={16} className="text-red-600"/>
-                                End quiz
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                    <SkipForward size={16} className="text-[#091A7A]"/>
+                                    Skip question
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={restartQuiz}
+                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]"
+                                >
+                                    <RotateCcw size={16} className="text-[#091A7A]"/>
+                                    Restart quiz
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator/>
+                                <DropdownMenuItem
+                                    onClick={onBack}
+                                    className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
+                                >
+                                    <X size={16} className="text-red-600"/>
+                                    End quiz
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-            </div>
 
-            {/* Progress */}
-            <div className="px-6 mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>
-            Question {currentQuestion + 1} of {questions.length}
-          </span>
-                    <span className="font-medium text-[#091A7A]">
-            {Math.round(
-                ((currentQuestion + 1) / questions.length) * 100,
-            )}
-                        %
-          </span>
-                </div>
-                <div className="h-2 bg-white/60 rounded-full overflow-hidden border border-white/40">
-                    <motion.div
-                        initial={{width: 0}}
-                        animate={{
-                            width: `${((currentQuestion + 1) / questions.length) * 100}%`,
-                        }}
-                        className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full"
-                        transition={{duration: 0.3}}
-                    />
+                {/* Tight progress: bar + count on one line */}
+                <div className="mt-2.5 flex items-center gap-3">
+                    <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden border border-white/40">
+                        <motion.div
+                            initial={{width: 0}}
+                            animate={{width: `${((currentQuestion + 1) / questions.length) * 100}%`}}
+                            className="h-full bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] rounded-full"
+                            transition={{duration: 0.3}}
+                        />
+                    </div>
+                    <span className="text-[12px] font-semibold text-[#091A7A] tabular-nums flex-shrink-0">
+                        {currentQuestion + 1}/{questions.length}
+                    </span>
                 </div>
             </div>
 
@@ -495,9 +466,9 @@ export function PalaceQuizScreen({
 }
 
 /**
- * Build the quiz from the palace's own room questions. Falls back to the
- * sample bank only when the user hasn't authored any questions yet, so a fresh
- * palace still has something to quiz against.
+ * Build the quiz from the palace's own authored room questions only. No sample
+ * fallback: a palace (or room) with no questions yet shows the empty state, so
+ * the quiz only ever tests the user's real content.
  */
 function buildQuizQuestions(
     palace: Palace | undefined,
@@ -507,7 +478,7 @@ function buildQuizQuestions(
     const rooms = roomTitle
         ? (palace?.rooms || []).filter((r) => r.title === roomTitle)
         : palace?.rooms || [];
-    const authored = rooms.flatMap((room) =>
+    const built = rooms.flatMap((room) =>
         (room.questions || []).map((q) => ({
             id: q.id,
             question: q.prompt,
@@ -517,14 +488,6 @@ function buildQuizQuestions(
             explanation: q.explanation,
         })),
     );
-    // A room-scoped quiz only ever uses that room's authored questions — no
-    // sample fallback, so an empty room reads as "nothing to test yet".
-    const built =
-        authored.length > 0
-            ? authored
-            : roomTitle
-                ? []
-                : generateQuizQuestions(palace?.id || "default");
     if (shuffleQuestions && built.length > 1) {
         const a = [...built];
         for (let i = a.length - 1; i > 0; i--) {
@@ -534,89 +497,4 @@ function buildQuizQuestions(
         return a;
     }
     return built;
-}
-
-// Generate quiz questions from palace content
-function generateQuizQuestions(
-    palaceId: string,
-): QuizQuestion[] {
-    // Sample questions - in production, these would come from palace rooms
-    const questionBank: Record<string, QuizQuestion[]> = {
-        "solar-system": [
-            {
-                id: "1",
-                question: "Which planet is closest to the Sun?",
-                options: ["Venus", "Mercury", "Mars", "Earth"],
-                correctAnswer: 1,
-                roomTitle: "Inner Planets",
-            },
-            {
-                id: "2",
-                question:
-                    "What is the largest planet in our solar system?",
-                options: ["Saturn", "Neptune", "Jupiter", "Uranus"],
-                correctAnswer: 2,
-                roomTitle: "Gas Giants",
-            },
-            {
-                id: "3",
-                question: "How many planets are in our solar system?",
-                options: ["7", "8", "9", "10"],
-                correctAnswer: 1,
-                roomTitle: "Solar System Overview",
-            },
-            {
-                id: "4",
-                question: "Which planet has the most moons?",
-                options: ["Jupiter", "Saturn", "Uranus", "Neptune"],
-                correctAnswer: 1,
-                roomTitle: "Moons",
-            },
-            {
-                id: "5",
-                question: "What is the smallest planet?",
-                options: ["Mercury", "Mars", "Venus", "Pluto"],
-                correctAnswer: 0,
-                roomTitle: "Planet Sizes",
-            },
-        ],
-        default: [
-            {
-                id: "1",
-                question:
-                    "What memory technique uses spatial visualization?",
-                options: [
-                    "Flashcards",
-                    "Method of Loci",
-                    "Repetition",
-                    "Mnemonics",
-                ],
-                correctAnswer: 1,
-                roomTitle: "Memory Techniques",
-            },
-            {
-                id: "2",
-                question:
-                    "Which part of the brain is crucial for memory formation?",
-                options: [
-                    "Cerebellum",
-                    "Hippocampus",
-                    "Amygdala",
-                    "Cortex",
-                ],
-                correctAnswer: 1,
-                roomTitle: "Brain Anatomy",
-            },
-            {
-                id: "3",
-                question:
-                    "How many items can working memory typically hold?",
-                options: ["5-9", "10-15", "2-4", "15-20"],
-                correctAnswer: 0,
-                roomTitle: "Memory Capacity",
-            },
-        ],
-    };
-
-    return questionBank[palaceId] || questionBank["default"];
 }

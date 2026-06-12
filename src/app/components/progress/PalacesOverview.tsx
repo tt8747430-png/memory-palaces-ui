@@ -77,7 +77,6 @@ export function PalacesOverview({
                                     progress={palace.progress}
                                     totalRooms={palace.totalRooms}
                                     roomsCompleted={palace.roomsCompleted}
-                                    estimatedTime={`${Math.floor(palace.totalRooms * 8 / 60)}h ${(palace.totalRooms * 8) % 60}min`}
                                     difficulty={
                                         palace.totalRooms < 5
                                             ? "Beginner"
@@ -85,7 +84,6 @@ export function PalacesOverview({
                                                 ? "Intermediate"
                                                 : "Advanced"
                                     }
-                                    rating={4.9}
                                     variant="default"
                                     onClick={() => onPalaceClick(palace.id)}
                                 />

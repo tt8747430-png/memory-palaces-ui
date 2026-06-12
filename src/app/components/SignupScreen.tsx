@@ -11,7 +11,7 @@ export default function SignupScreen({
                                      }: {
     onClose?: () => void;
     onLogin?: () => void;
-    onSignUp?: () => void;
+    onSignUp?: (data: {name: string; email: string}) => void;
 }) {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ export default function SignupScreen({
         // Simulate API call
         setTimeout(() => {
             setIsLoading(false);
-            onSignUp?.();
+            onSignUp?.({name: fullName.trim(), email: email.trim()});
         }, 1500);
     };
 

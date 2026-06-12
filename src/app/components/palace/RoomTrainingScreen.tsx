@@ -58,37 +58,6 @@ interface RoomTrainingScreenProps {
 type Mode = "review" | "browse";
 type SwipeAction = "right" | "left" | "up" | "down";
 
-const SAMPLE_LOCI: Locus[] = [
-    {
-        id: "sample-1",
-        front: "Zeus",
-        back: "King of the gods, god of sky and thunder. Symbol: lightning bolt.",
-        hint: "Picture Zeus on a throne of clouds, holding a glowing bolt.",
-        tip: "Think of the sky — the highest god rules the highest place.",
-    },
-    {
-        id: "sample-2",
-        front: "Poseidon",
-        back: "God of the sea, earthquakes, and horses. Symbol: trident.",
-        hint: "See Poseidon riding a wave with a golden trident.",
-        tip: "Three prongs, three domains: sea, quakes, horses.",
-    },
-    {
-        id: "sample-3",
-        front: "Athena",
-        back: "Goddess of wisdom, warfare, and crafts. Symbol: owl.",
-        hint: "Athena in armour, an owl on her shoulder.",
-        tip: "Wise as an owl.",
-    },
-    {
-        id: "sample-4",
-        front: "Apollo",
-        back: "God of music, poetry, sun, and prophecy. Symbol: lyre.",
-        hint: "Apollo playing a golden lyre as the sun rises.",
-        tip: "A-pollo plays — music and light.",
-    },
-];
-
 function shuffle<T>(input: T[]): T[] {
     const a = [...input];
     for (let i = a.length - 1; i > 0; i--) {
@@ -109,8 +78,8 @@ export function RoomTrainingScreen({
                                        onBack,
                                        onComplete,
                                        palaceId,
-                                       roomTitle = "Ancient Greek Gods",
-                                       palaceTitle = "Greek Mythology Palace",
+                                       roomTitle = "Room",
+                                       palaceTitle = "Memory Palace",
                                    }: RoomTrainingScreenProps) {
     const {state, actions} = useProgressState();
     const reduce = useReducedMotion();
@@ -120,10 +89,9 @@ export function RoomTrainingScreen({
     const roomId = room?.id;
     const settings = palaceSettings(palace);
 
-    // Live cards from the store (so SRS grades reflect immediately); fall back
-    // to a sample deck when the room has no authored loci yet.
-    const usingSample = !room || (room.loci?.length ?? 0) === 0;
-    const cards: Locus[] = usingSample ? SAMPLE_LOCI : room!.loci!;
+    // Live cards from the store, so SRS grades reflect immediately. An empty
+    // room shows a dedicated empty state below rather than any sample deck.
+    const cards: Locus[] = room?.loci ?? [];
     const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
     const [mode, setMode] = useState<Mode>("review");
@@ -145,8 +113,8 @@ export function RoomTrainingScreen({
         if (palaceId) actions.updatePalaceSettings(palaceId, updates);
     };
 
-    // In-study editing only works for real authored loci, not the sample deck.
-    const canEditCard = !usingSample && !!roomId && !!palaceId;
+    // In-study editing needs a real room target.
+    const canEditCard = !!roomId && !!palaceId;
 
     // Review session: a queue of locus ids. New/due cards lead; "Again" requeues.
     const buildReviewQueue = () => {
@@ -203,7 +171,7 @@ export function RoomTrainingScreen({
     // Core grade application (no flip guard — used by buttons and swipes alike).
     const applyGrade = (grade: Grade) => {
         if (!currentId) return;
-        if (!usingSample && roomId && palaceId) {
+        if (roomId && palaceId) {
             actions.reviewLocus(palaceId, roomId, currentId, grade);
         }
         const rest = reviewQueue.slice(1);
@@ -442,6 +410,29 @@ export function RoomTrainingScreen({
     const browseProgress =
         browseIds.length > 0 ? ((browsePos + 1) / browseIds.length) * 100 : 0;
     const progress = mode === "review" ? reviewProgress : browseProgress;
+
+    // A room with no authored cards yet: a real empty state, not a sample deck.
+    if (cards.length === 0) {
+        return (
+            <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#EAF4FF]">
+                    <Layers className="h-8 w-8 text-[#3D8FEF]"/>
+                </div>
+                <div>
+                    <h2 className="mb-1 text-2xl font-bold text-[#091A7A]">No cards yet</h2>
+                    <p className="mx-auto max-w-[32ch] text-[14px] text-[#475569]">
+                        Add a few cards to "{roomTitle}" and they'll appear here to study.
+                    </p>
+                </div>
+                <button
+                    onClick={onBack}
+                    className="rounded-full bg-[#091A7A] px-6 py-3 text-sm font-semibold text-white shadow-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                >
+                    Back to room
+                </button>
+            </div>
+        );
+    }
 
     // Review queue emptied: show the success overlay (finish() is mid-flight),
     // or a caught-up state with a way back if the session was already done.

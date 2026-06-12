@@ -1,5 +1,5 @@
 import {motion} from "motion/react";
-import {BellRing, ChevronRight, Layers} from "lucide-react";
+import {BellRing, Brain, Building2, ChevronRight, Layers, MapPin} from "lucide-react";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {Avatar} from "./ui/Avatar";
@@ -190,21 +190,81 @@ export function HomeFeed({
                             <ChevronRight className="w-5 h-5 text-[#091A7A]/40 flex-shrink-0"/>
                         </motion.button>
                     )}
-                    <TrainingStreak
-                        streakCount={streakCount}
-                        longestStreak={longestStreak}
-                        freezes={streakFreezes}
-                        trainingDays={trainingDays}
-                        onViewHistory={onViewStreakHistory}
-                    />
-                    <TrainingCalendar/>
-                    <PalacesOverview
-                        onPalaceClick={onPalaceClick}
-                        onCreatePalace={onCreatePalace}
-                        onViewAll={onViewAllPalaces}
-                    />
+                    {hasPalaces ? (
+                        <>
+                            <TrainingStreak
+                                streakCount={streakCount}
+                                longestStreak={longestStreak}
+                                freezes={streakFreezes}
+                                trainingDays={trainingDays}
+                                onViewHistory={onViewStreakHistory}
+                            />
+                            <TrainingCalendar/>
+                            <PalacesOverview
+                                onPalaceClick={onPalaceClick}
+                                onCreatePalace={onCreatePalace}
+                                onViewAll={onViewAllPalaces}
+                            />
+                        </>
+                    ) : (
+                        <FirstRunGuide/>
+                    )}
                 </div>
             </div>
         </div>
+    );
+}
+
+const FIRST_RUN_STEPS = [
+    {
+        icon: Building2,
+        title: "Build a palace",
+        body: "Pick a place you know by heart — your home, a walk, a route.",
+    },
+    {
+        icon: MapPin,
+        title: "Place vivid cues",
+        body: "Drop each fact at a spot along the way, the more striking the better.",
+    },
+    {
+        icon: Brain,
+        title: "Train your recall",
+        body: "Walk the rooms daily. Spaced review brings each one back when it's due.",
+    },
+];
+
+/**
+ * First-run companion to the "Build your memory palace" card: a calm, three-step
+ * primer on the method of loci. Shown only before the first palace exists, so the
+ * home never displays empty streak grids or fake stats on day one.
+ */
+function FirstRunGuide() {
+    return (
+        <motion.div
+            initial={{opacity: 0, y: 16}}
+            animate={{opacity: 1, y: 0}}
+            transition={{delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1]}}
+            className="rounded-[20px] bg-white/80 backdrop-blur-lg border border-white/40 shadow-card p-5"
+        >
+            <h3 className="text-section-header text-[#091A7A] mb-4">How it works</h3>
+            <div className="space-y-4">
+                {FIRST_RUN_STEPS.map((step, i) => (
+                    <div key={step.title} className="flex items-start gap-3.5">
+                        <div className="relative flex-shrink-0">
+                            <div className="w-10 h-10 rounded-2xl bg-[#EAF4FF] flex items-center justify-center text-[#091A7A]">
+                                <step.icon className="w-5 h-5"/>
+                            </div>
+                            <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-[#091A7A] text-white text-[11px] font-bold flex items-center justify-center">
+                                {i + 1}
+                            </span>
+                        </div>
+                        <div className="min-w-0 pt-0.5">
+                            <p className="text-[14px] font-semibold text-[#091A7A]">{step.title}</p>
+                            <p className="text-[13px] leading-snug text-[#475569]">{step.body}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </motion.div>
     );
 }

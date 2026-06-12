@@ -117,6 +117,8 @@ interface SwipeableRoomCardProps {
     canMoveDown: boolean;
     onEditRoom: (room: StateRoom) => void;
     onDeleteRoom: (roomId: string) => void;
+    onDuplicateRoom: (roomId: string) => void;
+    onResetRoomProgress: (roomId: string) => void;
     onRoomClick?: (roomTitle: string) => void;
     onMoveRoom: (roomId: string, direction: "up" | "down") => void;
 }
@@ -128,6 +130,8 @@ function SwipeableRoomCard({
                                canMoveDown,
                                onEditRoom,
                                onDeleteRoom,
+                               onDuplicateRoom,
+                               onResetRoomProgress,
                                onRoomClick,
                                onMoveRoom,
                            }: SwipeableRoomCardProps) {
@@ -135,10 +139,14 @@ function SwipeableRoomCard({
 
     const bind = useDrag(
         ({down, movement: [mx], velocity: [vx], direction: [dx], tap}) => {
-            // A clean tap anywhere on the card opens the room; a left swipe
-            // reveals the move / edit / delete actions behind it.
+            // A clean tap opens the room — but only when the card is closed. If
+            // the action row is revealed, a tap just closes it (so tapping near
+            // the actions never accidentally navigates).
             if (tap) {
-                animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
+                if (x.get() !== 0) {
+                    animate(x, 0, {type: "spring", stiffness: 400, damping: 30});
+                    return;
+                }
                 onRoomClick?.(room.title);
                 return;
             }
@@ -173,7 +181,9 @@ function SwipeableRoomCard({
                     whileTap={{scale: 0.9}}
                     aria-label={`Move ${room.title} up`}
                     disabled={!canMoveUp}
-                    onClick={() => {
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         animate(x, 0);
                         onMoveRoom(room.id, "up");
                     }}
@@ -185,7 +195,9 @@ function SwipeableRoomCard({
                     whileTap={{scale: 0.9}}
                     aria-label={`Move ${room.title} down`}
                     disabled={!canMoveDown}
-                    onClick={() => {
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         animate(x, 0);
                         onMoveRoom(room.id, "down");
                     }}
@@ -196,7 +208,9 @@ function SwipeableRoomCard({
                 <motion.button
                     whileTap={{scale: 0.9}}
                     aria-label={`Edit ${room.title}`}
-                    onClick={() => {
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         animate(x, 0);
                         onEditRoom(room);
                     }}
@@ -207,7 +221,9 @@ function SwipeableRoomCard({
                 <motion.button
                     whileTap={{scale: 0.9}}
                     aria-label={`Delete ${room.title}`}
-                    onClick={() => {
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         animate(x, 0);
                         onDeleteRoom(room.id);
                     }}
@@ -266,8 +282,11 @@ function SwipeableRoomCard({
                         <RoomCardMenu
                             canMoveUp={canMoveUp}
                             canMoveDown={canMoveDown}
+                            hasProgress={room.progress > 0 || room.isCompleted}
                             onEdit={() => onEditRoom(room)}
                             onMove={(dir) => onMoveRoom(room.id, dir)}
+                            onDuplicate={() => onDuplicateRoom(room.id)}
+                            onResetProgress={() => onResetRoomProgress(room.id)}
                             onDelete={() => onDeleteRoom(room.id)}
                         />
                         {room.isCompleted ? (
@@ -330,14 +349,20 @@ function SwipeableRoomCard({
 function RoomCardMenu({
                           canMoveUp,
                           canMoveDown,
+                          hasProgress,
                           onEdit,
                           onMove,
+                          onDuplicate,
+                          onResetProgress,
                           onDelete,
                       }: {
     canMoveUp: boolean;
     canMoveDown: boolean;
+    hasProgress: boolean;
     onEdit: () => void;
     onMove: (direction: "up" | "down") => void;
+    onDuplicate: () => void;
+    onResetProgress: () => void;
     onDelete: () => void;
 }) {
     const item =
@@ -372,6 +397,16 @@ function RoomCardMenu({
                     <DropdownMenuItem onClick={() => onMove("down")} className={item}>
                         <ChevronDown size={16} className="text-[#091A7A]"/>
                         Move down
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={onDuplicate} className={item}>
+                    <Copy size={16} className="text-[#091A7A]"/>
+                    Duplicate room
+                </DropdownMenuItem>
+                {hasProgress && (
+                    <DropdownMenuItem onClick={onResetProgress} className={item}>
+                        <RotateCcw size={16} className="text-[#091A7A]"/>
+                        Reset progress
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator/>
@@ -416,6 +451,7 @@ export function PalaceDetailScreen({
         {mode: "add"} | {mode: "edit"; room: StateRoom} | null
     >(null);
     const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
+    const [resetRoomId, setResetRoomId] = useState<string | null>(null);
     const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
 
     const header = useCollapsibleHeader({distance: 150});
@@ -442,6 +478,7 @@ export function PalaceDetailScreen({
     );
     const settings = palaceSettings(palace);
     const roomToDelete = rooms.find((r) => r.id === deleteRoomId);
+    const roomToReset = rooms.find((r) => r.id === resetRoomId);
 
     const handleArchive = () => {
         actions.togglePalaceArchived(palaceId);
@@ -827,6 +864,11 @@ export function PalaceDetailScreen({
                                     canMoveDown={roomIndex < rooms.length - 1}
                                     onEditRoom={(r) => setRoomEditor({mode: "edit", room: r})}
                                     onDeleteRoom={(rId) => setDeleteRoomId(rId)}
+                                    onDuplicateRoom={(rId) => {
+                                        actions.duplicateRoom(palaceId, rId);
+                                        toast.success("Room duplicated");
+                                    }}
+                                    onResetRoomProgress={(rId) => setResetRoomId(rId)}
                                     onRoomClick={onRoomClick}
                                     onMoveRoom={(rId, dir) => actions.moveRoom(palaceId, rId, dir)}
                                 />
@@ -915,6 +957,42 @@ export function PalaceDetailScreen({
                             className="flex-1 py-3.5 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
                         >
                             Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Reset a single room's progress */}
+            <AlertDialog open={!!resetRoomId} onOpenChange={(o) => !o && setResetRoomId(null)}>
+                <AlertDialogContent className="sm:max-w-[360px] rounded-3xl!">
+                    <AlertDialogHeader>
+                        <div className="w-14 h-14 bg-[#EAF4FF] rounded-full flex items-center justify-center mx-auto mb-3">
+                            <RotateCcw size={24} className="text-[#091A7A]"/>
+                        </div>
+                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
+                            {roomToReset ? `Reset “${roomToReset.title}”?` : "Reset progress?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center text-[#475569]">
+                            This clears the review schedule and completion for this room. Your cards
+                            and questions are kept.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
+                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (resetRoomId) {
+                                    actions.resetRoomProgress(palaceId, resetRoomId);
+                                    setResetRoomId(null);
+                                    toast.success("Room progress reset");
+                                }
+                            }}
+                            className="flex-1 py-3.5 h-auto bg-[#091A7A] hover:bg-[#0a2090] text-white font-semibold rounded-2xl"
+                        >
+                            Reset
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

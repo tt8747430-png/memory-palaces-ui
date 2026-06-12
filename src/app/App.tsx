@@ -7,11 +7,13 @@ import HomePage from "./components/HomePage";
 import {OpeningAnimation} from "./components/OpeningAnimation";
 import {WelcomeSuccessScreen} from "./components/WelcomeSuccessScreen";
 import {usePreferences} from "./hooks/usePreferences";
+import {useProfile} from "./hooks/useProfile";
 
 type Screen = "opening" | "login" | "signup" | "forgot-password" | "success" | "home";
 
 export default function App() {
     const {preferences} = usePreferences();
+    const {updateProfile} = useProfile();
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem("isAuthenticated") === "true";
     });
@@ -25,7 +27,10 @@ export default function App() {
         setCurrentScreen("home");
     };
 
-    const handleSignUp = () => {
+    const handleSignUp = (data: {name: string; email: string}) => {
+        // Capture the real identity entered at signup so the greeting, profile,
+        // and settings reflect the actual user instead of a placeholder.
+        updateProfile(data);
         setCurrentScreen("success");
     };
 

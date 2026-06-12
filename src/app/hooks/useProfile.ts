@@ -15,10 +15,12 @@ export interface Profile {
     avatar: string | null;
 }
 
+// Empty by default — identity is real data the user provides (captured at
+// signup, editable in Settings), never a fabricated placeholder name.
 export const DEFAULT_PROFILE: Profile = {
-    name: "Braila",
-    email: "memory@master.com",
-    bio: "On a mission to remember everything that matters.",
+    name: "",
+    email: "",
+    bio: "",
     avatar: null,
 };
 
@@ -32,17 +34,21 @@ export function useProfile() {
         setRaw((prev) => ({...prev, ...patch}));
     };
 
-    /** First name only, for compact greetings ("Hi, Braila"). */
-    const firstName = profile.name.trim().split(/\s+/)[0] || DEFAULT_PROFILE.name;
+    /** Whether the user has set a name yet (drives placeholders vs real value). */
+    const hasName = profile.name.trim().length > 0;
 
-    /** Up-to-two-letter initials for the avatar fallback. */
-    const initials =
-        profile.name
-            .trim()
-            .split(/\s+/)
-            .slice(0, 2)
-            .map((part) => part[0]?.toUpperCase() ?? "")
-            .join("") || "M";
+    /** First name for compact greetings; falls back to a warm generic. */
+    const firstName = hasName ? profile.name.trim().split(/\s+/)[0] : "there";
 
-    return {profile, updateProfile, firstName, initials};
+    /** Up-to-two-letter initials for the avatar fallback ("M" before a name). */
+    const initials = hasName
+        ? profile.name
+              .trim()
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((part) => part[0]?.toUpperCase() ?? "")
+              .join("")
+        : "M";
+
+    return {profile, updateProfile, firstName, initials, hasName};
 }

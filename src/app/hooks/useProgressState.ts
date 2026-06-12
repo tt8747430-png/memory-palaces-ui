@@ -233,41 +233,6 @@ function migrateRoom(room: Room | LegacyRoom): Room {
     return room as Room;
 }
 
-/** A small starter log so the bell screen is alive on first run. */
-function seedNotifications(): AppNotification[] {
-    const now = Date.now();
-    const at = (minutesAgo: number) =>
-        new Date(now - minutesAgo * 60_000).toISOString();
-    const make = (
-        minutesAgo: number,
-        draft: NotificationDraft,
-    ): AppNotification => ({
-        ...draft,
-        id: genId("ntf"),
-        createdAt: at(minutesAgo),
-        read: false,
-    });
-    return [
-        make(7, {
-            type: "streak",
-            title: "5-day streak",
-            subtitle: "You're on a roll. Keep the chain alive.",
-        }),
-        make(95, {
-            type: "level-up",
-            title: "Level 12 reached",
-            subtitle: "Fresh rooms are ready to explore.",
-            xpGain: 100,
-        }),
-        make(1440, {
-            type: "room-complete",
-            title: "Room complete",
-            subtitle: "World Capitals",
-            xpGain: 50,
-        }),
-    ];
-}
-
 function isLegacy(state: ProgressState): boolean {
     if (state.folders === undefined) return true;
     if (state.notifications === undefined) return true;
@@ -305,111 +270,29 @@ function migrateState(state: ProgressState): ProgressState {
         ...state,
         palaces,
         folders: state.folders ?? [],
-        notifications: state.notifications ?? seedNotifications(),
+        notifications: state.notifications ?? [],
         streakFreezes: state.streakFreezes ?? 1,
         bestQuizAccuracy: state.bestQuizAccuracy ?? 0,
         longestStreak: state.longestStreak ?? state.streakCount ?? 0,
     };
 }
 
+// A clean zero-state: a new learner starts with nothing fabricated. Every
+// number here is honest (PRODUCT: "show real evidence; never fake progress").
+// Palaces, stats, streak, and notifications all grow only from real activity.
 const DEFAULT_STATE: ProgressState = {
-    userXP: 2450,
-    currentLevel: 12,
-    streakCount: 5,
-    longestStreak: 5,
+    userXP: 0,
+    currentLevel: calculateLevel(0).currentLevel,
+    streakCount: 0,
+    longestStreak: 0,
     lastTrainingDate: null,
-    palaces: [
-        {
-            id: "greek-mythology",
-            name: "Greek Mythology",
-            description: "Ancient gods and heroes",
-            progress: 75,
-            icon: "🏛️",
-            color: "from-purple-500 to-pink-500",
-            roomsCompleted: 9,
-            totalRooms: 12,
-            category: "History",
-            createdAt: "2026-01-15T10:00:00.000Z",
-            updatedAt: "2026-05-20T14:30:00.000Z",
-            rooms: [],
-        },
-        {
-            id: "solar-system",
-            name: "Solar System",
-            description: "Planets and celestial bodies",
-            progress: 50,
-            icon: "🌌",
-            color: "from-blue-500 to-cyan-500",
-            roomsCompleted: 4,
-            totalRooms: 8,
-            category: "Science",
-            createdAt: "2026-02-10T08:00:00.000Z",
-            updatedAt: "2026-05-18T16:45:00.000Z",
-            rooms: [],
-        },
-        {
-            id: "world-capitals",
-            name: "World Capitals",
-            description: "Major cities around the globe",
-            progress: 90,
-            icon: "🌍",
-            color: "from-green-500 to-emerald-500",
-            roomsCompleted: 22,
-            totalRooms: 24,
-            category: "Geography",
-            createdAt: "2026-01-05T12:00:00.000Z",
-            updatedAt: "2026-05-21T09:15:00.000Z",
-            rooms: [],
-        },
-        {
-            id: "human-anatomy",
-            name: "Human Anatomy",
-            description: "Body systems and organs",
-            progress: 30,
-            icon: "🫀",
-            color: "from-red-500 to-orange-500",
-            roomsCompleted: 5,
-            totalRooms: 15,
-            category: "Science",
-            createdAt: "2026-03-01T14:00:00.000Z",
-            updatedAt: "2026-05-19T11:20:00.000Z",
-            rooms: [],
-        },
-        {
-            id: "periodic-table",
-            name: "Periodic Table",
-            description: "Chemical elements",
-            progress: 60,
-            icon: "⚗️",
-            color: "from-indigo-500 to-purple-500",
-            roomsCompleted: 11,
-            totalRooms: 18,
-            category: "Science",
-            createdAt: "2026-02-20T10:30:00.000Z",
-            updatedAt: "2026-05-20T13:40:00.000Z",
-            rooms: [],
-        },
-        {
-            id: "programming-languages",
-            name: "Programming Languages",
-            description: "Syntax and concepts",
-            progress: 45,
-            icon: "💻",
-            color: "from-amber-500 to-yellow-500",
-            roomsCompleted: 5,
-            totalRooms: 10,
-            category: "Technology",
-            createdAt: "2026-04-01T09:00:00.000Z",
-            updatedAt: "2026-05-22T10:00:00.000Z",
-            rooms: [],
-        },
-    ],
+    palaces: [],
     folders: [],
     trainingDays: [],
-    currentProgress: 65,
-    totalRoomsCompleted: 87,
-    notifications: seedNotifications(),
-    streakFreezes: 1,
+    currentProgress: 0,
+    totalRoomsCompleted: 0,
+    notifications: [],
+    streakFreezes: 0,
     bestQuizAccuracy: 0,
 };
 
@@ -658,6 +541,32 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
 
     const resetProgress = () => {
         setState(DEFAULT_STATE);
+    };
+
+    /** Clear Data: delete every palace and folder, keeping stats/streak. */
+    const clearPalaces = () => {
+        setState((prev) => ({
+            ...prev,
+            palaces: [],
+            folders: [],
+            totalRoomsCompleted: 0,
+            currentProgress: 0,
+        }));
+    };
+
+    /** Clear Data: reset XP, level, streak, training history, and quiz best. */
+    const clearStats = () => {
+        setState((prev) => ({
+            ...prev,
+            userXP: 0,
+            currentLevel: calculateLevel(0).currentLevel,
+            streakCount: 0,
+            longestStreak: 0,
+            lastTrainingDate: null,
+            trainingDays: [],
+            streakFreezes: 0,
+            bestQuizAccuracy: 0,
+        }));
     };
 
     // --- Developer tools ----------------------------------------------------
@@ -942,6 +851,85 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
                 };
             }),
         }));
+    };
+
+    /**
+     * Clone a room (its loci + questions) with fresh ids, reset schedule and
+     * completion, inserted right after the original. Returns the new room id.
+     */
+    const duplicateRoom = (palaceId: string, roomId: string) => {
+        let newId = "";
+        setState((prev) => {
+            const updatedPalaces = prev.palaces.map((palace) => {
+                if (palace.id !== palaceId) return palace;
+                const rooms = [...(palace.rooms || [])];
+                const i = rooms.findIndex((r) => r.id === roomId);
+                if (i < 0) return palace;
+                const original = rooms[i];
+                newId = genId("room");
+                const clone: Room = {
+                    ...original,
+                    id: newId,
+                    title: `${original.title} (Copy)`,
+                    isCompleted: false,
+                    progress: 0,
+                    loci: (original.loci || []).map((l) => ({
+                        ...l,
+                        id: genId("locus"),
+                        srs: undefined, // a copy starts unscheduled
+                    })),
+                    questions: (original.questions || []).map((q) => ({
+                        ...q,
+                        id: genId("q"),
+                    })),
+                };
+                rooms.splice(i + 1, 0, clone);
+                return withRoomStats({
+                    ...palace,
+                    rooms: rooms.map((r, idx) => ({...r, order: idx + 1})),
+                    updatedAt: new Date().toISOString(),
+                });
+            });
+            return {
+                ...prev,
+                palaces: updatedPalaces,
+                ...recomputeTotals(updatedPalaces),
+            };
+        });
+        return newId;
+    };
+
+    /** Clear one room's progress: reset every locus's schedule, progress, and
+     *  completion, without deleting any content. */
+    const resetRoomProgress = (palaceId: string, roomId: string) => {
+        setState((prev) => {
+            const updatedPalaces = prev.palaces.map((palace) => {
+                if (palace.id !== palaceId) return palace;
+                const rooms = (palace.rooms || []).map((room) =>
+                    room.id === roomId
+                        ? {
+                            ...room,
+                            isCompleted: false,
+                            progress: 0,
+                            loci: (room.loci || []).map((l) => ({
+                                ...l,
+                                srs: undefined,
+                            })),
+                        }
+                        : room,
+                );
+                return withRoomStats({
+                    ...palace,
+                    rooms,
+                    updatedAt: new Date().toISOString(),
+                });
+            });
+            return {
+                ...prev,
+                palaces: updatedPalaces,
+                ...recomputeTotals(updatedPalaces),
+            };
+        });
     };
 
     // --- Room content: loci & questions ------------------------------------
@@ -1256,6 +1244,8 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             removeNotification,
             clearNotifications,
             resetProgress,
+            clearPalaces,
+            clearStats,
             setUserXP,
             setStreak,
             clearTrainingDays,
@@ -1273,6 +1263,8 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             updateRoom,
             deleteRoom,
             moveRoom,
+            duplicateRoom,
+            resetRoomProgress,
             createLocus,
             updateLocus,
             deleteLocus,

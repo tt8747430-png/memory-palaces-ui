@@ -148,7 +148,7 @@ export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
                             initialsClassName="text-[12px]"
                         />
                         <div>
-                            <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">{profile.name}</h2>
+                            <h2 className="text-[15px] font-semibold text-[#091A7A] leading-tight">{profile.name || "Your name"}</h2>
                             <p className="text-[11px] font-medium text-[#091A7A]/60">Level {levelProgress.currentLevel}</p>
                         </div>
                     </div>
@@ -202,7 +202,7 @@ export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
                     </motion.div>
 
                     <div className="space-y-1">
-                        <h1 className="text-[26px] font-bold text-[#091A7A] tracking-tight">{profile.name}</h1>
+                        <h1 className="text-[26px] font-bold text-[#091A7A] tracking-tight">{profile.name || "Your name"}</h1>
                         <p className="text-[14px] text-[#091A7A]/70 font-medium">{subtitle}</p>
                     </div>
 
