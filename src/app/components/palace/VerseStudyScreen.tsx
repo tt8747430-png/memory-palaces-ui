@@ -186,7 +186,7 @@ export function VerseStudyScreen({
                             transition={{duration: 0.2}}
                             className="flex-1 min-h-0 flex flex-col"
                         >
-                            {mode === "blur" && <BlurMode text={text} reduce={!!reduce}/>}
+                            {mode === "blur" && <BlurMode text={text}/>}
                             {mode === "words" && (
                                 <WordsMode text={text} reduce={!!reduce}/>
                             )}
@@ -333,29 +333,84 @@ function ModeTabs({
 
 // --- Blur mode --------------------------------------------------------------
 
-function BlurMode({text, reduce}: {text: string; reduce: boolean}) {
-    const [blurred, setBlurred] = useState(false);
+function BlurMode({text}: {text: string}) {
+    const tokens = useMemo(() => tokenizeWords(text), [text]);
+    // Verse markers stay visible as anchors; the rest can be hidden.
+    const hideable = useMemo(
+        () => tokens.map((_, i) => i).filter((i) => !isVerseMarker(tokens[i])),
+        [tokens],
+    );
+    // A stable random order in which words disappear as you tap "Blur".
+    const order = useMemo(() => scramble(hideable), [hideable]);
+    const step = Math.max(1, Math.round(order.length * 0.25));
+    const [hiddenCount, setHiddenCount] = useState(0);
+    const hidden = useMemo(
+        () => new Set(order.slice(0, hiddenCount)),
+        [order, hiddenCount],
+    );
+
     return (
         <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5 flex items-center justify-center">
-                <p
-                    onClick={() => setBlurred((b) => !b)}
-                    className={`cursor-pointer text-center text-[clamp(18px,5vw,24px)] font-semibold leading-relaxed text-[#091A7A] text-balance transition-[filter] duration-300 ${
-                        blurred ? "blur-[7px] select-none" : ""
-                    }`}
-                    style={reduce && blurred ? {filter: "blur(7px)"} : undefined}
-                >
-                    {text}
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5">
+                <p className="text-center leading-[2.4] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
+                    {tokens.map((token, i) => {
+                        const gap = i < tokens.length - 1 ? " " : "";
+                        if (isVerseMarker(token)) {
+                            return (
+                                <span key={i} className="font-bold text-[#1E5FBF]">
+                                    {token}
+                                    {gap}
+                                </span>
+                            );
+                        }
+                        if (hidden.has(i)) {
+                            return (
+                                <span key={i} className="whitespace-nowrap">
+                                    <span
+                                        aria-hidden
+                                        className="border-b-2 border-[#091A7A]/35 text-transparent"
+                                    >
+                                        {" ".repeat(Math.min(token.length + 1, 14))}
+                                    </span>
+                                    {gap}
+                                </span>
+                            );
+                        }
+                        return (
+                            <span key={i}>
+                                {token}
+                                {gap}
+                            </span>
+                        );
+                    })}
                 </p>
             </div>
-            <div className="px-5 pb-5">
+            <div className="flex items-center gap-2.5 px-5 pb-5">
                 <motion.button
                     {...tapCard}
-                    onClick={() => setBlurred((b) => !b)}
-                    className="w-full rounded-2xl bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] py-3.5 font-semibold text-white shadow-interactive flex items-center justify-center gap-2"
+                    onClick={() => setHiddenCount((c) => Math.min(order.length, c + step))}
+                    disabled={hiddenCount >= order.length}
+                    className={`flex-1 rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 transition-colors ${
+                        hiddenCount >= order.length
+                            ? "bg-[#E2E8F0] text-[#94a3b8]"
+                            : "bg-gradient-to-r from-[#091A7A] to-[#4F8EFF] text-white shadow-interactive"
+                    }`}
                 >
-                    {blurred ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
-                    {blurred ? "Show verse" : "Blur & recite"}
+                    <EyeOff className="w-5 h-5"/>
+                    Blur
+                </motion.button>
+                <motion.button
+                    {...tapCard}
+                    onClick={() => setHiddenCount((c) => Math.max(0, c - step))}
+                    disabled={hiddenCount <= 0}
+                    className={`flex-1 rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 transition-colors ${
+                        hiddenCount <= 0
+                            ? "bg-[#E2E8F0] text-[#94a3b8]"
+                            : "bg-[#EAF4FF] text-[#091A7A]"
+                    }`}
+                >
+                    <Eye className="w-5 h-5"/>
+                    Show
                 </motion.button>
             </div>
         </div>
@@ -496,11 +551,11 @@ function InitialsMode({
         <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5">
                 {revealed ? (
-                    <p className="text-left text-[clamp(16px,4.4vw,21px)] font-medium leading-relaxed text-[#091A7A]">
+                    <p className="text-center text-[clamp(16px,4.4vw,21px)] font-medium leading-relaxed text-[#091A7A] text-balance">
                         {text}
                     </p>
                 ) : (
-                    <p className="text-left leading-[2.5] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
+                    <p className="text-center leading-[2.6] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
                         {tokens.map((token, i) => {
                             const gap = i < tokens.length - 1 ? " " : "";
                             if (isVerseMarker(token)) {
