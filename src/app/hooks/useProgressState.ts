@@ -1223,6 +1223,68 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         };
     };
 
+    /**
+     * Create one or more new rooms in a palace, each seeded with its own loci
+     * (and questions). Used by the "import a whole chapter / deck as a room"
+     * flow: an eBiblia chapter or an Anki deck becomes a named room with its
+     * verses/cards inside. Incoming items get fresh ids. Imported rooms are
+     * unlocked (Scripture isn't a gated journey) and appended in order.
+     */
+    const importRoomsWithContent = (
+        palaceId: string,
+        rooms: {
+            title: string;
+            description?: string;
+            loci?: Omit<Locus, "id">[];
+            questions?: Omit<Question, "id">[];
+        }[],
+    ) => {
+        // Counts are known from the input, so compute them up front rather than
+        // inside the (deferred) state updater.
+        const createdRooms = rooms.length;
+        const createdLoci = rooms.reduce((sum, r) => sum + (r.loci?.length ?? 0), 0);
+        setState((prev) => {
+            const updatedPalaces = prev.palaces.map((palace) => {
+                if (palace.id !== palaceId) return palace;
+                const existing = palace.rooms || [];
+                const newRooms: Room[] = rooms.map((r, idx) => {
+                    const loci = (r.loci || []).map((l) => ({
+                        ...l,
+                        id: genId("locus"),
+                    }));
+                    const questions = (r.questions || []).map((q) => ({
+                        ...q,
+                        id: genId("q"),
+                    }));
+                    return {
+                        id: genId("room"),
+                        title: r.title,
+                        description: r.description || "",
+                        duration: 10,
+                        content: "",
+                        isUnlocked: true,
+                        isCompleted: false,
+                        progress: 0,
+                        order: existing.length + idx + 1,
+                        loci,
+                        questions,
+                    };
+                });
+                return withRoomStats({
+                    ...palace,
+                    rooms: [...existing, ...newRooms],
+                    updatedAt: new Date().toISOString(),
+                });
+            });
+            return {
+                ...prev,
+                palaces: updatedPalaces,
+                ...recomputeTotals(updatedPalaces),
+            };
+        });
+        return {rooms: createdRooms, loci: createdLoci};
+    };
+
     // --- Folders ------------------------------------------------------------
 
     const createFolder = (data: Omit<Folder, "id" | "createdAt">) => {
@@ -1313,6 +1375,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             duplicateQuestion,
             moveQuestion,
             importRoomContent,
+            importRoomsWithContent,
             createFolder,
             updateFolder,
             deleteFolder,

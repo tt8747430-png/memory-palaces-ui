@@ -328,28 +328,44 @@ export function stripHtml(input: string): string {
         .trim();
 }
 
+/** One chapter from an eBiblia paste: a title and its verse cards. */
+export interface EBibliaChapter {
+    /** The heading line, e.g. "3 Ioan 1" — used as the room title. */
+    title: string;
+    loci: Locus[];
+}
+
 /**
- * Parse the **eBiblia** verse format into one locus per verse. Input looks like:
+ * Parse the **eBiblia** verse format, grouped by chapter. Input looks like:
  *
  *   3 Ioan 1
  *   (1:1) Prezbiterul către preaiubitul Gaius...
  *   (1:2) preaiubitule, doresc...
  *
- * A header line ("Book Chapter", ending in a chapter number) sets the current
- * book; each `(chapter:verse) text` line becomes a card with
+ * A header line ("Book Chapter", ending in a chapter number) opens a new
+ * chapter; each `(chapter:verse) text` line becomes a card with
  * `front = "Book chapter:verse"` and `back = "Book chapter:verse text"`.
  * Lines that wrap a verse onto the next row are appended to it. Multiple
- * books/chapters in one paste are supported (each header resets the book).
+ * books/chapters in one paste each become their own chapter group.
  */
-export function parseEBiblia(text: string): Locus[] {
+export function parseEBibliaChapters(text: string): EBibliaChapter[] {
     const verseRe = /^\((\d+):(\d+)\)\s*(.*)$/;
     // A header ends in a chapter number, optionally a range like "1:1-31".
     const headerRe = /^(.*\p{L})\s+\d+(?:\s*[-–:]\s*\d+)*\.?$/u;
     const chapterTail = /\s+\d+(?:\s*[-–:]\s*\d+)*\.?$/u;
 
+    const chapters: EBibliaChapter[] = [];
+    let current: EBibliaChapter | null = null;
     let book = "";
     let last: Locus | null = null;
-    const loci: Locus[] = [];
+
+    const ensureChapter = () => {
+        if (!current) {
+            current = {title: book || "Verses", loci: []};
+            chapters.push(current);
+        }
+        return current;
+    };
 
     for (const raw of text.split(/\r?\n/)) {
         const line = raw.trim();
@@ -364,13 +380,15 @@ export function parseEBiblia(text: string): Locus[] {
                 front: ref,
                 back: body ? `${ref} ${body}`.trim() : ref,
             };
-            loci.push(locus);
+            ensureChapter().loci.push(locus);
             last = locus;
             continue;
         }
 
         if (headerRe.test(line)) {
             book = line.replace(chapterTail, "").trim();
+            current = {title: line, loci: []};
+            chapters.push(current);
             last = null;
             continue;
         }
@@ -379,7 +397,13 @@ export function parseEBiblia(text: string): Locus[] {
         if (last) last.back = `${last.back} ${line}`.trim();
     }
 
-    return loci;
+    // Drop headings that had no verses under them.
+    return chapters.filter((c) => c.loci.length > 0);
+}
+
+/** Flatten an eBiblia paste into one locus per verse (chapter-agnostic). */
+export function parseEBiblia(text: string): Locus[] {
+    return parseEBibliaChapters(text).flatMap((c) => c.loci);
 }
 
 export class ContentImportError extends Error {}

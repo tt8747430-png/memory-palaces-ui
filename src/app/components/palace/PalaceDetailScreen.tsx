@@ -14,6 +14,7 @@ import {
     Copy,
     DownloadCloud,
     Edit2,
+    FileUp,
     HelpCircle,
     Lock,
     MapPin,
@@ -63,6 +64,7 @@ import {Input} from "../ui/input";
 import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {LociPreviewCarousel} from "./LociPreviewCarousel";
+import {ImportRoomsSheet} from "./ImportRoomsSheet";
 import {RoomJourneyMap} from "./RoomJourneyMap";
 import {PalaceCover} from "../cards/PalaceCover";
 import {isDue, srsStatus} from "../../utils/srs";
@@ -453,6 +455,7 @@ export function PalaceDetailScreen({
     const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
     const [resetRoomId, setResetRoomId] = useState<string | null>(null);
     const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
+    const [importOpen, setImportOpen] = useState(false);
 
     const header = useCollapsibleHeader({distance: 150});
 
@@ -793,13 +796,22 @@ export function PalaceDetailScreen({
                         title="No rooms yet"
                         description="Rooms are the places along your palace's route. Add one, then fill it with loci to remember."
                         action={
-                            <button
-                                onClick={() => setRoomEditor({mode: "add"})}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
-                            >
-                                <Plus className="h-4 w-4"/>
-                                Add room
-                            </button>
+                            <div className="flex flex-col items-center gap-3">
+                                <button
+                                    onClick={() => setRoomEditor({mode: "add"})}
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#091A7A] px-5 py-3 text-sm font-medium text-white shadow-interactive"
+                                >
+                                    <Plus className="h-4 w-4"/>
+                                    Add room
+                                </button>
+                                <button
+                                    onClick={() => setImportOpen(true)}
+                                    className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#091A7A] border border-[#091A7A]/12"
+                                >
+                                    <FileUp className="h-4 w-4"/>
+                                    Import a chapter or deck
+                                </button>
+                            </div>
                         }
                     />
                 ) : (
@@ -841,14 +853,24 @@ export function PalaceDetailScreen({
                                     );
                                 })}
                             </div>
-                            <motion.button
-                                whileTap={{scale: 0.95}}
-                                onClick={() => setRoomEditor({mode: "add"})}
-                                className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-3.5 py-2 text-[13px] font-semibold text-[#091A7A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
-                            >
-                                <Plus size={15}/>
-                                Add room
-                            </motion.button>
+                            <div className="flex items-center gap-2">
+                                <motion.button
+                                    whileTap={{scale: 0.92}}
+                                    onClick={() => setImportOpen(true)}
+                                    aria-label="Import a room"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF4FF] text-[#091A7A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    <FileUp size={16}/>
+                                </motion.button>
+                                <motion.button
+                                    whileTap={{scale: 0.95}}
+                                    onClick={() => setRoomEditor({mode: "add"})}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-3.5 py-2 text-[13px] font-semibold text-[#091A7A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    <Plus size={15}/>
+                                    Add room
+                                </motion.button>
+                            </div>
                         </div>
 
                         {preferences.roomView === "map" ? (
@@ -925,6 +947,13 @@ export function PalaceDetailScreen({
                     setRoomEditor(null);
                     toast.success("Room updated");
                 }}
+            />
+
+            {/* Import a whole chapter / deck as new room(s) */}
+            <ImportRoomsSheet
+                palaceId={palaceId}
+                open={importOpen}
+                onClose={() => setImportOpen(false)}
             />
 
             {/* Delete room */}

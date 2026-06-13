@@ -494,23 +494,20 @@ function InitialsMode({
 
     return (
         <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5 flex items-center justify-center">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5">
                 {revealed ? (
-                    <p className="text-center text-[clamp(18px,5vw,24px)] font-semibold leading-relaxed text-[#091A7A] text-balance">
+                    <p className="text-left text-[clamp(16px,4.4vw,21px)] font-medium leading-relaxed text-[#091A7A]">
                         {text}
                     </p>
                 ) : (
-                    <p
-                        className={`text-center leading-[2.1] text-[clamp(20px,5.5vw,28px)] font-semibold text-[#091A7A] ${
-                            showWordSpaces ? "" : "tracking-tight"
-                        }`}
-                    >
+                    <p className="text-left leading-[2.5] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
                         {tokens.map((token, i) => {
+                            const gap = i < tokens.length - 1 ? " " : "";
                             if (isVerseMarker(token)) {
                                 return (
-                                    <span key={i} className="text-[#3D8FEF]">
+                                    <span key={i} className="font-bold text-[#1E5FBF]">
                                         {token}
-                                        {showWordSpaces ? " " : ""}
+                                        {gap}
                                     </span>
                                 );
                             }
@@ -518,16 +515,17 @@ function InitialsMode({
                             return (
                                 <span key={i} className="whitespace-nowrap">
                                     {lead}
-                                    <span className="border-b-2 border-[#091A7A]/40 pb-0.5">
-                                        {initial}
-                                        {hidden > 0 && (
-                                            <span className="text-transparent">
-                                                {" ".repeat(Math.min(hidden, 6))}
-                                            </span>
-                                        )}
-                                    </span>
+                                    <span className="font-bold">{initial}</span>
+                                    {showWordSpaces && hidden > 0 && (
+                                        <span
+                                            aria-hidden
+                                            className="border-b-2 border-[#091A7A]/35 text-transparent"
+                                        >
+                                            {" ".repeat(Math.min(hidden + 1, 10))}
+                                        </span>
+                                    )}
                                     {trail}
-                                    {showWordSpaces ? " " : ""}
+                                    {gap}
                                 </span>
                             );
                         })}
