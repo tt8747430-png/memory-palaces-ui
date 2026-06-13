@@ -3,7 +3,6 @@ import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from 
 import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
     ArrowLeft,
-    ArrowLeftRight,
     Brain,
     CheckCircle,
     ChevronDown,
@@ -12,7 +11,6 @@ import {
     Clock,
     GraduationCap,
     Copy,
-    DownloadCloud,
     Edit2,
     FileUp,
     HelpCircle,
@@ -23,20 +21,13 @@ import {
     Plus,
     RotateCcw,
     Settings2,
-    Shuffle,
     Target,
-    Timer,
     Trash2,
     Unlock,
-    X,
 } from "lucide-react";
 import {
-    type CardOrder,
-    Palace,
-    type PalaceSettings,
     palaceSettings,
     Room as StateRoom,
-    type StudyDirection,
     useProgressState,
 } from "../../hooks/useProgressState";
 import {useDrag} from "@use-gesture/react";
@@ -65,6 +56,7 @@ import {Textarea} from "../ui/textarea";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {LociPreviewCarousel} from "./LociPreviewCarousel";
 import {ImportRoomsSheet} from "./ImportRoomsSheet";
+import {PalaceSettingsScreen} from "./PalaceSettingsScreen";
 import {RoomJourneyMap} from "./RoomJourneyMap";
 import {PalaceCover} from "../cards/PalaceCover";
 import {isDue, srsStatus} from "../../utils/srs";
@@ -78,8 +70,6 @@ interface PalaceDetailScreenProps {
     /** Jump straight into a room's flashcard deck (skips the detail page). */
     onStudyRoom?: (roomTitle: string) => void;
     onQuizClick?: () => void;
-    /** Open the full edit flow (name, icon, color) for this palace. */
-    onEditPalace?: () => void;
 }
 
 const getCurrentRoom = (rooms: StateRoom[]) => {
@@ -87,29 +77,6 @@ const getCurrentRoom = (rooms: StateRoom[]) => {
         rooms.find((r) => !r.isCompleted && r.isUnlocked) ?? rooms[0];
     return next ? {room: next.title, progress: next.progress} : null;
 };
-
-/** Download a single palace as JSON (rooms, loci, questions, settings). */
-function exportPalace(palace: Palace) {
-    const blob = new Blob(
-        [
-            JSON.stringify(
-                {type: "mindscape-palace", version: 1, palace},
-                null,
-                2,
-            ),
-        ],
-        {type: "application/json"},
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const slug =
-        palace.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ||
-        "palace";
-    a.href = url;
-    a.download = `${slug}-palace.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
 
 interface SwipeableRoomCardProps {
     room: StateRoom;
@@ -441,7 +408,6 @@ export function PalaceDetailScreen({
                                        onRoomClick,
                                        onStudyRoom,
                                        onQuizClick,
-                                       onEditPalace,
                                    }: PalaceDetailScreenProps) {
     const {state, actions} = useProgressState();
     const {preferences, setPreference} = usePreferences();
@@ -454,7 +420,6 @@ export function PalaceDetailScreen({
     >(null);
     const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
     const [resetRoomId, setResetRoomId] = useState<string | null>(null);
-    const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
     const [importOpen, setImportOpen] = useState(false);
 
     const header = useCollapsibleHeader({distance: 150});
@@ -482,13 +447,6 @@ export function PalaceDetailScreen({
     const settings = palaceSettings(palace);
     const roomToDelete = rooms.find((r) => r.id === deleteRoomId);
     const roomToReset = rooms.find((r) => r.id === resetRoomId);
-
-    const handleArchive = () => {
-        actions.togglePalaceArchived(palaceId);
-        setShowSettings(false);
-        toast.success("Palace archived");
-        onBack();
-    };
 
     return (
         <div
@@ -900,29 +858,12 @@ export function PalaceDetailScreen({
                 )}
             </div>
 
-            {/* Per-palace settings sheet */}
-            <PalaceSettingsSheet
+            {/* Per-palace settings (identity + study + manage + delete) */}
+            <PalaceSettingsScreen
+                palaceId={palaceId}
                 open={showSettings}
-                onOpenChange={setShowSettings}
-                palace={palace}
-                settings={settings}
-                onEditPalace={() => {
-                    setShowSettings(false);
-                    onEditPalace?.();
-                }}
-                onUpdateSettings={(u) => actions.updatePalaceSettings(palaceId, u)}
-                onDuplicate={() => {
-                    actions.duplicatePalace(palaceId);
-                    setShowSettings(false);
-                    toast.success("Palace duplicated");
-                }}
-                onExport={() => {
-                    exportPalace(palace);
-                    toast.success("Palace exported");
-                }}
-                onReset={() => setConfirm("reset")}
-                onArchive={handleArchive}
-                onDelete={() => setConfirm("delete")}
+                onClose={() => setShowSettings(false)}
+                onExit={onBack}
             />
 
             {/* Room editor */}
@@ -1027,361 +968,7 @@ export function PalaceDetailScreen({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Reset / delete palace confirms */}
-            <AlertDialog open={confirm === "reset"} onOpenChange={(o) => !o && setConfirm(null)}>
-                <AlertDialogContent className="sm:max-w-[380px] rounded-3xl!">
-                    <AlertDialogHeader>
-                        <div className="w-14 h-14 bg-[#EAF4FF] rounded-full flex items-center justify-center mx-auto mb-3">
-                            <RotateCcw size={26} className="text-[#091A7A]"/>
-                        </div>
-                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
-                            Reset this palace's progress?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[#475569]">
-                            Every room goes back to not started. Your loci and questions are kept.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
-                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={(e) => {
-                                e.preventDefault();
-                                actions.resetPalaceProgress(palaceId);
-                                setConfirm(null);
-                                setShowSettings(false);
-                                toast.success("Progress reset");
-                            }}
-                            className="flex-1 py-3.5 h-auto bg-[#091A7A] hover:bg-[#0a2090] text-white font-semibold rounded-2xl"
-                        >
-                            Reset
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog open={confirm === "delete"} onOpenChange={(o) => !o && setConfirm(null)}>
-                <AlertDialogContent className="sm:max-w-[380px] rounded-3xl!">
-                    <AlertDialogHeader>
-                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Trash2 size={26} className="text-red-600"/>
-                        </div>
-                        <AlertDialogTitle className="text-center text-[#091A7A] text-lg">
-                            Delete “{palace.name}”?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center text-[#475569]">
-                            This can't be undone. Every room, locus, question, and your progress here are
-                            deleted for good.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3 sm:justify-center mt-2">
-                        <AlertDialogCancel className="flex-1 py-3.5 h-auto border-none bg-[#EAF4FF] hover:bg-[#dcebff] text-[#091A7A] font-semibold rounded-2xl">
-                            Keep palace
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={(e) => {
-                                e.preventDefault();
-                                actions.deletePalace(palaceId);
-                                setConfirm(null);
-                                onBack();
-                            }}
-                            className="flex-1 py-3.5 h-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-2xl"
-                        >
-                            Delete palace
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
-    );
-}
-
-// --- Per-palace settings sheet ----------------------------------------------
-
-function SettingRow({
-                        icon,
-                        label,
-                        sublabel,
-                        onClick,
-                        right,
-                        danger,
-                    }: {
-    icon: React.ReactNode;
-    label: string;
-    sublabel?: string;
-    onClick?: () => void;
-    right?: React.ReactNode;
-    danger?: boolean;
-}) {
-    const Comp = onClick ? motion.button : "div";
-    return (
-        <Comp
-            {...(onClick ? {whileTap: {scale: 0.98}, onClick} : {})}
-            className={`w-full flex items-center gap-3.5 px-4 py-3.5 text-left ${
-                onClick ? "transition-colors hover:bg-[#091A7A]/[0.03]" : ""
-            }`}
-        >
-            <div
-                className={`w-9 h-9 rounded-[12px] flex items-center justify-center flex-shrink-0 ${
-                    danger ? "bg-red-50" : "bg-[#EAF4FF]"
-                }`}
-            >
-                {icon}
-            </div>
-            <div className="flex-1 min-w-0">
-                <p
-                    className={`text-[15px] font-semibold ${
-                        danger ? "text-red-500" : "text-[#091A7A]"
-                    }`}
-                >
-                    {label}
-                </p>
-                {sublabel && (
-                    <p className="text-[12px] text-[#64748b] mt-0.5 leading-snug">
-                        {sublabel}
-                    </p>
-                )}
-            </div>
-            {right}
-        </Comp>
-    );
-}
-
-function SettingsGroup({children}: {children: React.ReactNode}) {
-    return (
-        <div className="bg-white rounded-[20px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.05] overflow-hidden divide-y divide-[#091A7A]/[0.06]">
-            {children}
-        </div>
-    );
-}
-
-/** Compact pill segmented control used in the settings sheet. */
-function Segmented({
-                       value,
-                       options,
-                       onChange,
-                   }: {
-    value: string;
-    options: {value: string; label: string}[];
-    onChange: (value: string) => void;
-}) {
-    return (
-        <div className="flex items-center gap-0.5 rounded-full bg-[#F1F5F9] p-0.5">
-            {options.map((o) => {
-                const active = o.value === value;
-                return (
-                    <button
-                        key={o.value}
-                        onClick={() => onChange(o.value)}
-                        className={`rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors ${
-                            active
-                                ? "bg-[#091A7A] text-white shadow-sm"
-                                : "text-[#475569] hover:text-[#091A7A]"
-                        }`}
-                    >
-                        {o.label}
-                    </button>
-                );
-            })}
-        </div>
-    );
-}
-
-function PalaceSettingsSheet({
-                                 open,
-                                 onOpenChange,
-                                 palace,
-                                 settings,
-                                 onEditPalace,
-                                 onUpdateSettings,
-                                 onDuplicate,
-                                 onExport,
-                                 onReset,
-                                 onArchive,
-                                 onDelete,
-                             }: {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    palace: Palace;
-    settings: PalaceSettings;
-    onEditPalace: () => void;
-    onUpdateSettings: (updates: Partial<PalaceSettings>) => void;
-    onDuplicate: () => void;
-    onExport: () => void;
-    onReset: () => void;
-    onArchive: () => void;
-    onDelete: () => void;
-}) {
-    return (
-        <AnimatePresence>
-            {open && (
-                <motion.div
-                    initial={{x: "100%"}}
-                    animate={{x: 0}}
-                    exit={{x: "100%"}}
-                    transition={{ease: [0.22, 1, 0.36, 1], duration: 0.35}}
-                    className="fixed inset-0 z-[100] bg-[#EEF4FF] flex flex-col shadow-[-20px_0_40px_rgba(9,26,122,0.10)]"
-                >
-                    {/* Header */}
-                    <div className="flex-shrink-0 bg-white border-b border-[#091A7A]/[0.06]">
-                        <div className="h-safe-top"/>
-                        <div className="flex items-center gap-2 px-3 py-2.5">
-                            <button
-                                onClick={() => onOpenChange(false)}
-                                aria-label="Go back"
-                                className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[#091A7A] active:scale-95 transition-transform"
-                            >
-                                <ArrowLeft className="w-5 h-5"/>
-                            </button>
-                            <div className="min-w-0">
-                                <h1 className="text-[18px] font-bold text-[#091A7A] leading-tight">
-                                    Palace settings
-                                </h1>
-                                <p className="text-[12px] text-[#64748b] truncate">
-                                    {palace.name}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto scrollbar-hide px-5 py-5 space-y-5 pb-[max(env(safe-area-inset-bottom),2rem)]">
-                        <div>
-                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
-                                Palace
-                            </h3>
-                            <SettingsGroup>
-                                <SettingRow
-                                    icon={<Edit2 size={18} className="text-[#091A7A]"/>}
-                                    label="Edit name, icon & color"
-                                    sublabel="Rename and restyle this palace"
-                                    onClick={onEditPalace}
-                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
-                                />
-                                <SettingRow
-                                    icon={<Copy size={18} className="text-[#091A7A]"/>}
-                                    label="Duplicate palace"
-                                    sublabel="Copy its rooms, loci, and questions"
-                                    onClick={onDuplicate}
-                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
-                                />
-                            </SettingsGroup>
-                        </div>
-
-                        <div>
-                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
-                                Study
-                            </h3>
-                            <SettingsGroup>
-                                <SettingRow
-                                    icon={<ArrowLeftRight size={18} className="text-[#091A7A]"/>}
-                                    label="Study direction"
-                                    sublabel="Which face leads in training"
-                                    right={
-                                        <Segmented
-                                            value={settings.studyDirection}
-                                            options={[
-                                                {value: "front", label: "Front"},
-                                                {value: "back", label: "Back"},
-                                            ]}
-                                            onChange={(v) =>
-                                                onUpdateSettings({
-                                                    studyDirection: v as StudyDirection,
-                                                })
-                                            }
-                                        />
-                                    }
-                                />
-                                <SettingRow
-                                    icon={<Shuffle size={18} className="text-[#091A7A]"/>}
-                                    label="Card order"
-                                    sublabel="Default order when browsing"
-                                    right={
-                                        <Segmented
-                                            value={settings.cardOrder}
-                                            options={[
-                                                {value: "inOrder", label: "List"},
-                                                {value: "shuffle", label: "Shuffle"},
-                                                {value: "reverse", label: "Reverse"},
-                                            ]}
-                                            onChange={(v) =>
-                                                onUpdateSettings({cardOrder: v as CardOrder})
-                                            }
-                                        />
-                                    }
-                                />
-                                <SettingRow
-                                    icon={<Timer size={18} className="text-[#091A7A]"/>}
-                                    label="Quiz timer"
-                                    sublabel="Count down each quiz question"
-                                    right={
-                                        <Switch
-                                            checked={settings.quizTimer}
-                                            onCheckedChange={(v) =>
-                                                onUpdateSettings({quizTimer: v})
-                                            }
-                                        />
-                                    }
-                                />
-                                <SettingRow
-                                    icon={<Shuffle size={18} className="text-[#091A7A]"/>}
-                                    label="Shuffle questions"
-                                    sublabel="Randomize quiz question order"
-                                    right={
-                                        <Switch
-                                            checked={settings.shuffleQuestions}
-                                            onCheckedChange={(v) =>
-                                                onUpdateSettings({shuffleQuestions: v})
-                                            }
-                                        />
-                                    }
-                                />
-                            </SettingsGroup>
-                        </div>
-
-                        <div>
-                            <h3 className="text-[12px] font-semibold text-[#091A7A]/70 mb-2 px-1 uppercase tracking-wider">
-                                Manage
-                            </h3>
-                            <SettingsGroup>
-                                <SettingRow
-                                    icon={<DownloadCloud size={18} className="text-[#091A7A]"/>}
-                                    label="Export palace"
-                                    sublabel="Download as JSON"
-                                    onClick={onExport}
-                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
-                                />
-                                <SettingRow
-                                    icon={<RotateCcw size={18} className="text-[#091A7A]"/>}
-                                    label="Reset progress"
-                                    sublabel="Keep content, clear completion"
-                                    onClick={onReset}
-                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
-                                />
-                                <SettingRow
-                                    icon={<X size={18} className="text-[#091A7A]"/>}
-                                    label={palace.archived ? "Unarchive palace" : "Archive palace"}
-                                    sublabel="Hide it from the main list"
-                                    onClick={onArchive}
-                                    right={<ChevronRight className="w-5 h-5 text-[#091A7A]/30"/>}
-                                />
-                            </SettingsGroup>
-                        </div>
-
-                        <SettingsGroup>
-                            <SettingRow
-                                icon={<Trash2 size={18} className="text-red-500"/>}
-                                label="Delete palace"
-                                sublabel="Remove it and all its content"
-                                onClick={onDelete}
-                                danger
-                                right={<ChevronRight className="w-5 h-5 text-red-300"/>}
-                            />
-                        </SettingsGroup>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
     );
 }
 

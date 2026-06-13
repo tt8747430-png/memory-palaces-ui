@@ -1,5 +1,4 @@
 import {useState} from "react";
-import {AnimatePresence} from "motion/react";
 import {toast} from "sonner";
 import {LiquidGlassBottomNav} from "./LiquidGlassBottomNav";
 import {SearchPopup} from "./SearchPopup";
@@ -14,7 +13,6 @@ import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
 import {VerseStudyScreen} from "./palace/VerseStudyScreen";
 import {MatchGameScreen} from "./palace/MatchGameScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
-import {EditPalaceScreen} from "./palace/EditPalaceScreen";
 import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
 import {PalaceQuizCompletionScreen} from "./quiz/PalaceQuizCompletionScreen";
 import {DailyReviewScreen} from "./DailyReviewScreen";
@@ -121,7 +119,6 @@ export default function HomePage() {
     const [showStats, setShowStats] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
-    const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
 
     const unreadCount = state.notifications.filter((n) => !n.read).length;
     const dueCount = countDueLoci(state.palaces);
@@ -216,11 +213,6 @@ export default function HomePage() {
         toast.success("Palace created. Add a room to start building.");
     };
 
-    const handleEditPalaceSuccess = () => {
-        setEditingPalaceId(null);
-        toast.success("Changes saved");
-    };
-
     // --- Full-screen flow router -------------------------------------------
 
     if (showNotifications) {
@@ -231,16 +223,6 @@ export default function HomePage() {
                 onMarkAllRead={actions.markAllNotificationsRead}
                 onRemove={actions.removeNotification}
                 onClear={actions.clearNotifications}
-            />
-        );
-    }
-
-    if (editingPalaceId) {
-        return (
-            <EditPalaceScreen
-                palaceId={editingPalaceId}
-                onBack={() => setEditingPalaceId(null)}
-                onSuccess={handleEditPalaceSuccess}
             />
         );
     }
@@ -353,7 +335,6 @@ export default function HomePage() {
                     setQuizRoomTitle(null);
                     setShowQuiz(true);
                 }}
-                onEditPalace={() => setEditingPalaceId(selectedPalaceId)}
             />
         );
     }
@@ -467,14 +448,11 @@ export default function HomePage() {
 
             <SettingsScreen open={showSettings} onOpenChange={setShowSettings}/>
 
-            <AnimatePresence>
-                {showCreatePalace && (
-                    <CreatePalaceScreen
-                        onBack={() => setShowCreatePalace(false)}
-                        onSuccess={handleCreatePalaceSuccess}
-                    />
-                )}
-            </AnimatePresence>
+            <CreatePalaceScreen
+                open={showCreatePalace}
+                onClose={() => setShowCreatePalace(false)}
+                onSuccess={handleCreatePalaceSuccess}
+            />
 
             {showDebug && <ProgressDebugPanel/>}
         </div>

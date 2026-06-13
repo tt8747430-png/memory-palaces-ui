@@ -352,34 +352,29 @@ function BlurMode({text}: {text: string}) {
         <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
                 <div className="min-h-full flex items-center justify-center px-6 py-6">
-                <p className="text-center leading-[2.4] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
+                <p className="w-full flex flex-wrap items-baseline justify-center gap-x-2 gap-y-2 text-[clamp(17px,4.6vw,22px)] font-semibold leading-relaxed text-[#091A7A]">
                     {tokens.map((token, i) => {
-                        const gap = i < tokens.length - 1 ? " " : "";
                         if (isVerseMarker(token)) {
                             return (
                                 <span key={i} className="font-bold text-[#1E5FBF]">
                                     {token}
-                                    {gap}
                                 </span>
                             );
                         }
                         if (hidden.has(i)) {
                             return (
-                                <span key={i} className="whitespace-nowrap">
-                                    <span
-                                        aria-hidden
-                                        className="border-b-2 border-[#091A7A]/35 text-transparent"
-                                    >
-                                        {" ".repeat(Math.min(token.length + 1, 14))}
-                                    </span>
-                                    {gap}
+                                <span
+                                    key={i}
+                                    aria-hidden
+                                    className="whitespace-nowrap border-b-2 border-[#091A7A]/35 text-transparent"
+                                >
+                                    {" ".repeat(Math.min(token.length + 1, 14))}
                                 </span>
                             );
                         }
                         return (
-                            <span key={i}>
+                            <span key={i} className="whitespace-nowrap">
                                 {token}
-                                {gap}
                             </span>
                         );
                     })}
@@ -557,14 +552,12 @@ function InitialsMode({
                         {text}
                     </p>
                 ) : (
-                    <p className="text-center leading-[2.6] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
+                    <p className="w-full flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-2 text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
                         {tokens.map((token, i) => {
-                            const gap = i < tokens.length - 1 ? " " : "";
                             if (isVerseMarker(token)) {
                                 return (
                                     <span key={i} className="font-bold text-[#1E5FBF]">
                                         {token}
-                                        {gap}
                                     </span>
                                 );
                             }
@@ -578,11 +571,10 @@ function InitialsMode({
                                             aria-hidden
                                             className="border-b-2 border-[#091A7A]/35 text-transparent"
                                         >
-                                            {" ".repeat(Math.min(hidden + 1, 10))}
+                                            {" ".repeat(Math.min(hidden + 1, 10))}
                                         </span>
                                     )}
                                     {trail}
-                                    {gap}
                                 </span>
                             );
                         })}

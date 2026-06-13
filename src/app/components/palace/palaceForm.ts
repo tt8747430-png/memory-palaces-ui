@@ -1,30 +1,7 @@
-import * as z from "zod";
-
 /**
- * Single source of truth for the palace create/edit forms: the zod schema and
- * the option lists the pickers render. Both `CreatePalaceScreen` and
- * `EditPalaceScreen` consume these so the two dialogs can never drift.
+ * The option lists the palace appearance pickers render. Shared by the create
+ * sheet and the settings screen (via `palaceFields.tsx`) so they never drift.
  */
-export const palaceFormSchema = z.object({
-    name: z
-        .string()
-        .trim()
-        .min(2, "Give your palace a name"),
-    // Optional: a palace only needs a name + category to exist.
-    description: z.string().trim().max(280, "Keep the description under 280 characters"),
-    category: z.string().min(1, "Pick a category"),
-    icon: z.string(),
-    // A preset Tailwind gradient (`from-… to-…`) or a custom hex (`#7C3AED`).
-    color: z.string(),
-    // Optional custom cover photo as a downscaled data URL.
-    image: z.string().optional(),
-    // Scripture palace: each locus is a verse and rooms unlock the verse-study
-    // modes (Blur / Words / Initials / Type).
-    bibleMode: z.boolean().optional(),
-});
-
-export type PalaceFormData = z.infer<typeof palaceFormSchema>;
-
 export const iconOptions = [
     "🏛️", "🌌", "🌍", "🫀", "⚗️", "💻", "📚", "🎨", "🎭", "🎵",
     "⚽", "🏀", "🎯", "🎲", "🎪", "🎬", "📷", "🎤", "🎧", "🎸",
@@ -45,6 +22,7 @@ export const colorOptions = [
 ];
 
 export const categoryOptions = [
+    "General",
     "Science",
     "History",
     "Geography",
