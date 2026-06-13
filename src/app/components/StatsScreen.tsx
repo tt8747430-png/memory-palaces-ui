@@ -1,5 +1,4 @@
 import {type ReactNode} from "react";
-import {motion} from "motion/react";
 import {
     BookOpen,
     CalendarCheck,
@@ -12,38 +11,33 @@ import {
 } from "lucide-react";
 import {ScreenHeader} from "./ui/ScreenHeader";
 import {GlassCard} from "./ui/GlassCard";
+import {StatTile} from "./progress/StatTile";
 import {TrainingCalendar} from "./progress/TrainingCalendar";
 import {useProgressState} from "../hooks/useProgressState";
-import {countDueLoci} from "../utils/dueCards";
-import {buildDayCells, totalTrainingDays} from "../utils/streak";
-import {easeOutQuart} from "../utils/motion";
+import {buildDayCells} from "../utils/streak";
+import {computeStats} from "../utils/stats";
 
 interface StatsScreenProps {
     onBack: () => void;
 }
 
 /**
- * The full statistics screen behind "More in Stats". Every figure is derived
- * from real training data (PRODUCT: "show real evidence; never fake progress").
+ * The full statistics screen and the single canonical home for detailed stats.
+ * Every figure comes from {@link computeStats} (PRODUCT: "show real evidence;
+ * never fake progress").
  */
 export function StatsScreen({onBack}: StatsScreenProps) {
     const {state} = useProgressState();
-
+    const stats = computeStats(state);
     const week = buildDayCells(state.trainingDays, 7);
-    const totalDays = totalTrainingDays(state.trainingDays);
-    const dueToday = countDueLoci(state.palaces);
-    const totalCards = state.palaces.reduce(
-        (sum, p) => sum + (p.rooms || []).reduce((s, r) => s + (r.loci?.length || 0), 0),
-        0,
-    );
 
     const tiles: {label: string; value: string; icon: ReactNode}[] = [
-        {label: "Days trained", value: totalDays.toString(), icon: <CalendarCheck className="w-[22px] h-[22px]"/>},
-        {label: "Rooms completed", value: state.totalRoomsCompleted.toString(), icon: <TrendingUp className="w-[22px] h-[22px]"/>},
-        {label: "Palaces", value: state.palaces.length.toString(), icon: <BookOpen className="w-[22px] h-[22px]"/>},
-        {label: "Cards", value: totalCards.toString(), icon: <Layers className="w-[22px] h-[22px]"/>},
-        {label: "Due today", value: dueToday.toString(), icon: <Flame className="w-[22px] h-[22px]"/>},
-        {label: "Best quiz", value: `${state.bestQuizAccuracy}%`, icon: <Target className="w-[22px] h-[22px]"/>},
+        {label: "Days trained", value: stats.daysTrained.toString(), icon: <CalendarCheck className="w-[22px] h-[22px]"/>},
+        {label: "Rooms completed", value: stats.roomsCompleted.toString(), icon: <TrendingUp className="w-[22px] h-[22px]"/>},
+        {label: "Palaces", value: stats.palaces.toString(), icon: <BookOpen className="w-[22px] h-[22px]"/>},
+        {label: "Cards", value: stats.totalCards.toString(), icon: <Layers className="w-[22px] h-[22px]"/>},
+        {label: "Due today", value: stats.dueToday.toString(), icon: <Flame className="w-[22px] h-[22px]"/>},
+        {label: "Best quiz", value: `${stats.bestQuizAccuracy}%`, icon: <Target className="w-[22px] h-[22px]"/>},
     ];
 
     return (
@@ -58,7 +52,7 @@ export function StatsScreen({onBack}: StatsScreenProps) {
                             <div className="flex items-center gap-1.5">
                                 <Flame className="w-6 h-6 text-[#F59E0B]" fill="currentColor"/>
                                 <span className="text-[34px] font-bold text-[#091A7A] leading-none tabular-nums">
-                                    {state.streakCount}
+                                    {stats.currentStreak}
                                 </span>
                             </div>
                             <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#33417A]">
@@ -68,7 +62,7 @@ export function StatsScreen({onBack}: StatsScreenProps) {
                         <div className="w-px bg-[#091A7A]/15"/>
                         <div className="flex-1 flex flex-col items-center text-center">
                             <span className="text-[34px] font-bold text-[#091A7A] leading-none tabular-nums">
-                                {state.longestStreak}
+                                {stats.longestStreak}
                             </span>
                             <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#33417A]">
                                 Longest streak
@@ -107,10 +101,10 @@ export function StatsScreen({onBack}: StatsScreenProps) {
                         <Trophy className="w-6 h-6 text-white"/>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-bold text-[#091A7A]">Level {state.currentLevel}</p>
+                        <p className="text-[15px] font-bold text-[#091A7A]">Level {stats.level}</p>
                         <p className="text-[13px] font-medium text-[#091A7A]/65 flex items-center gap-1">
                             <Zap className="w-3.5 h-3.5 text-[#F59E0B]" fill="currentColor"/>
-                            {state.userXP.toLocaleString()} XP earned
+                            {stats.totalXP.toLocaleString()} XP earned
                         </p>
                     </div>
                 </div>
@@ -120,21 +114,13 @@ export function StatsScreen({onBack}: StatsScreenProps) {
                     <h3 className="text-section-header text-[#091A7A] mb-3 px-1">Your Journey</h3>
                     <div className="grid grid-cols-2 gap-3.5">
                         {tiles.map((tile, index) => (
-                            <motion.div
+                            <StatTile
                                 key={tile.label}
-                                initial={{opacity: 0, y: 10}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: index * 0.04, ease: easeOutQuart, duration: 0.35}}
-                                className="p-4 bg-white rounded-[22px] shadow-card border border-[#091A7A]/[0.04]"
-                            >
-                                <div className="w-11 h-11 bg-[#EAF4FF] rounded-[14px] flex items-center justify-center text-[#091A7A] mb-4">
-                                    {tile.icon}
-                                </div>
-                                <p className="text-[28px] font-bold text-[#091A7A] tracking-tight mb-1 tabular-nums">
-                                    {tile.value}
-                                </p>
-                                <p className="text-[13px] font-medium text-[#091A7A]/65">{tile.label}</p>
-                            </motion.div>
+                                icon={tile.icon}
+                                value={tile.value}
+                                label={tile.label}
+                                delay={index * 0.04}
+                            />
                         ))}
                     </div>
                 </div>

@@ -6,8 +6,8 @@ import {
     Calendar,
     ChevronRight,
     Crown,
+    Flame,
     Settings,
-    Snowflake,
     Star,
     Target,
     TrendingUp,
@@ -15,8 +15,10 @@ import {
     Zap,
 } from "lucide-react";
 import {Avatar} from "./ui/Avatar";
+import {StatTile} from "./progress/StatTile";
 import {useProgressState} from "../hooks/useProgressState";
 import {useProfile} from "../hooks/useProfile";
+import {computeStats} from "../utils/stats";
 import {useContainerScroll} from "../hooks/useCollapsibleHeader";
 import {useMemo, useState} from "react";
 
@@ -57,11 +59,18 @@ export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
     const levelProgressPercent = (levelProgress.xpInCurrentLevel / levelProgress.xpForNextLevel) * 100;
     const xpForNextLevel = levelProgress.xpForNextLevel - levelProgress.xpInCurrentLevel;
 
-    const stats = [
-        {label: "Total XP", value: state.userXP.toLocaleString(), icon: Zap},
-        {label: "Current Streak", value: `${state.streakCount} days`, icon: Calendar},
-        {label: "Palaces", value: state.palaces.length.toString(), icon: Book},
-        {label: "Rooms Completed", value: state.totalRoomsCompleted.toString(), icon: TrendingUp},
+    // A lean glance — the full breakdown lives on the Stats screen (one home for
+    // detailed stats). Sourced from the shared computeStats() so it never drifts.
+    const stats = computeStats(state);
+    const headlineTiles = [
+        {label: "Total XP", value: stats.totalXP.toLocaleString(), icon: <Zap className="w-[22px] h-[22px]"/>},
+        {
+            label: "Current streak",
+            value: `${stats.currentStreak} ${stats.currentStreak === 1 ? "day" : "days"}`,
+            icon: <Flame className="w-[22px] h-[22px]"/>,
+        },
+        {label: "Palaces", value: stats.palaces.toString(), icon: <Book className="w-[22px] h-[22px]"/>},
+        {label: "Rooms done", value: stats.roomsCompleted.toString(), icon: <TrendingUp className="w-[22px] h-[22px]"/>},
     ];
 
     // Achievements reflect real progress where the data supports it, so the page
@@ -265,30 +274,14 @@ export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
                             >
                                 <h3 className="font-bold text-[17px] text-[#091A7A] px-1">Your Journey</h3>
                                 <div className="grid grid-cols-2 gap-3.5">
-                                    {stats.map((stat, index) => (
-                                        <motion.div
-                                            key={stat.label}
-                                            initial={{opacity: 0, y: 10}}
-                                            animate={{opacity: 1, y: 0}}
-                                            transition={{delay: index * 0.04, ease: [0.22, 1, 0.36, 1], duration: 0.35}}
-                                            className="relative p-4 bg-white rounded-[22px] shadow-[0_8px_24px_rgba(9,26,122,0.06)] border border-[#091A7A]/[0.04]"
-                                        >
-                                            {stat.label === "Current Streak" && state.streakFreezes > 0 && (
-                                                <span
-                                                    className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-[#EAF4FF] px-2 py-0.5 text-[11px] font-semibold text-[#1E5FBF]"
-                                                    aria-label={`${state.streakFreezes} streak ${state.streakFreezes === 1 ? "freeze" : "freezes"} available`}
-                                                >
-                                                    <Snowflake className="w-3 h-3"/>
-                                                    {state.streakFreezes}
-                                                </span>
-                                            )}
-                                            <div
-                                                className="w-11 h-11 bg-[#EAF4FF] rounded-[14px] flex items-center justify-center mb-4">
-                                                <stat.icon className="w-[22px] h-[22px] text-[#091A7A]" strokeWidth={2.2}/>
-                                            </div>
-                                            <p className="text-[28px] font-bold text-[#091A7A] tracking-tight mb-1">{stat.value}</p>
-                                            <p className="text-[13px] font-medium text-[#091A7A]/65">{stat.label}</p>
-                                        </motion.div>
+                                    {headlineTiles.map((tile, index) => (
+                                        <StatTile
+                                            key={tile.label}
+                                            icon={tile.icon}
+                                            value={tile.value}
+                                            label={tile.label}
+                                            delay={index * 0.04}
+                                        />
                                     ))}
                                 </div>
 

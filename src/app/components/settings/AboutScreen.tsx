@@ -1,14 +1,11 @@
 import {motion} from "motion/react";
-import {ArrowLeft, Book, Brain, ExternalLink, Flame, Heart, Trophy} from "lucide-react";
-import {useProgressState} from "../../hooks/useProgressState";
+import {ArrowLeft, Brain, ExternalLink, Heart} from "lucide-react";
 
 interface AboutScreenProps {
     onBack: () => void;
 }
 
 export function AboutScreen({onBack}: AboutScreenProps) {
-    const {state} = useProgressState();
-
     const appInfo = [
         {label: "Version", value: "1.0.0"},
         {label: "Build", value: "2026.06.12"},
@@ -19,14 +16,6 @@ export function AboutScreen({onBack}: AboutScreenProps) {
         {label: "Terms of Service", url: "https://mindscape.app/terms"},
         {label: "Privacy Policy", url: "https://mindscape.app/privacy"},
         {label: "Open Source Licenses", url: "https://mindscape.app/licenses"},
-    ];
-
-    // Honest, personal evidence instead of fabricated global vanity metrics
-    // (PRODUCT: "show real evidence; never fake progress").
-    const stats = [
-        {icon: Book, label: "Your palaces", value: state.palaces.length.toString()},
-        {icon: Trophy, label: "Rooms done", value: state.totalRoomsCompleted.toString()},
-        {icon: Flame, label: "Day streak", value: state.streakCount.toString()},
     ];
 
     return (
@@ -64,27 +53,6 @@ export function AboutScreen({onBack}: AboutScreenProps) {
                         <p className="text-sm text-[#091A7A]/70 max-w-xs">
                             Build memory palaces, train recall, and watch your memory measurably improve.
                         </p>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3">
-                        {stats.map((stat, index) => (
-                            <div
-                                key={index}
-                                className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card p-4 text-center"
-                            >
-                                <div
-                                    className="w-10 h-10 bg-[#ADC8FF]/20 rounded-xl flex items-center justify-center mx-auto mb-2">
-                                    <stat.icon className="w-5 h-5 text-[#091A7A]"/>
-                                </div>
-                                <p className="text-lg font-bold text-[#091A7A] mb-1">
-                                    {stat.value}
-                                </p>
-                                <p className="text-xs text-[#091A7A]/70">
-                                    {stat.label}
-                                </p>
-                            </div>
-                        ))}
                     </div>
 
                     {/* App Info */}

@@ -37,7 +37,7 @@ import {
     type StudyDirection,
     useProgressState,
 } from "../../hooks/useProgressState";
-import {type Grade, isDue} from "../../utils/srs";
+import {type Grade, isDue, srsStatus} from "../../utils/srs";
 import {cancelSpeech, speak, speechAvailable} from "../../utils/speech";
 import {impact, success as successHaptic, tick} from "../../utils/haptics";
 import {RiveAnimation} from "../ui/RiveAnimation";
@@ -57,6 +57,45 @@ interface RoomTrainingScreenProps {
 
 type Mode = "review" | "browse";
 type SwipeAction = "right" | "left" | "up" | "down";
+
+/** Which subset of a room's loci the session studies. */
+type Scope =
+    | {kind: "all"}
+    | {kind: "due"}
+    | {kind: "new"}
+    | {kind: "learning"}
+    | {kind: "flagged"}
+    /** A contiguous batch by position, e.g. cards 1–10 (0-indexed [start, end)). */
+    | {kind: "range"; start: number; end: number};
+
+/** Cards per range batch (the "1–10 / 11–20" chunks). */
+const BATCH = 10;
+
+/** Filter a deck down to the active scope, preserving the room's card order. */
+function applyScope(cards: Locus[], scope: Scope): Locus[] {
+    switch (scope.kind) {
+        case "due":
+            return cards.filter((c) => isDue(c.srs));
+        case "new":
+            return cards.filter((c) => srsStatus(c.srs) === "new");
+        case "learning":
+            return cards.filter((c) => srsStatus(c.srs) === "learning");
+        case "flagged":
+            return cards.filter((c) => c.flagged);
+        case "range":
+            return cards.slice(scope.start, scope.end);
+        default:
+            return cards;
+    }
+}
+
+function scopesEqual(a: Scope, b: Scope): boolean {
+    if (a.kind !== b.kind) return false;
+    if (a.kind === "range" && b.kind === "range") {
+        return a.start === b.start && a.end === b.end;
+    }
+    return true;
+}
 
 function shuffle<T>(input: T[]): T[] {
     const a = [...input];
@@ -95,6 +134,7 @@ export function RoomTrainingScreen({
     const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
     const [mode, setMode] = useState<Mode>("review");
+    const [scope, setScope] = useState<Scope>({kind: "all"});
     const [direction, setDirection] = useState<StudyDirection>(settings.studyDirection);
     const [order, setOrder] = useState<CardOrder>(settings.cardOrder);
     const [flipped, setFlipped] = useState(false);
@@ -116,10 +156,37 @@ export function RoomTrainingScreen({
     // In-study editing needs a real room target.
     const canEditCard = !!roomId && !!palaceId;
 
+    // The active subset to study. `byId` (above) stays built from ALL cards so
+    // lookups never break, while every session derives from `scopedCards`.
+    const scopedCards = useMemo(() => applyScope(cards, scope), [cards, scope]);
+
+    // Live counts per filter, for the "Cards to study" chips.
+    const scopeCounts = useMemo(
+        () => ({
+            all: cards.length,
+            due: cards.filter((c) => isDue(c.srs)).length,
+            new: cards.filter((c) => srsStatus(c.srs) === "new").length,
+            learning: cards.filter((c) => srsStatus(c.srs) === "learning").length,
+            flagged: cards.filter((c) => c.flagged).length,
+        }),
+        [cards],
+    );
+
+    // Range batches ("1–10", "11–20", …) — only meaningful past one batch.
+    const batches = useMemo(() => {
+        if (cards.length <= BATCH) return [];
+        const out: {start: number; end: number; label: string}[] = [];
+        for (let start = 0; start < cards.length; start += BATCH) {
+            const end = Math.min(start + BATCH, cards.length);
+            out.push({start, end, label: `${start + 1}–${end}`});
+        }
+        return out;
+    }, [cards.length]);
+
     // Review session: a queue of locus ids. New/due cards lead; "Again" requeues.
     const buildReviewQueue = () => {
-        const due = cards.filter((c) => isDue(c.srs));
-        const base = (due.length > 0 ? due : cards).map((c) => c.id);
+        const due = scopedCards.filter((c) => isDue(c.srs));
+        const base = (due.length > 0 ? due : scopedCards).map((c) => c.id);
         return shuffleCards ? shuffle(base) : base;
     };
     const [reviewQueue, setReviewQueue] = useState<string[]>(buildReviewQueue);
@@ -129,7 +196,7 @@ export function RoomTrainingScreen({
 
     // Browse session: an ordered list of ids with a moving pointer.
     const [browseIds, setBrowseIds] = useState<string[]>(() =>
-        orderIds(cards, shuffleCards ? "shuffle" : settings.cardOrder),
+        orderIds(scopedCards, shuffleCards ? "shuffle" : settings.cardOrder),
     );
     const [browsePos, setBrowsePos] = useState(0);
 
@@ -244,7 +311,7 @@ export function RoomTrainingScreen({
             setGraded(0);
             setPiles({learning: 0, known: 0});
         } else {
-            setBrowseIds(orderIds(cards, shuffleCards ? "shuffle" : nextOrder));
+            setBrowseIds(orderIds(scopedCards, shuffleCards ? "shuffle" : nextOrder));
             setBrowsePos(0);
         }
         resetCardView();
@@ -254,9 +321,30 @@ export function RoomTrainingScreen({
         setMode(next);
         resetCardView();
         if (next === "browse") {
-            setBrowseIds(orderIds(cards, shuffleCards ? "shuffle" : order));
+            setBrowseIds(orderIds(scopedCards, shuffleCards ? "shuffle" : order));
             setBrowsePos(0);
         }
+    };
+
+    // Pick a new study scope and rebuild the session from it. Deriving the next
+    // deck inline avoids depending on `scopedCards` (which updates next render).
+    const handleScope = (next: Scope) => {
+        setScope(next);
+        cancelSpeech();
+        const deck = applyScope(cards, next);
+        if (mode === "review") {
+            const due = deck.filter((c) => isDue(c.srs));
+            const base = (due.length > 0 ? due : deck).map((c) => c.id);
+            const queue = shuffleCards ? shuffle(base) : base;
+            setReviewQueue(queue);
+            setSessionTotal(queue.length);
+            setGraded(0);
+            setPiles({learning: 0, known: 0});
+        } else {
+            setBrowseIds(orderIds(deck, shuffleCards ? "shuffle" : order));
+            setBrowsePos(0);
+        }
+        resetCardView();
     };
 
     // --- Swipe commit -------------------------------------------------------
@@ -437,6 +525,9 @@ export function RoomTrainingScreen({
     // Review queue emptied: show the success overlay (finish() is mid-flight),
     // or a caught-up state with a way back if the session was already done.
     if (!current) {
+        // An active filter/range matched nothing: don't dead-end — explain and
+        // offer a one-tap return to the full deck.
+        const emptyScope = scopedCards.length === 0 && scope.kind !== "all";
         return (
             <div className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white flex flex-col items-center justify-center gap-5 px-6 text-center">
                 {showSuccess ? (
@@ -445,24 +536,47 @@ export function RoomTrainingScreen({
                     <>
                         <Sparkles className="w-12 h-12 text-[#FFC71E]"/>
                         <div>
-                            <h2 className="text-2xl font-bold text-[#091A7A] mb-1">All caught up</h2>
+                            <h2 className="text-2xl font-bold text-[#091A7A] mb-1">
+                                {emptyScope ? "Nothing in this selection" : "All caught up"}
+                            </h2>
                             <p className="text-[14px] text-[#475569] max-w-[32ch]">
-                                Nothing is due right now. Come back later, or browse the cards.
+                                {emptyScope
+                                    ? "No cards match the filter you picked. Study the whole room, or change the selection."
+                                    : "Nothing is due right now. Come back later, or browse the cards."}
                             </p>
                         </div>
                         <div className="flex gap-3">
-                            <button
-                                onClick={() => switchMode("browse")}
-                                className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#091A7A] border border-[#091A7A]/12"
-                            >
-                                Browse cards
-                            </button>
-                            <button
-                                onClick={onBack}
-                                className="rounded-full bg-[#091A7A] px-5 py-2.5 text-sm font-semibold text-white"
-                            >
-                                Done
-                            </button>
+                            {emptyScope ? (
+                                <>
+                                    <button
+                                        onClick={() => setOptionsOpen(true)}
+                                        className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#091A7A] border border-[#091A7A]/12"
+                                    >
+                                        Change selection
+                                    </button>
+                                    <button
+                                        onClick={() => handleScope({kind: "all"})}
+                                        className="rounded-full bg-[#091A7A] px-5 py-2.5 text-sm font-semibold text-white"
+                                    >
+                                        Study all cards
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => switchMode("browse")}
+                                        className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#091A7A] border border-[#091A7A]/12"
+                                    >
+                                        Browse cards
+                                    </button>
+                                    <button
+                                        onClick={onBack}
+                                        className="rounded-full bg-[#091A7A] px-5 py-2.5 text-sm font-semibold text-white"
+                                    >
+                                        Done
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </>
                 )}
@@ -757,6 +871,10 @@ export function RoomTrainingScreen({
                 open={optionsOpen}
                 onClose={() => setOptionsOpen(false)}
                 mode={mode}
+                scope={scope}
+                scopeCounts={scopeCounts}
+                batches={batches}
+                onScope={handleScope}
                 direction={direction}
                 order={order}
                 shuffleCards={shuffleCards}
@@ -1072,10 +1190,49 @@ function SheetSection({title, children}: {title: string; children: ReactNode}) {
     );
 }
 
+/** A selectable pill for the "Cards to study" scope, with an optional count. */
+function ScopeChip({
+                       label,
+                       count,
+                       active,
+                       onClick,
+                   }: {
+    label: string;
+    count?: number;
+    active: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <motion.button
+            whileTap={{scale: 0.94}}
+            onClick={onClick}
+            aria-pressed={active}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40 ${
+                active
+                    ? "bg-[#091A7A] text-white"
+                    : "bg-[#F1F5F9] text-[#475569] hover:bg-[#EAF4FF]"
+            }`}
+        >
+            {label}
+            {count !== undefined && (
+                <span
+                    className={`text-[11px] font-bold ${active ? "text-white/70" : "text-[#94a3b8]"}`}
+                >
+                    {count}
+                </span>
+            )}
+        </motion.button>
+    );
+}
+
 function StudyOptionsSheet({
                               open,
                               onClose,
                               mode,
+                              scope,
+                              scopeCounts,
+                              batches,
+                              onScope,
                               direction,
                               order,
                               shuffleCards,
@@ -1094,6 +1251,10 @@ function StudyOptionsSheet({
     open: boolean;
     onClose: () => void;
     mode: Mode;
+    scope: Scope;
+    scopeCounts: {all: number; due: number; new: number; learning: number; flagged: number};
+    batches: {start: number; end: number; label: string}[];
+    onScope: (s: Scope) => void;
     direction: StudyDirection;
     order: CardOrder;
     shuffleCards: boolean;
@@ -1109,6 +1270,13 @@ function StudyOptionsSheet({
     onRestart: () => void;
     onFinish: () => void;
 }) {
+    const filterChips: {scope: Scope; label: string; count: number}[] = [
+        {scope: {kind: "all"}, label: "All", count: scopeCounts.all},
+        {scope: {kind: "due"}, label: "Due", count: scopeCounts.due},
+        {scope: {kind: "new"}, label: "New", count: scopeCounts.new},
+        {scope: {kind: "learning"}, label: "Learning", count: scopeCounts.learning},
+        {scope: {kind: "flagged"}, label: "Flagged", count: scopeCounts.flagged},
+    ];
     return (
         <KeyboardSheet
             open={open}
@@ -1139,6 +1307,47 @@ function StudyOptionsSheet({
                 </div>
             }
         >
+            <SheetSection title="Cards to study">
+                <div className="flex flex-wrap gap-2">
+                    {filterChips.map(
+                        ({scope: s, label, count}) =>
+                            // Always offer "All"; hide empty filters to avoid dead chips.
+                            (s.kind === "all" || count > 0) && (
+                                <ScopeChip
+                                    key={s.kind}
+                                    label={label}
+                                    count={count}
+                                    active={scopesEqual(scope, s)}
+                                    onClick={() => onScope(s)}
+                                />
+                            ),
+                    )}
+                </div>
+                {batches.length > 0 && (
+                    <div className="pt-1">
+                        <p className="mb-1.5 px-1 text-[12px] font-semibold text-[#091A7A]">
+                            By range
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {batches.map((b) => (
+                                <ScopeChip
+                                    key={b.label}
+                                    label={b.label}
+                                    active={
+                                        scope.kind === "range" &&
+                                        scope.start === b.start &&
+                                        scope.end === b.end
+                                    }
+                                    onClick={() =>
+                                        onScope({kind: "range", start: b.start, end: b.end})
+                                    }
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </SheetSection>
+
             <SheetSection title="General">
                 <ToggleRow
                     icon={<Shuffle size={18}/>}
