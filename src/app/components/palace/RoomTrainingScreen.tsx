@@ -21,8 +21,10 @@ import {
     Layers,
     Lightbulb,
     MapPin,
+    Minus,
     MoreHorizontal,
     Pencil,
+    Plus,
     RotateCcw,
     Shuffle,
     SkipForward,
@@ -1225,6 +1227,129 @@ function ScopeChip({
     );
 }
 
+const clampRange = (n: number, lo: number, hi: number) =>
+    Math.min(hi, Math.max(lo, n));
+
+/** A small +/- stepper with a direct numeric input, for the custom range. */
+function RangeStepper({
+                          label,
+                          value,
+                          min,
+                          max,
+                          onChange,
+                      }: {
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    onChange: (value: number) => void;
+}) {
+    return (
+        <div className="flex-1">
+            <p className="mb-1 px-0.5 text-[11px] font-semibold text-[#64748b]">{label}</p>
+            <div className="flex items-center rounded-xl border border-[#091A7A]/10 bg-white overflow-hidden">
+                <button
+                    onClick={() => onChange(value - 1)}
+                    disabled={value <= min}
+                    aria-label={`Decrease ${label}`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center text-[#091A7A] disabled:opacity-30"
+                >
+                    <Minus size={16}/>
+                </button>
+                <input
+                    type="number"
+                    inputMode="numeric"
+                    aria-label={label}
+                    value={value}
+                    min={min}
+                    max={max}
+                    onChange={(e) => onChange(Number(e.target.value))}
+                    className="h-11 w-full min-w-0 bg-transparent text-center text-[15px] font-bold text-[#091A7A] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <button
+                    onClick={() => onChange(value + 1)}
+                    disabled={value >= max}
+                    aria-label={`Increase ${label}`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center text-[#091A7A] disabled:opacity-30"
+                >
+                    <Plus size={16}/>
+                </button>
+            </div>
+        </div>
+    );
+}
+
+/** Pick an arbitrary start–end slice of the deck (beyond the fixed batches). */
+function CustomRange({
+                         total,
+                         scope,
+                         batches,
+                         onScope,
+                     }: {
+    total: number;
+    scope: Scope;
+    batches: {start: number; end: number; label: string}[];
+    onScope: (s: Scope) => void;
+}) {
+    const matchesPreset =
+        scope.kind === "range" &&
+        batches.some((b) => b.start === scope.start && b.end === scope.end);
+    const active = scope.kind === "range" && !matchesPreset;
+
+    const [from, setFrom] = useState(() =>
+        active && scope.kind === "range" ? scope.start + 1 : 1,
+    );
+    const [to, setTo] = useState(() =>
+        active && scope.kind === "range" ? scope.end : Math.min(total, 10),
+    );
+
+    const apply = (nextFrom: number, nextTo: number) => {
+        const f = clampRange(Math.round(nextFrom) || 1, 1, total);
+        const t = clampRange(Math.round(nextTo) || f, f, total);
+        setFrom(f);
+        setTo(t);
+        onScope({kind: "range", start: f - 1, end: t});
+    };
+
+    const safeFrom = clampRange(from, 1, total);
+    const safeTo = clampRange(to, safeFrom, total);
+    const count = safeTo - safeFrom + 1;
+
+    return (
+        <div
+            className={`rounded-2xl border p-3 transition-colors ${
+                active
+                    ? "border-[#091A7A]/30 bg-[#EAF4FF]"
+                    : "border-[#091A7A]/10 bg-[#F8FAFF]"
+            }`}
+        >
+            <div className="mb-2 flex items-center justify-between">
+                <p className="text-[12px] font-semibold text-[#091A7A]">Custom range</p>
+                <span className="text-[11px] font-bold text-[#3D8FEF]">
+                    {count} {count === 1 ? "card" : "cards"}
+                </span>
+            </div>
+            <div className="flex items-end gap-2.5">
+                <RangeStepper
+                    label="From"
+                    value={safeFrom}
+                    min={1}
+                    max={total}
+                    onChange={(v) => apply(v, Math.max(v, safeTo))}
+                />
+                <span className="pb-2.5 text-[13px] font-semibold text-[#94a3b8]">to</span>
+                <RangeStepper
+                    label="To"
+                    value={safeTo}
+                    min={safeFrom}
+                    max={total}
+                    onChange={(v) => apply(safeFrom, v)}
+                />
+            </div>
+        </div>
+    );
+}
+
 function StudyOptionsSheet({
                               open,
                               onClose,
@@ -1323,27 +1448,35 @@ function StudyOptionsSheet({
                             ),
                     )}
                 </div>
-                {batches.length > 0 && (
-                    <div className="pt-1">
-                        <p className="mb-1.5 px-1 text-[12px] font-semibold text-[#091A7A]">
+                {(batches.length > 0 || scopeCounts.all > 1) && (
+                    <div className="pt-1 space-y-2">
+                        <p className="px-1 text-[12px] font-semibold text-[#091A7A]">
                             By range
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                            {batches.map((b) => (
-                                <ScopeChip
-                                    key={b.label}
-                                    label={b.label}
-                                    active={
-                                        scope.kind === "range" &&
-                                        scope.start === b.start &&
-                                        scope.end === b.end
-                                    }
-                                    onClick={() =>
-                                        onScope({kind: "range", start: b.start, end: b.end})
-                                    }
-                                />
-                            ))}
-                        </div>
+                        {batches.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {batches.map((b) => (
+                                    <ScopeChip
+                                        key={b.label}
+                                        label={b.label}
+                                        active={
+                                            scope.kind === "range" &&
+                                            scope.start === b.start &&
+                                            scope.end === b.end
+                                        }
+                                        onClick={() =>
+                                            onScope({kind: "range", start: b.start, end: b.end})
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        <CustomRange
+                            total={scopeCounts.all}
+                            scope={scope}
+                            batches={batches}
+                            onScope={onScope}
+                        />
                     </div>
                 )}
             </SheetSection>

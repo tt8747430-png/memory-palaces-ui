@@ -2,7 +2,7 @@ import {type ChangeEvent, type ReactNode, useRef} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {motion} from "motion/react";
-import {ArrowLeft, Check, ImagePlus, Plus, Save, Sparkles, Trash2} from "lucide-react";
+import {ArrowLeft, BookOpen, Check, ImagePlus, Plus, Save, Sparkles, Trash2} from "lucide-react";
 import {toast} from "sonner";
 import {DynamicBackground} from "../DynamicBackground";
 import {AmbientParticles} from "../AmbientParticles";
@@ -60,6 +60,7 @@ export function PalaceEditor({
     const icon = watch("icon");
     const color = watch("color");
     const image = watch("image");
+    const bibleMode = watch("bibleMode");
     const keyboardInset = useKeyboardInset();
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -202,6 +203,63 @@ export function PalaceEditor({
                                         </motion.button>
                                     ))}
                                 </div>
+                            </Field>
+
+                            <Field label="Bible mode">
+                                <motion.button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={!!bibleMode}
+                                    whileTap={{scale: 0.98}}
+                                    onClick={() => {
+                                        const next = !bibleMode;
+                                        setValue("bibleMode", next, {shouldDirty: true});
+                                        // Keep the required-category rule satisfied without
+                                        // forcing the user to pick one for Scripture palaces.
+                                        if (next && !category) {
+                                            setValue("category", "Scripture");
+                                            trigger("category");
+                                        }
+                                    }}
+                                    className={`w-full flex items-center gap-3.5 rounded-2xl px-4 py-3.5 text-left transition-colors ${
+                                        bibleMode ? "bg-white" : "bg-white/15 active:bg-white/25"
+                                    }`}
+                                >
+                                    <span
+                                        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${
+                                            bibleMode ? "bg-[#091A7A]/10 text-[#091A7A]" : "bg-white/20 text-white"
+                                        }`}
+                                    >
+                                        <BookOpen size={20}/>
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span
+                                            className={`block text-[14px] font-semibold ${
+                                                bibleMode ? "text-[#091A7A]" : "text-white"
+                                            }`}
+                                        >
+                                            Memorize verses
+                                        </span>
+                                        <span
+                                            className={`mt-0.5 block text-[12px] leading-snug ${
+                                                bibleMode ? "text-[#475569]" : "text-white/70"
+                                            }`}
+                                        >
+                                            Each locus is a verse. Unlocks Blur, Words, Initials &amp; Type.
+                                        </span>
+                                    </span>
+                                    <span
+                                        className={`relative h-7 w-12 flex-shrink-0 rounded-full transition-colors ${
+                                            bibleMode ? "bg-[#091A7A]" : "bg-white/30"
+                                        }`}
+                                    >
+                                        <span
+                                            className={`absolute top-0.5 block h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
+                                                bibleMode ? "translate-x-[22px]" : "translate-x-0.5"
+                                            }`}
+                                        />
+                                    </span>
+                                </motion.button>
                             </Field>
                         </section>
 

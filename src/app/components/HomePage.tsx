@@ -11,6 +11,7 @@ import {ProgressDebugPanel} from "./progress/ProgressDebugPanel";
 import {PalaceDetailScreen} from "./palace/PalaceDetailScreen";
 import {RoomDetailScreen} from "./palace/RoomDetailScreen";
 import {RoomTrainingScreen} from "./palace/RoomTrainingScreen";
+import {VerseStudyScreen} from "./palace/VerseStudyScreen";
 import {MatchGameScreen} from "./palace/MatchGameScreen";
 import {CreatePalaceScreen} from "./palace/CreatePalaceScreen";
 import {EditPalaceScreen} from "./palace/EditPalaceScreen";
@@ -109,7 +110,7 @@ export default function HomePage() {
     // A room opens to its detail page; from there it can switch into flashcards
     // or the Match game without leaving the palace.
     const [roomView, setRoomView] = useState<
-        {roomTitle: string; mode: "detail" | "flashcards" | "match"} | null
+        {roomTitle: string; mode: "detail" | "flashcards" | "match" | "verses"} | null
     >(null);
     const [showQuiz, setShowQuiz] = useState(false);
     // When set, the quiz is scoped to a single room rather than the whole palace.
@@ -309,6 +310,17 @@ export default function HomePage() {
             );
         }
 
+        if (roomView.mode === "verses") {
+            return (
+                <VerseStudyScreen
+                    onBack={backToDetail}
+                    palaceId={selectedPalaceId}
+                    roomTitle={roomView.roomTitle}
+                    palaceTitle={palaceTitle}
+                />
+            );
+        }
+
         return (
             <RoomDetailScreen
                 palaceId={selectedPalaceId}
@@ -319,6 +331,9 @@ export default function HomePage() {
                     setRoomView((v) => (v ? {...v, mode: "flashcards"} : null))
                 }
                 onMatch={() => setRoomView((v) => (v ? {...v, mode: "match"} : null))}
+                onVerses={() =>
+                    setRoomView((v) => (v ? {...v, mode: "verses"} : null))
+                }
                 onTest={() => {
                     setQuizRoomTitle(roomView.roomTitle);
                     setShowQuiz(true);

@@ -18,6 +18,9 @@ export const palaceFormSchema = z.object({
     color: z.string(),
     // Optional custom cover photo as a downscaled data URL.
     image: z.string().optional(),
+    // Scripture palace: each locus is a verse and rooms unlock the verse-study
+    // modes (Blur / Words / Initials / Type).
+    bibleMode: z.boolean().optional(),
 });
 
 export type PalaceFormData = z.infer<typeof palaceFormSchema>;
@@ -52,4 +55,5 @@ export const categoryOptions = [
     "Literature",
     "Mathematics",
     "Languages",
+    "Scripture",
 ];

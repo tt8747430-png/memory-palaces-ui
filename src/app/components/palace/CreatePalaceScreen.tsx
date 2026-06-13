@@ -15,6 +15,7 @@ const CREATE_DEFAULTS: PalaceFormData = {
     category: "",
     icon: "🏛️",
     color: "from-purple-500 to-pink-500",
+    bibleMode: false,
 };
 
 /**
@@ -33,6 +34,7 @@ export function CreatePalaceScreen({onBack, onSuccess}: CreatePalaceScreenProps)
             icon: data.icon,
             color: data.color,
             image: data.image,
+            bibleMode: data.bibleMode,
         });
         onSuccess(palaceId);
     };

@@ -5,6 +5,7 @@ import {
   Archive,
   ArchiveRestore,
   ArrowLeft,
+  BookOpen,
   ChevronRight,
   Folder as FolderIcon,
   FolderPlus,
@@ -169,6 +170,7 @@ interface PalacesPageProps {
 // Pseudo-folder ids for the filter rail.
 const ALL = "__all__";
 const FAVORITES = "__favorites__";
+const BIBLE = "__bible__";
 const UNFILED = "__unfiled__";
 const ARCHIVED = "__archived__";
 
@@ -202,6 +204,7 @@ export function PalacesPage({
     const safeFolders = folders ?? [];
     const archivedCount = palaces.filter((p) => p.archived).length;
     const favoriteCount = palaces.filter((p) => p.favorite && !p.archived).length;
+    const bibleCount = palaces.filter((p) => p.bibleMode && !p.archived).length;
 
     const sortOptions = ["Recent", "Progress", "Name", "Category"];
 
@@ -213,6 +216,9 @@ export function PalacesPage({
             {id: ALL, label: "All", count: activeNonArchived.length},
             ...(favoriteCount > 0
                 ? [{id: FAVORITES, label: "Favorites", count: favoriteCount}]
+                : []),
+            ...(bibleCount > 0
+                ? [{id: BIBLE, label: "Bible", count: bibleCount}]
                 : []),
             ...safeFolders.map((f) => ({
                 id: f.id,
@@ -228,13 +234,14 @@ export function PalacesPage({
             base.push({id: UNFILED, label: "Unfiled", count: unfiledCount});
         }
         return base;
-    }, [activeNonArchived, favoriteCount, safeFolders]);
+    }, [activeNonArchived, favoriteCount, bibleCount, safeFolders]);
 
     const visiblePalaces = useMemo(() => {
         let list = palaces.filter((p) =>
             activeFilter === ARCHIVED ? p.archived : !p.archived,
         );
         if (activeFilter === FAVORITES) list = list.filter((p) => p.favorite);
+        else if (activeFilter === BIBLE) list = list.filter((p) => p.bibleMode);
         else if (activeFilter === UNFILED) list = list.filter((p) => !p.folderId);
         else if (
             activeFilter !== ALL &&
@@ -425,6 +432,7 @@ export function PalacesPage({
                             {rail.map((chip) => {
                                 const active = activeFilter === chip.id;
                                 const isFav = chip.id === FAVORITES;
+                                const isBible = chip.id === BIBLE;
                                 const isFolder = "folder" in chip;
                                 return (
                                     <motion.button
@@ -446,6 +454,12 @@ export function PalacesPage({
                                                             ? "text-white fill-white"
                                                             : "text-[#FFC71E] fill-[#FFC71E]"
                                                     }
+                                                />
+                                            )}
+                                            {isBible && (
+                                                <BookOpen
+                                                    size={14}
+                                                    className={active ? "text-white" : "text-[#3D8FEF]"}
                                                 />
                                             )}
                                             {isFolder && (

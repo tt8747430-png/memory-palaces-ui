@@ -1,6 +1,7 @@
 import {type ChangeEvent, useEffect, useMemo, useRef, useState} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {
+    BookOpen,
     Check,
     CheckSquare,
     ChevronDown,
@@ -14,6 +15,7 @@ import {
     Flag,
     GraduationCap,
     HelpCircle,
+    Layers,
     Lightbulb,
     ListChecks,
     MapPin,
@@ -62,8 +64,10 @@ import {
     exportQuestionsCSV,
     exportRoomContentJSON,
     importContentFile,
+    parseEBiblia,
     parsePastedLoci,
 } from "../../utils/contentUtils";
+import {importAnkiFile} from "../../utils/ankiImport";
 
 interface RoomContentEditorProps {
     palaceId: string;
@@ -106,7 +110,11 @@ export function RoomContentEditor({
     const [transferOpen, setTransferOpen] = useState(false);
     const [pasteOpen, setPasteOpen] = useState(false);
     const [pasteText, setPasteText] = useState("");
+    const [verseOpen, setVerseOpen] = useState(false);
+    const [verseInput, setVerseInput] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // Which parser the next file picked should run through.
+    const importKindRef = useRef<"content" | "anki">("content");
     const quickFrontRef = useRef<HTMLInputElement>(null);
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
@@ -144,9 +152,11 @@ export function RoomContentEditor({
         );
     }
 
-    // Open the OS file picker, scoped to the format the user chose.
-    const importFile = (accept: string) => {
+    // Open the OS file picker, scoped to the format the user chose. `kind`
+    // routes the picked file to the matching parser in handleFileChange.
+    const importFile = (accept: string, kind: "content" | "anki" = "content") => {
         setTransferOpen(false);
+        importKindRef.current = kind;
         const input = fileInputRef.current;
         if (input) {
             input.accept = accept;
@@ -157,6 +167,29 @@ export function RoomContentEditor({
     const openPaste = () => {
         setTransferOpen(false);
         setPasteOpen(true);
+    };
+
+    const openVerses = () => {
+        setTransferOpen(false);
+        setVerseOpen(true);
+    };
+
+    const applyVerses = () => {
+        const parsed = parseEBiblia(verseInput);
+        if (parsed.length === 0) {
+            toast.warning("Paste verses like “(1:1) In the beginning…”");
+            return;
+        }
+        const {loci: n} = actions.importRoomContent(
+            palaceId,
+            roomId,
+            {loci: parsed},
+            "merge",
+        );
+        toast.success(`Added ${n} ${n === 1 ? "verse" : "verses"}`);
+        setVerseInput("");
+        setVerseOpen(false);
+        setTab("loci");
     };
 
     const applyPaste = () => {
@@ -211,7 +244,10 @@ export function RoomContentEditor({
         const file = event.target.files?.[0];
         if (file) {
             try {
-                const content = await importContentFile(file);
+                const content =
+                    importKindRef.current === "anki"
+                        ? await importAnkiFile(file)
+                        : await importContentFile(file);
                 const {loci: lociCount, questions: qCount} =
                     actions.importRoomContent(palaceId, roomId, content, "merge");
                 const parts = [
@@ -687,7 +723,7 @@ export function RoomContentEditor({
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
-                accept=".json,.csv"
+                accept=".csv,.apkg,.colpkg,.txt"
                 onChange={handleFileChange}
             />
 
@@ -696,9 +732,10 @@ export function RoomContentEditor({
                 onClose={() => setTransferOpen(false)}
                 lociCount={loci.length}
                 questionCount={questions.length}
-                onImportJson={() => importFile(".json")}
                 onImportCsv={() => importFile(".csv")}
+                onImportAnki={() => importFile(".apkg,.colpkg,.txt", "anki")}
                 onPaste={openPaste}
+                onImportVerses={openVerses}
                 onExportAll={exportAll}
                 onExportLoci={exportLoci}
                 onExportQuestions={exportQuestions}
@@ -710,6 +747,14 @@ export function RoomContentEditor({
                 value={pasteText}
                 onChange={setPasteText}
                 onApply={applyPaste}
+            />
+
+            <VersePasteSheet
+                open={verseOpen}
+                onClose={() => setVerseOpen(false)}
+                value={verseInput}
+                onChange={setVerseInput}
+                onApply={applyVerses}
             />
         </div>
     );
@@ -754,9 +799,10 @@ function TransferSheet({
                            onClose,
                            lociCount,
                            questionCount,
-                           onImportJson,
                            onImportCsv,
+                           onImportAnki,
                            onPaste,
+                           onImportVerses,
                            onExportAll,
                            onExportLoci,
                            onExportQuestions,
@@ -765,9 +811,10 @@ function TransferSheet({
     onClose: () => void;
     lociCount: number;
     questionCount: number;
-    onImportJson: () => void;
     onImportCsv: () => void;
+    onImportAnki: () => void;
     onPaste: () => void;
+    onImportVerses: () => void;
     onExportAll: () => void;
     onExportLoci: () => void;
     onExportQuestions: () => void;
@@ -777,28 +824,35 @@ function TransferSheet({
         <KeyboardSheet open={open} onClose={onClose} title="Import & export">
             <div className="space-y-2.5">
                 <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
-                    Import from
+                    Import cards from
                 </p>
                 <TransferRow
-                    icon={<FileJson size={20} className="text-[#3D8FEF]"/>}
-                    tint="bg-[#E6F0FF]"
-                    title="JSON file"
-                    sub="A Mindscape export (.json)"
-                    onClick={onImportJson}
+                    icon={<ClipboardPaste size={20} className="text-[#B8860B]"/>}
+                    tint="bg-[#FFF4D6]"
+                    title="Paste text"
+                    sub="One card per line — term, then definition"
+                    onClick={onPaste}
                 />
                 <TransferRow
                     icon={<FileSpreadsheet size={20} className="text-[#0E9F6E]"/>}
                     tint="bg-[#E3F6EE]"
                     title="CSV file"
-                    sub="Loci or questions from a spreadsheet"
+                    sub="A spreadsheet or Quizlet export (.csv)"
                     onClick={onImportCsv}
                 />
                 <TransferRow
-                    icon={<ClipboardPaste size={20} className="text-[#B8860B]"/>}
-                    tint="bg-[#FFF4D6]"
-                    title="Paste text"
-                    sub="One card per line: front, back"
-                    onClick={onPaste}
+                    icon={<Layers size={20} className="text-[#6D5BD0]"/>}
+                    tint="bg-[#EEEBFF]"
+                    title="Anki deck"
+                    sub="An .apkg / .colpkg deck or notes (.txt)"
+                    onClick={onImportAnki}
+                />
+                <TransferRow
+                    icon={<BookOpen size={20} className="text-[#091A7A]"/>}
+                    tint="bg-[#EAF0FF]"
+                    title="Bible verses"
+                    sub="Paste eBiblia text — one card per verse"
+                    onClick={onImportVerses}
                 />
             </div>
 
@@ -871,14 +925,72 @@ function PasteSheet({
             }
         >
             <p className="text-[13px] text-[#475569] leading-relaxed">
-                Paste one card per line. Separate the front and back with a comma,
-                semicolon, or tab.
+                Paste one card per line, with the front and back separated by a comma,
+                semicolon, or tab. A copied Quizlet or Anki export (term ⇥ definition)
+                drops straight in.
             </p>
             <Textarea
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={"Zeus, King of the gods\nPoseidon, God of the sea"}
                 rows={7}
+                className={`${navyField} px-4 py-3 resize-none font-mono text-[13px]`}
+            />
+        </KeyboardSheet>
+    );
+}
+
+const EBIBLIA_EXAMPLE = `3 Ioan 1
+(1:1) Prezbiterul către preaiubitul Gaius, pe care-l iubesc în adevăr:
+(1:2) preaiubitule, doresc ca toate lucrurile tale să-ți meargă bine...`;
+
+function VersePasteSheet({
+                             open,
+                             onClose,
+                             value,
+                             onChange,
+                             onApply,
+                         }: {
+    open: boolean;
+    onClose: () => void;
+    value: string;
+    onChange: (v: string) => void;
+    onApply: () => void;
+}) {
+    const count = parseEBiblia(value).length;
+    return (
+        <KeyboardSheet
+            open={open}
+            onClose={onClose}
+            title="Paste Bible verses"
+            footer={
+                <button
+                    onClick={onApply}
+                    disabled={count === 0}
+                    className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors ${
+                        count > 0
+                            ? "bg-[#091A7A] text-white shadow-[0_8px_20px_rgba(9,26,122,0.25)] active:scale-[0.98]"
+                            : "bg-[#E2E8F0] text-[#94a3b8] cursor-not-allowed"
+                    }`}
+                >
+                    <BookOpen size={18}/>
+                    {count > 0
+                        ? `Add ${count} ${count === 1 ? "verse" : "verses"}`
+                        : "Add verses"}
+                </button>
+            }
+        >
+            <p className="text-[13px] text-[#475569] leading-relaxed">
+                Paste verses in <span className="font-semibold text-[#091A7A]">eBiblia</span>{" "}
+                format: a heading line like <span className="font-mono">3 Ioan 1</span>, then
+                one <span className="font-mono">(chapter:verse) text</span> line per verse. Each
+                verse becomes its own card (front = the reference, back = the verse).
+            </p>
+            <Textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={EBIBLIA_EXAMPLE}
+                rows={8}
                 className={`${navyField} px-4 py-3 resize-none font-mono text-[13px]`}
             />
         </KeyboardSheet>

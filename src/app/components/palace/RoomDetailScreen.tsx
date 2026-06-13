@@ -3,6 +3,7 @@ import {motion} from "motion/react";
 import {toast} from "sonner";
 import {
     ArrowLeft,
+    BookOpen,
     Brain,
     ChevronRight,
     GraduationCap,
@@ -46,6 +47,8 @@ interface RoomDetailScreenProps {
     onMatch: () => void;
     /** Launch the room-scoped quiz. */
     onTest: () => void;
+    /** Launch the verse-study modes (Bible-mode palaces only). */
+    onVerses?: () => void;
 }
 
 /**
@@ -61,11 +64,13 @@ export function RoomDetailScreen({
                                      onStudy,
                                      onMatch,
                                      onTest,
+                                     onVerses,
                                  }: RoomDetailScreenProps) {
     const {state, actions} = useProgressState();
     const palace = state.palaces.find((p) => p.id === palaceId);
     const room = (palace?.rooms || []).find((r) => r.title === roomTitle);
     const roomId = room?.id;
+    const bibleMode = !!palace?.bibleMode;
 
     const loci = useMemo(() => room?.loci ?? [], [room]);
     const questions = useMemo(() => room?.questions ?? [], [room]);
@@ -212,6 +217,16 @@ export function RoomDetailScreen({
 
                 {/* Study modes */}
                 <div className="space-y-2.5">
+                    {bibleMode && onVerses && (
+                        <ModeTile
+                            icon={<BookOpen className="w-5 h-5"/>}
+                            tint="bg-gradient-to-br from-[#091A7A] to-[#4F8EFF]"
+                            label="Memorize verses"
+                            sublabel="Blur, Words, Initials & Type"
+                            onClick={onVerses}
+                            disabled={loci.length === 0}
+                        />
+                    )}
                     <ModeTile
                         icon={<Layers className="w-5 h-5"/>}
                         tint="bg-[#091A7A]"

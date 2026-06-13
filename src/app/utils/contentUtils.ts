@@ -308,6 +308,80 @@ export function parsePastedLoci(text: string): Locus[] {
         .filter((l): l is Locus => l !== null);
 }
 
+/**
+ * Strip HTML to plain text. Anki notes store rich-text fields, so imported
+ * cards need their tags, entities, and `<br>` line breaks reduced to text.
+ */
+export function stripHtml(input: string): string {
+    return input
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/(p|div|li)>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+}
+
+/**
+ * Parse the **eBiblia** verse format into one locus per verse. Input looks like:
+ *
+ *   3 Ioan 1
+ *   (1:1) Prezbiterul către preaiubitul Gaius...
+ *   (1:2) preaiubitule, doresc...
+ *
+ * A header line ("Book Chapter", ending in a chapter number) sets the current
+ * book; each `(chapter:verse) text` line becomes a card with
+ * `front = "Book chapter:verse"` and `back = "Book chapter:verse text"`.
+ * Lines that wrap a verse onto the next row are appended to it. Multiple
+ * books/chapters in one paste are supported (each header resets the book).
+ */
+export function parseEBiblia(text: string): Locus[] {
+    const verseRe = /^\((\d+):(\d+)\)\s*(.*)$/;
+    // A header ends in a chapter number, optionally a range like "1:1-31".
+    const headerRe = /^(.*\p{L})\s+\d+(?:\s*[-–:]\s*\d+)*\.?$/u;
+    const chapterTail = /\s+\d+(?:\s*[-–:]\s*\d+)*\.?$/u;
+
+    let book = "";
+    let last: Locus | null = null;
+    const loci: Locus[] = [];
+
+    for (const raw of text.split(/\r?\n/)) {
+        const line = raw.trim();
+        if (!line) continue;
+
+        const verse = line.match(verseRe);
+        if (verse) {
+            const [, ch, vs, body] = verse;
+            const ref = `${book ? `${book} ` : ""}${ch}:${vs}`.trim();
+            const locus: Locus = {
+                id: placeholderId,
+                front: ref,
+                back: body ? `${ref} ${body}`.trim() : ref,
+            };
+            loci.push(locus);
+            last = locus;
+            continue;
+        }
+
+        if (headerRe.test(line)) {
+            book = line.replace(chapterTail, "").trim();
+            last = null;
+            continue;
+        }
+
+        // Otherwise it's the previous verse wrapping onto a new line.
+        if (last) last.back = `${last.back} ${line}`.trim();
+    }
+
+    return loci;
+}
+
 export class ContentImportError extends Error {}
 
 /**

@@ -27,6 +27,7 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
         icon: palace.icon,
         color: palace.color,
         image: palace.image,
+        bibleMode: palace.bibleMode ?? false,
     };
 
     const handleSubmit = (data: PalaceFormData) => {
@@ -37,6 +38,7 @@ export function EditPalaceScreen({palaceId, onBack, onSuccess}: EditPalaceScreen
             icon: data.icon,
             color: data.color,
             image: data.image || undefined,
+            bibleMode: data.bibleMode,
         });
         onSuccess();
     };

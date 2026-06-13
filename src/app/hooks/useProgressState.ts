@@ -23,6 +23,12 @@ export interface Locus {
     srs?: SrsState;
     /** User-flagged for follow-up (e.g., marked tricky during study). */
     flagged?: boolean;
+    /**
+     * Standalone "Memorized" marker set in the verse-study modes. Purely
+     * informational — it never feeds the spaced-repetition schedule, streaks,
+     * or stats (verse study is a practice surface, not graded review).
+     */
+    memorized?: boolean;
 }
 
 /** A multiple-choice recall question scoped to a room. */
@@ -117,6 +123,13 @@ export interface Palace {
     archived?: boolean;
     /** The collection this palace belongs to, or null/undefined for none. */
     folderId?: string | null;
+    /**
+     * Marks this as a Scripture palace: each locus is a verse (front = the
+     * reference, back = the verse text), and rooms unlock the verse-study
+     * surface (Blur / Words / Initials / Type). Bible palaces are also grouped
+     * under their own filter in the palaces list.
+     */
+    bibleMode?: boolean;
 }
 
 /** A user-defined collection that groups palaces (like folders). */
@@ -1053,6 +1066,23 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         }));
     };
 
+    /**
+     * Toggle a verse's standalone "Memorized" marker (verse-study modes). This
+     * is informational only and deliberately does NOT touch the SRS schedule.
+     */
+    const toggleLocusMemorized = (
+        palaceId: string,
+        roomId: string,
+        locusId: string,
+    ) => {
+        mutateRoom(palaceId, roomId, (room) => ({
+            ...room,
+            loci: (room.loci || []).map((l) =>
+                l.id === locusId ? {...l, memorized: !l.memorized} : l,
+            ),
+        }));
+    };
+
     /** Delete many loci at once (bulk select). */
     const deleteLoci = (palaceId: string, roomId: string, ids: string[]) => {
         const remove = new Set(ids);
@@ -1272,6 +1302,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             moveLocus,
             reviewLocus,
             toggleLocusFlag,
+            toggleLocusMemorized,
             deleteLoci,
             deleteQuestions,
             resetLociSrs,
