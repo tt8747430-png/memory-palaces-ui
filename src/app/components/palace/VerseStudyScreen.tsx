@@ -18,6 +18,7 @@ import {
     Volume2,
 } from "lucide-react";
 import {type Locus, useProgressState} from "../../hooks/useProgressState";
+import {usePreferences} from "../../hooks/usePreferences";
 import {cancelSpeech, speak, speechAvailable} from "../../utils/speech";
 import {tick} from "../../utils/haptics";
 import {tapCard, tapNav, tapSmall} from "../../utils/motion";
@@ -56,6 +57,7 @@ export function VerseStudyScreen({
                                      palaceTitle = "Memory Palace",
                                  }: VerseStudyScreenProps) {
     const {state, actions} = useProgressState();
+    const {preferences, setPreference} = usePreferences();
     const reduce = useReducedMotion();
 
     const palace = state.palaces.find((p) => p.id === palaceId);
@@ -64,9 +66,11 @@ export function VerseStudyScreen({
     const cards: Locus[] = useMemo(() => room?.loci ?? [], [room]);
     const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
-    const [mode, setMode] = useState<VerseMode>("blur");
-    const [shuffleVerses, setShuffleVerses] = useState(false);
-    const [showWordSpaces, setShowWordSpaces] = useState(true);
+    // Verse-study options persist across sessions (remembered everywhere).
+    const mode = preferences.verseMode;
+    const setMode = (m: VerseMode) => setPreference("verseMode", m);
+    const shuffleVerses = preferences.verseShuffle;
+    const showWordSpaces = preferences.verseWordSpaces;
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [editing, setEditing] = useState(false);
     const [index, setIndex] = useState(0);
@@ -163,17 +167,12 @@ export function VerseStudyScreen({
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF4FF] px-3 py-1.5 text-[12px] font-bold text-[#1E5FBF] min-w-0">
                             <span className="truncate">{reference}</span>
                         </span>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                            {current.memorized && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
-                                    <Check size={12} strokeWidth={3}/>
-                                    Memorized
-                                </span>
-                            )}
-                            <span className="text-[12px] font-semibold text-[#94a3b8] tabular-nums">
-                                {index + 1} / {order.length}
+                        {current.memorized && (
+                            <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
+                                <Check size={12} strokeWidth={3}/>
+                                Memorized
                             </span>
-                        </div>
+                        )}
                     </div>
 
                     {/* Mode panel — keyed so state resets on verse / mode change */}
@@ -269,8 +268,8 @@ export function VerseStudyScreen({
                 onClose={() => setSettingsOpen(false)}
                 showWordSpaces={showWordSpaces}
                 shuffleVerses={shuffleVerses}
-                onShowWordSpaces={setShowWordSpaces}
-                onShuffleVerses={setShuffleVerses}
+                onShowWordSpaces={(v) => setPreference("verseWordSpaces", v)}
+                onShuffleVerses={(v) => setPreference("verseShuffle", v)}
                 onEditVerse={() => {
                     setSettingsOpen(false);
                     setEditing(true);
@@ -351,7 +350,8 @@ function BlurMode({text}: {text: string}) {
 
     return (
         <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+                <div className="min-h-full flex items-center justify-center px-6 py-6">
                 <p className="text-center leading-[2.4] text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
                     {tokens.map((token, i) => {
                         const gap = i < tokens.length - 1 ? " " : "";
@@ -384,6 +384,7 @@ function BlurMode({text}: {text: string}) {
                         );
                     })}
                 </p>
+                </div>
             </div>
             <div className="flex items-center gap-2.5 px-5 pb-5">
                 <motion.button
@@ -549,7 +550,8 @@ function InitialsMode({
 
     return (
         <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-6 py-5">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+                <div className="min-h-full flex items-center justify-center px-6 py-6">
                 {revealed ? (
                     <p className="text-center text-[clamp(16px,4.4vw,21px)] font-medium leading-relaxed text-[#091A7A] text-balance">
                         {text}
@@ -586,6 +588,7 @@ function InitialsMode({
                         })}
                     </p>
                 )}
+                </div>
             </div>
             <div className="px-5 pb-5">
                 <motion.button

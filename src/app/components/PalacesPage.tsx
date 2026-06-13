@@ -46,6 +46,7 @@ import {
 import {Tabs, TabsList, TabsTrigger} from "./ui/tabs";
 import {KeyboardSheet} from "./ui/KeyboardSheet";
 import {Input} from "./ui/input";
+import {type Preferences, usePreferences} from "../hooks/usePreferences";
 
 const FOLDER_COLORS = [
     "from-blue-500 to-cyan-500",
@@ -188,9 +189,16 @@ export function PalacesPage({
                                 onDeleteFolder,
                                 loading = false,
                             }: PalacesPageProps) {
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    // View layout and sort persist across sessions; the active filter is
+    // navigational and resets to All each visit.
+    const {preferences, setPreference} = usePreferences();
+    const viewMode = preferences.palacesView;
+    const setViewMode = (v: Preferences["palacesView"]) =>
+        setPreference("palacesView", v);
+    const sortBy = preferences.palacesSort;
+    const setSortBy = (s: Preferences["palacesSort"]) =>
+        setPreference("palacesSort", s);
     const [activeFilter, setActiveFilter] = useState<string>(ALL);
-    const [sortBy, setSortBy] = useState("Recent");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const [movingPalaceId, setMovingPalaceId] = useState<string | null>(null);
     const [showNewFolder, setShowNewFolder] = useState(false);
@@ -206,7 +214,7 @@ export function PalacesPage({
     const favoriteCount = palaces.filter((p) => p.favorite && !p.archived).length;
     const bibleCount = palaces.filter((p) => p.bibleMode && !p.archived).length;
 
-    const sortOptions = ["Recent", "Progress", "Name", "Category"];
+    const sortOptions = ["Recent", "Progress", "Name", "Category"] as const;
 
     // Filter rail: pseudo-folders + real folders. Counts exclude archived,
     // except the Archived chip itself.

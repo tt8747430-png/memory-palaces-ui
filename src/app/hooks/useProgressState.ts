@@ -58,6 +58,7 @@ export interface Room {
 
 export type StudyDirection = "front" | "back";
 export type CardOrder = "inOrder" | "shuffle" | "reverse";
+export type StudyMode = "review" | "browse";
 
 /** Per-palace study configuration. Absent means defaults (see DEFAULT_SETTINGS). */
 export interface PalaceSettings {
@@ -67,6 +68,8 @@ export interface PalaceSettings {
     studyDirection: StudyDirection;
     /** Default browse order for a study session. */
     cardOrder: CardOrder;
+    /** Last flashcard mode used: spaced `review` or free `browse`. */
+    studyMode: StudyMode;
     /** Randomize question order in the quiz. */
     shuffleQuestions: boolean;
     /** Shuffle the flashcard deck at the start of each study session. */
@@ -81,6 +84,7 @@ export const DEFAULT_SETTINGS: PalaceSettings = {
     quizTimer: true,
     studyDirection: "front",
     cardOrder: "inOrder",
+    studyMode: "review",
     shuffleQuestions: false,
     shuffleCards: false,
     textToSpeech: false,

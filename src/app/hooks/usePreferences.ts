@@ -47,6 +47,16 @@ export interface Preferences {
     language: string;
     /** Default room view inside a palace: spatial journey map or list. */
     roomView: "map" | "list";
+    /** Palaces list layout, remembered across sessions. */
+    palacesView: "grid" | "list";
+    /** Palaces list sort, remembered across sessions. */
+    palacesSort: "Recent" | "Progress" | "Name" | "Category";
+    /** Last verse-study mode, so it reopens where the user left off. */
+    verseMode: "blur" | "words" | "initials" | "type";
+    /** Practise verses in a random order. */
+    verseShuffle: boolean;
+    /** Show per-word length blanks in the Initials view. */
+    verseWordSpaces: boolean;
     /** Privacy & security switches (persisted as a group). */
     privacy: PrivacySettings;
 }
@@ -59,6 +69,11 @@ export const DEFAULT_PREFERENCES: Preferences = {
     darkMode: false,
     language: "en",
     roomView: "map",
+    palacesView: "grid",
+    palacesSort: "Recent",
+    verseMode: "blur",
+    verseShuffle: false,
+    verseWordSpaces: true,
     privacy: DEFAULT_PRIVACY,
 };
 

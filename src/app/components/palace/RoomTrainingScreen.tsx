@@ -135,7 +135,7 @@ export function RoomTrainingScreen({
     const cards: Locus[] = room?.loci ?? [];
     const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
-    const [mode, setMode] = useState<Mode>("review");
+    const [mode, setMode] = useState<Mode>(settings.studyMode);
     const [scope, setScope] = useState<Scope>({kind: "all"});
     const [direction, setDirection] = useState<StudyDirection>(settings.studyDirection);
     const [order, setOrder] = useState<CardOrder>(settings.cardOrder);
@@ -321,6 +321,7 @@ export function RoomTrainingScreen({
 
     const switchMode = (next: Mode) => {
         setMode(next);
+        persist({studyMode: next});
         resetCardView();
         if (next === "browse") {
             setBrowseIds(orderIds(scopedCards, shuffleCards ? "shuffle" : order));
