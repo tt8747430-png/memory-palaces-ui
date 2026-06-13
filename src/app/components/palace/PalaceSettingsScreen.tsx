@@ -6,6 +6,7 @@ import {
     BookOpen,
     Copy,
     DownloadCloud,
+    Layers,
     RotateCcw,
     Shuffle,
     Timer,
@@ -35,6 +36,7 @@ import {
 } from "../ui/alert-dialog";
 import {categoryOptions} from "./palaceForm";
 import {ColorPicker, CoverField, IconPicker} from "./palaceFields";
+import {exportPalaceAnki, exportPalaceJSON} from "../../utils/palaceTransfer";
 
 interface PalaceSettingsScreenProps {
     palaceId: string;
@@ -42,23 +44,6 @@ interface PalaceSettingsScreenProps {
     onClose: () => void;
     /** Leave the palace entirely (after archive or delete). */
     onExit: () => void;
-}
-
-/** Download a single palace as JSON (rooms, loci, questions, settings). */
-function exportPalace(palace: Palace) {
-    const blob = new Blob(
-        [JSON.stringify({type: "mindscape-palace", version: 1, palace}, null, 2)],
-        {type: "application/json"},
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const slug =
-        palace.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ||
-        "palace";
-    a.href = url;
-    a.download = `${slug}-palace.json`;
-    a.click();
-    URL.revokeObjectURL(url);
 }
 
 const inputCls =
@@ -302,10 +287,19 @@ export function PalaceSettingsScreen({
                                 <SettingRow
                                     icon={<DownloadCloud size={18} className="text-[#091A7A]"/>}
                                     label="Export palace"
-                                    sublabel="Download as JSON"
+                                    sublabel="Mindscape file — re-imports with everything intact"
                                     onClick={() => {
-                                        exportPalace(palace);
+                                        exportPalaceJSON(palace);
                                         toast.success("Palace exported");
+                                    }}
+                                />
+                                <SettingRow
+                                    icon={<Layers size={18} className="text-[#091A7A]"/>}
+                                    label="Export for Anki"
+                                    sublabel="Notes in Plain Text (.txt) for Anki & others"
+                                    onClick={() => {
+                                        exportPalaceAnki(palace);
+                                        toast.success("Exported for Anki");
                                     }}
                                 />
                                 <SettingRow

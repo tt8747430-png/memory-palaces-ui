@@ -376,6 +376,7 @@ export default function HomePage() {
                             actions.deleteFolder(folderId);
                             toast.success("Folder deleted");
                         }}
+                        onImportPalaces={(imported) => actions.importPalaces(imported)}
                     />
                 );
 

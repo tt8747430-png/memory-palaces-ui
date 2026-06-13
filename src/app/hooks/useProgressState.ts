@@ -1289,6 +1289,46 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
         return {rooms: createdRooms, loci: createdLoci};
     };
 
+    /**
+     * Add whole palaces from an import (one or many), each with fresh ids for
+     * the palace, its rooms, loci, and questions, so nothing collides with what
+     * already exists. Room-derived stats are recomputed. Returns how many landed.
+     */
+    const importPalaces = (
+        incoming: Array<Omit<Palace, "id" | "progress" | "roomsCompleted" | "totalRooms">>,
+    ) => {
+        const now = new Date().toISOString();
+        setState((prev) => {
+            const cloned: Palace[] = incoming.map((p) =>
+                withRoomStats({
+                    ...p,
+                    id: genId("palace"),
+                    progress: 0,
+                    roomsCompleted: 0,
+                    totalRooms: 0,
+                    favorite: false,
+                    archived: false,
+                    folderId: null,
+                    createdAt: p.createdAt || now,
+                    updatedAt: now,
+                    settings: p.settings ?? {...DEFAULT_SETTINGS},
+                    rooms: (p.rooms || []).map((room) => ({
+                        ...room,
+                        id: genId("room"),
+                        loci: (room.loci || []).map((l) => ({...l, id: genId("locus")})),
+                        questions: (room.questions || []).map((q) => ({
+                            ...q,
+                            id: genId("q"),
+                        })),
+                    })),
+                }),
+            );
+            const palaces = [...prev.palaces, ...cloned];
+            return {...prev, palaces, ...recomputeTotals(palaces)};
+        });
+        return incoming.length;
+    };
+
     // --- Folders ------------------------------------------------------------
 
     const createFolder = (data: Omit<Folder, "id" | "createdAt">) => {
@@ -1380,6 +1420,7 @@ export function useProgressState(onEvent?: (event: ProgressEvent) => void) {
             moveQuestion,
             importRoomContent,
             importRoomsWithContent,
+            importPalaces,
             createFolder,
             updateFolder,
             deleteFolder,

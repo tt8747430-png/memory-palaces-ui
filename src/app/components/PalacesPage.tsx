@@ -1,5 +1,6 @@
-import {useMemo, useState} from "react";
+import {type ChangeEvent, useMemo, useRef, useState} from "react";
 import {motion} from "motion/react";
+import {toast} from "sonner";
 import {useCollapsibleHeader} from "../hooks/useCollapsibleHeader";
 import {
   Archive,
@@ -18,10 +19,12 @@ import {
   Sparkles,
   Star,
   Trash2,
+  Upload,
 } from "lucide-react";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {Folder, Palace} from "../hooks/useProgressState";
+import {type ImportedPalace, PalaceImportError, parsePalacesFile} from "../utils/palaceTransfer";
 import {PalaceCard} from "./cards/PalaceCard";
 import {PalaceCardSkeleton} from "./cards/PalaceCardSkeleton";
 import {PalaceCover} from "./cards/PalaceCover";
@@ -164,6 +167,8 @@ interface PalacesPageProps {
     onSetPalaceFolder: (palaceId: string, folderId: string | null) => void;
     onCreateFolder: (data: {name: string; color: string; icon: string}) => void;
     onDeleteFolder: (folderId: string) => void;
+    /** Add one or many palaces parsed from an imported Mindscape file. */
+    onImportPalaces: (palaces: ImportedPalace[]) => void;
     /** Render skeletons instead of content while palaces resolve. */
     loading?: boolean;
 }
@@ -187,6 +192,7 @@ export function PalacesPage({
                                 onSetPalaceFolder,
                                 onCreateFolder,
                                 onDeleteFolder,
+                                onImportPalaces,
                                 loading = false,
                             }: PalacesPageProps) {
     // View layout and sort persist across sessions; the active filter is
@@ -204,6 +210,26 @@ export function PalacesPage({
     const [showNewFolder, setShowNewFolder] = useState(false);
     const [newFolderName, setNewFolderName] = useState("");
     const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+    const importRef = useRef<HTMLInputElement>(null);
+
+    const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (importRef.current) importRef.current.value = "";
+        if (!file) return;
+        try {
+            const imported = await parsePalacesFile(file);
+            onImportPalaces(imported);
+            toast.success(
+                `Imported ${imported.length} ${imported.length === 1 ? "palace" : "palaces"}`,
+            );
+        } catch (error) {
+            toast.error(
+                error instanceof PalaceImportError
+                    ? error.message
+                    : "Couldn't import that file.",
+            );
+        }
+    };
 
     // Scroll-away header: the navy hero recedes and a compact bar fades in that
     // keeps Palaces + search + create pinned at the top.
@@ -368,6 +394,14 @@ export function PalacesPage({
                                     className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                                 >
                                     <Search size={20} strokeWidth={2.5}/>
+                                </motion.button>
+                                <motion.button
+                                    whileTap={{scale: 0.92}}
+                                    onClick={() => importRef.current?.click()}
+                                    aria-label="Import palaces"
+                                    className="w-[44px] h-[44px] rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                                >
+                                    <Upload size={20} strokeWidth={2.5}/>
                                 </motion.button>
                                 <motion.button
                                     whileTap={{scale: 0.92}}
@@ -866,6 +900,15 @@ export function PalacesPage({
                     ))}
                 </div>
             </KeyboardSheet>
+
+            {/* Hidden picker for importing one or many palaces from a file */}
+            <input
+                ref={importRef}
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleImportFile}
+            />
         </div>
     );
 }

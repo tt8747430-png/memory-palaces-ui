@@ -1,5 +1,5 @@
 import {type ChangeEvent, useRef, useState} from "react";
-import {BookOpen, ChevronRight, FileSpreadsheet, Layers} from "lucide-react";
+import {BookOpen, ChevronRight, FileJson, FileSpreadsheet, Layers} from "lucide-react";
 import {toast} from "sonner";
 import {useProgressState} from "../../hooks/useProgressState";
 import {
@@ -8,6 +8,7 @@ import {
     parseEBibliaChapters,
 } from "../../utils/contentUtils";
 import {importAnkiFile} from "../../utils/ankiImport";
+import {PalaceImportError, parsePalacesFile} from "../../utils/palaceTransfer";
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {Textarea} from "../ui/textarea";
 
@@ -44,7 +45,7 @@ export function ImportRoomsSheet({
     const [step, setStep] = useState<"menu" | "verses">("menu");
     const [verseInput, setVerseInput] = useState("");
     const fileRef = useRef<HTMLInputElement>(null);
-    const fileKindRef = useRef<"anki" | "csv">("anki");
+    const fileKindRef = useRef<"anki" | "csv" | "mindscape">("anki");
 
     const reset = () => {
         setStep("menu");
@@ -56,7 +57,7 @@ export function ImportRoomsSheet({
         onClose();
     };
 
-    const pickFile = (accept: string, kind: "anki" | "csv") => {
+    const pickFile = (accept: string, kind: "anki" | "csv" | "mindscape") => {
         fileKindRef.current = kind;
         const input = fileRef.current;
         if (input) {
@@ -69,31 +70,58 @@ export function ImportRoomsSheet({
         const file = event.target.files?.[0];
         if (file) {
             try {
-                const content =
-                    fileKindRef.current === "anki"
-                        ? await importAnkiFile(file)
-                        : await importContentFile(file);
-                if (content.loci.length === 0) {
-                    toast.warning("No cards found in that file.");
+                if (fileKindRef.current === "mindscape") {
+                    // A Mindscape file may hold several palaces; bring in every
+                    // room across them as rooms in this palace.
+                    const palaces = await parsePalacesFile(file);
+                    const incoming = palaces.flatMap((p) => p.rooms ?? []);
+                    if (incoming.length === 0) {
+                        toast.warning("No rooms found in that file.");
+                    } else {
+                        const {rooms, loci} = actions.importRoomsWithContent(
+                            palaceId,
+                            incoming.map((r) => ({
+                                title: r.title,
+                                description: r.description,
+                                loci: r.loci,
+                                questions: r.questions,
+                            })),
+                        );
+                        toast.success(
+                            `Added ${rooms === 1 ? "1 room" : `${rooms} rooms`} · ${loci} ${
+                                loci === 1 ? "card" : "cards"
+                            }`,
+                        );
+                        onImported?.();
+                        close();
+                    }
                 } else {
-                    const {rooms, loci} = actions.importRoomsWithContent(palaceId, [
-                        {
-                            title: roomTitleFromFile(file.name),
-                            loci: content.loci,
-                            questions: content.questions,
-                        },
-                    ]);
-                    toast.success(
-                        `Added ${rooms === 1 ? "1 room" : `${rooms} rooms`} · ${loci} ${
-                            loci === 1 ? "card" : "cards"
-                        }`,
-                    );
-                    onImported?.();
-                    close();
+                    const content =
+                        fileKindRef.current === "anki"
+                            ? await importAnkiFile(file)
+                            : await importContentFile(file);
+                    if (content.loci.length === 0) {
+                        toast.warning("No cards found in that file.");
+                    } else {
+                        const {rooms, loci} = actions.importRoomsWithContent(palaceId, [
+                            {
+                                title: roomTitleFromFile(file.name),
+                                loci: content.loci,
+                                questions: content.questions,
+                            },
+                        ]);
+                        toast.success(
+                            `Added ${rooms === 1 ? "1 room" : `${rooms} rooms`} · ${loci} ${
+                                loci === 1 ? "card" : "cards"
+                            }`,
+                        );
+                        onImported?.();
+                        close();
+                    }
                 }
             } catch (error) {
                 toast.error(
-                    error instanceof ContentImportError
+                    error instanceof ContentImportError || error instanceof PalaceImportError
                         ? error.message
                         : "Couldn't import that file.",
                 );
@@ -186,6 +214,13 @@ export function ImportRoomsSheet({
                             title="CSV file"
                             sub="A spreadsheet or Quizlet export → one room"
                             onClick={() => pickFile(".csv", "csv")}
+                        />
+                        <ImportRow
+                            icon={<FileJson size={20} className="text-[#091A7A]"/>}
+                            tint="bg-[#EAF0FF]"
+                            title="Mindscape file"
+                            sub="A palace export (.json) → all its rooms"
+                            onClick={() => pickFile(".json,application/json", "mindscape")}
                         />
                     </div>
                 ) : (

@@ -159,9 +159,33 @@ export function exportQuestionsCSV(roomName: string, questions: Question[]) {
     );
 }
 
+/** Escape one field for Anki's tab-separated "Notes in Plain Text" import. */
+function ankiField(value: string): string {
+    return (value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\t/g, " ")
+        .replace(/\r?\n/g, "<br>");
+}
+
+/**
+ * Loci as Anki "Notes in Plain Text" (tab-separated, Front/Back). Drops in via
+ * Anki's File → Import; `#html:true` keeps line breaks as `<br>`.
+ */
+export function lociToAnkiTSV(loci: Locus[]): string {
+    const header = "#separator:tab\n#html:true\n#columns:Front\tBack";
+    const lines = loci.map((c) => `${ankiField(c.front)}\t${ankiField(c.back)}`);
+    return [header, ...lines].join("\n");
+}
+
+export function exportLociAnki(roomName: string, loci: Locus[]) {
+    download(`${slug(roomName)}-anki.txt`, lociToAnkiTSV(loci), "text/plain");
+}
+
 // --- Import -----------------------------------------------------------------
 
-function coerceLoci(raw: unknown): Locus[] {
+export function coerceLoci(raw: unknown): Locus[] {
     if (!Array.isArray(raw)) return [];
     return raw
         .map((item) => {
@@ -181,7 +205,7 @@ function coerceLoci(raw: unknown): Locus[] {
         .filter((c): c is Locus => c !== null);
 }
 
-function coerceQuestions(raw: unknown): Question[] {
+export function coerceQuestions(raw: unknown): Question[] {
     if (!Array.isArray(raw)) return [];
     return raw
         .map((item) => {

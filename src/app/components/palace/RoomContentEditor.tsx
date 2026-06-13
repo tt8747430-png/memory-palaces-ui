@@ -60,6 +60,7 @@ import {
 import {KeyboardSheet} from "../ui/KeyboardSheet";
 import {
     ContentImportError,
+    exportLociAnki,
     exportLociCSV,
     exportQuestionsCSV,
     exportRoomContentJSON,
@@ -237,6 +238,16 @@ export function RoomContentEditor({
         }
         exportQuestionsCSV(room!.title, questions);
         toast.success("Exported questions as CSV");
+        setTransferOpen(false);
+    };
+
+    const exportAnki = () => {
+        if (loci.length === 0) {
+            toast.warning("No loci to export");
+            return;
+        }
+        exportLociAnki(room!.title, loci);
+        toast.success("Exported for Anki");
         setTransferOpen(false);
     };
 
@@ -737,6 +748,7 @@ export function RoomContentEditor({
                 onPaste={openPaste}
                 onImportVerses={openVerses}
                 onExportAll={exportAll}
+                onExportAnki={exportAnki}
                 onExportLoci={exportLoci}
                 onExportQuestions={exportQuestions}
             />
@@ -804,6 +816,7 @@ function TransferSheet({
                            onPaste,
                            onImportVerses,
                            onExportAll,
+                           onExportAnki,
                            onExportLoci,
                            onExportQuestions,
                        }: {
@@ -816,6 +829,7 @@ function TransferSheet({
     onPaste: () => void;
     onImportVerses: () => void;
     onExportAll: () => void;
+    onExportAnki: () => void;
     onExportLoci: () => void;
     onExportQuestions: () => void;
 }) {
@@ -870,6 +884,13 @@ function TransferSheet({
                             : "Nothing to export yet"
                     }
                     onClick={onExportAll}
+                />
+                <TransferRow
+                    icon={<Layers size={20} className="text-[#6D5BD0]"/>}
+                    tint="bg-[#EEEBFF]"
+                    title="Anki deck"
+                    sub="Notes in Plain Text (.txt), import into Anki"
+                    onClick={onExportAnki}
                 />
                 <TransferRow
                     icon={<MapPin size={20} className="text-[#3D8FEF]"/>}

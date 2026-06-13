@@ -366,10 +366,9 @@ function BlurMode({text}: {text: string}) {
                                 <span
                                     key={i}
                                     aria-hidden
-                                    className="whitespace-nowrap border-b-2 border-[#091A7A]/35 text-transparent"
-                                >
-                                    {" ".repeat(Math.min(token.length + 1, 14))}
-                                </span>
+                                    className="inline-block border-b-2 border-[#091A7A]/35 align-baseline"
+                                    style={{width: `${Math.min(Math.max(token.length, 1), 18)}ch`}}
+                                />
                             );
                         }
                         return (
@@ -552,7 +551,11 @@ function InitialsMode({
                         {text}
                     </p>
                 ) : (
-                    <p className="w-full flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-2 text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A]">
+                    <p
+                        className={`w-full flex flex-wrap items-baseline justify-center gap-y-2.5 text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A] ${
+                            showWordSpaces ? "gap-x-3" : "gap-x-0"
+                        }`}
+                    >
                         {tokens.map((token, i) => {
                             if (isVerseMarker(token)) {
                                 return (
@@ -566,13 +569,12 @@ function InitialsMode({
                                 <span key={i} className="whitespace-nowrap">
                                     {lead}
                                     <span className="font-bold">{initial}</span>
-                                    {showWordSpaces && hidden > 0 && (
+                                    {hidden > 0 && (
                                         <span
                                             aria-hidden
-                                            className="border-b-2 border-[#091A7A]/35 text-transparent"
-                                        >
-                                            {" ".repeat(Math.min(hidden + 1, 10))}
-                                        </span>
+                                            className="ml-0.5 inline-block border-b-2 border-[#091A7A]/40 align-baseline"
+                                            style={{width: `${Math.min(Math.max(hidden, 1), 16)}ch`}}
+                                        />
                                     )}
                                     {trail}
                                 </span>
