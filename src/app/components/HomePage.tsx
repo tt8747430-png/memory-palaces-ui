@@ -18,7 +18,6 @@ import {PalaceQuizScreen, QuizResults} from "./quiz/PalaceQuizScreen";
 import {PalaceQuizCompletionScreen} from "./quiz/PalaceQuizCompletionScreen";
 import {DailyReviewScreen} from "./DailyReviewScreen";
 import {StatsScreen} from "./StatsScreen";
-import {StreakHistorySheet} from "./progress/StreakHistorySheet";
 import {ProgressNotification} from "./notifications/ProgressNotification";
 import {NotificationsScreen} from "./notifications/NotificationsScreen";
 import {SaveIndicator} from "./notifications/SaveIndicator";
@@ -119,7 +118,6 @@ export default function HomePage() {
     const [showSettings, setShowSettings] = useState(false);
     const [showDailyReview, setShowDailyReview] = useState(false);
     const [showStats, setShowStats] = useState(false);
-    const [showStreakHistory, setShowStreakHistory] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreatePalace, setShowCreatePalace] = useState(false);
     const [editingPalaceId, setEditingPalaceId] = useState<string | null>(null);
@@ -134,6 +132,13 @@ export default function HomePage() {
 
     // Jump into the most recently touched palace: straight into its flashcards
     // if it has any, otherwise its detail so the user can build/pick.
+    // Deep-link from the home "Up next" widget straight into a room's study
+    // session (same path handleStartTraining uses, but for a chosen room).
+    const handleOpenRoom = (palaceId: string, roomTitle: string) => {
+        setSelectedPalaceId(palaceId);
+        setRoomView({roomTitle, mode: "flashcards"});
+    };
+
     const handleStartTraining = () => {
         const active = state.palaces.filter((p) => !p.archived);
         if (active.length === 0) {
@@ -410,7 +415,9 @@ export default function HomePage() {
                         onCreatePalace={() => setShowCreatePalace(true)}
                         onPalaceClick={(id) => setSelectedPalaceId(id)}
                         onViewAllPalaces={() => setActiveTab("palaces")}
-                        onViewStreakHistory={() => setShowStreakHistory(true)}
+                        onOpenStats={() => setShowStats(true)}
+                        onOpenRoom={handleOpenRoom}
+                        palaces={state.palaces.filter((p) => !p.archived)}
                         dueCount={dueCount}
                         onDailyReview={() => setShowDailyReview(true)}
                     />
@@ -444,15 +451,6 @@ export default function HomePage() {
             />
 
             <SettingsScreen open={showSettings} onOpenChange={setShowSettings}/>
-
-            <StreakHistorySheet
-                open={showStreakHistory}
-                onClose={() => setShowStreakHistory(false)}
-                onMoreStats={() => {
-                    setShowStreakHistory(false);
-                    setShowStats(true);
-                }}
-            />
 
             <AnimatePresence>
                 {showCreatePalace && (

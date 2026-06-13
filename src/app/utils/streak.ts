@@ -52,36 +52,6 @@ export function buildDayCells(
     return cells;
 }
 
-/**
- * A Sunday→Saturday grid of the last `weeks` weeks (oldest week first), aligned
- * so columns line up under an S M T W T F S header — the layout in the
- * reference Training History sheet.
- */
-export function buildWeekGrid(
-    trainingDays: string[],
-    weeks: number,
-    endDate: Date = new Date(),
-): DayCell[][] {
-    const trained = new Set(trainingDays);
-    const todayKey = dayKey(endDate);
-
-    // Sunday of the current week.
-    const currentSunday = new Date(endDate);
-    currentSunday.setUTCDate(currentSunday.getUTCDate() - currentSunday.getUTCDay());
-
-    const grid: DayCell[][] = [];
-    for (let w = weeks - 1; w >= 0; w--) {
-        const row: DayCell[] = [];
-        for (let d = 0; d < 7; d++) {
-            const date = new Date(currentSunday);
-            date.setUTCDate(currentSunday.getUTCDate() - w * 7 + d);
-            row.push(makeCell(date, trained, todayKey));
-        }
-        grid.push(row);
-    }
-    return grid;
-}
-
 /** Total distinct days trained. */
 export function totalTrainingDays(trainingDays: string[]): number {
     return new Set(trainingDays).size;

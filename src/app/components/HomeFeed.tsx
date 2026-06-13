@@ -1,12 +1,13 @@
 import {motion} from "motion/react";
 import {BellRing, Brain, Building2, ChevronRight, Layers, MapPin} from "lucide-react";
+import {type Palace} from "../hooks/useProgressState";
 import {DynamicBackground} from "./DynamicBackground";
 import {AmbientParticles} from "./AmbientParticles";
 import {Avatar} from "./ui/Avatar";
 import {ProgressHeader} from "./progress/ProgressHeader";
 import {PalaceProgressCard} from "./progress/PalaceProgressCard";
 import {TrainingStreak} from "./progress/TrainingStreak";
-import {TrainingCalendar} from "./progress/TrainingCalendar";
+import {UpNextCard} from "./progress/UpNextCard";
 import {PalacesOverview} from "./progress/PalacesOverview";
 import {useCollapsibleHeader} from "../hooks/useCollapsibleHeader";
 
@@ -20,9 +21,11 @@ interface HomeFeedProps {
     streakCount: number;
     longestStreak: number;
     streakFreezes: number;
-    /** ISO date strings of every day trained; drives the streak week + calendar. */
+    /** ISO date strings of every day trained; drives the streak week. */
     trainingDays: string[];
     hasPalaces: boolean;
+    /** Active (non-archived) palaces, for the "Up next" suggestions. */
+    palaces: Palace[];
     unreadCount: number;
     recentXPGain: number;
     showXPAnimation: boolean;
@@ -32,10 +35,12 @@ interface HomeFeedProps {
     onStartTraining: () => void;
     onCreatePalace: () => void;
     onPalaceClick: (palaceId: string) => void;
+    /** Open a specific room straight into study (from "Up next"). */
+    onOpenRoom: (palaceId: string, roomTitle: string) => void;
     /** Jump to the Palaces tab (the home "View all" affordance). */
     onViewAllPalaces: () => void;
-    /** Open the training-history sheet from the streak card. */
-    onViewStreakHistory: () => void;
+    /** Open the full Stats screen from the streak card. */
+    onOpenStats: () => void;
     /** Loci due for review across all palaces today. */
     dueCount: number;
     onDailyReview: () => void;
@@ -58,6 +63,7 @@ export function HomeFeed({
                              streakFreezes,
                              trainingDays,
                              hasPalaces,
+                             palaces,
                              unreadCount,
                              recentXPGain,
                              showXPAnimation,
@@ -67,8 +73,9 @@ export function HomeFeed({
                              onStartTraining,
                              onCreatePalace,
                              onPalaceClick,
+                             onOpenRoom,
                              onViewAllPalaces,
-                             onViewStreakHistory,
+                             onOpenStats,
                              dueCount,
                              onDailyReview,
                          }: HomeFeedProps) {
@@ -151,6 +158,9 @@ export function HomeFeed({
                             xpForNextLevel: (currentLevel + 1) * 250,
                             xpInCurrentLevel: userXP % 250,
                         }}
+                        streakCount={streakCount}
+                        dueCount={dueCount}
+                        showStats={hasPalaces}
                         unreadCount={unreadCount}
                         onNotificationClick={onNotificationClick}
                         onProfileClick={onProfileClick}
@@ -192,14 +202,14 @@ export function HomeFeed({
                     )}
                     {hasPalaces ? (
                         <>
+                            <UpNextCard palaces={palaces} onOpenRoom={onOpenRoom}/>
                             <TrainingStreak
                                 streakCount={streakCount}
                                 longestStreak={longestStreak}
                                 freezes={streakFreezes}
                                 trainingDays={trainingDays}
-                                onViewHistory={onViewStreakHistory}
+                                onViewHistory={onOpenStats}
                             />
-                            <TrainingCalendar/>
                             <PalacesOverview
                                 onPalaceClick={onPalaceClick}
                                 onCreatePalace={onCreatePalace}

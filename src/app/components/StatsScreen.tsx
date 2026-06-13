@@ -4,6 +4,7 @@ import {
     CalendarCheck,
     Flame,
     Layers,
+    Snowflake,
     Target,
     TrendingUp,
     Trophy,
@@ -14,7 +15,6 @@ import {GlassCard} from "./ui/GlassCard";
 import {StatTile} from "./progress/StatTile";
 import {TrainingCalendar} from "./progress/TrainingCalendar";
 import {useProgressState} from "../hooks/useProgressState";
-import {buildDayCells} from "../utils/streak";
 import {computeStats} from "../utils/stats";
 
 interface StatsScreenProps {
@@ -29,7 +29,6 @@ interface StatsScreenProps {
 export function StatsScreen({onBack}: StatsScreenProps) {
     const {state} = useProgressState();
     const stats = computeStats(state);
-    const week = buildDayCells(state.trainingDays, 7);
 
     const tiles: {label: string; value: string; icon: ReactNode}[] = [
         {label: "Days trained", value: stats.daysTrained.toString(), icon: <CalendarCheck className="w-[22px] h-[22px]"/>},
@@ -70,28 +69,23 @@ export function StatsScreen({onBack}: StatsScreenProps) {
                         </div>
                     </div>
 
-                    {/* Last 7 days */}
-                    <div className="mt-5 flex justify-between gap-1">
-                        {week.map((day) => (
-                            <div key={day.key} className="flex flex-col items-center gap-1.5">
-                                <span className="text-[10px] font-semibold text-[#33417A]">
-                                    {day.weekdayShort[0]}
+                    {/* Summary facts — the day-by-day view is the calendar below,
+                        so the hero stays a clean headline (no repeated grid). */}
+                    <div className="mt-5 flex items-center justify-center gap-2 text-[13px] font-medium text-[#33417A]">
+                        <span>
+                            <span className="font-bold text-[#091A7A]">{stats.daysTrained}</span> total{" "}
+                            {stats.daysTrained === 1 ? "day" : "days"} trained
+                        </span>
+                        {state.streakFreezes > 0 && (
+                            <>
+                                <span className="text-[#091A7A]/25">·</span>
+                                <span className="inline-flex items-center gap-1">
+                                    <Snowflake className="w-3.5 h-3.5 text-[#1E5FBF]"/>
+                                    <span className="font-bold text-[#091A7A]">{state.streakFreezes}</span> in
+                                    reserve
                                 </span>
-                                <div
-                                    className={`w-8 h-8 rounded-[12px] flex items-center justify-center ${
-                                        day.trained
-                                            ? "bg-gradient-to-br from-[#FFC71E] to-[#F59E0B]"
-                                            : day.isToday
-                                                ? "bg-white/80 border-2 border-white"
-                                                : "bg-white/30"
-                                    }`}
-                                >
-                                    {day.trained && (
-                                        <Flame className="w-3.5 h-3.5 text-white" fill="currentColor"/>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                            </>
+                        )}
                     </div>
                 </GlassCard>
 

@@ -13,14 +13,15 @@ interface TrainingStreakProps {
     freezes?: number;
     /** ISO `YYYY-MM-DD` day keys of every day trained. */
     trainingDays: string[];
-    /** Open the full Training History sheet. */
+    /** Open the full Stats screen (the canonical training history + calendar). */
     onViewHistory?: () => void;
 }
 
 /**
- * The home streak overview. Shows the current and longest streak side by side
- * plus the real last-seven-days row (computed from `trainingDays`, not faked),
- * and opens the Training History sheet on tap.
+ * The home streak glance: current and longest streak side by side plus the real
+ * last-seven-days row (computed from `trainingDays`, not faked). It is the only
+ * place the week strip lives; tapping opens the full Stats screen, where the
+ * month calendar lives. No duplicated calendar grid on the home feed.
  */
 export function TrainingStreak({
                                    streakCount,
@@ -43,7 +44,7 @@ export function TrainingStreak({
                     onViewHistory?.();
                 }
             }}
-            aria-label="View training history"
+            aria-label="View your stats"
             className="p-5 cursor-pointer transition-transform active:scale-[0.99] outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
         >
             <div className="flex items-center justify-between mb-5">

@@ -1,6 +1,7 @@
 import {AnimatePresence, motion} from "motion/react";
 import {Avatar} from "../ui/Avatar";
-import {BellRing, Brain, Plus, Zap} from "lucide-react";
+import {Chip} from "../ui/Chip";
+import {BellRing, Brain, Flame, Layers, Plus, Zap} from "lucide-react";
 import {useEffect, useState} from "react";
 
 interface ProgressHeaderProps {
@@ -17,6 +18,12 @@ interface ProgressHeaderProps {
         xpForNextLevel: number;
         xpInCurrentLevel: number;
     };
+    /** Current training streak, surfaced as a header chip. */
+    streakCount?: number;
+    /** Cards due for review today, surfaced as a header chip when > 0. */
+    dueCount?: number;
+    /** Show the at-a-glance metric chips (hidden on first run). */
+    showStats?: boolean;
     onNotificationClick?: () => void;
     onProfileClick?: () => void;
     unreadCount?: number;
@@ -31,6 +38,9 @@ export function ProgressHeader({
                                    showXPAnimation,
                                    onXPAnimationComplete,
                                    levelProgress,
+                                   streakCount = 0,
+                                   dueCount = 0,
+                                   showStats = false,
                                    onNotificationClick,
                                    onProfileClick,
                                    unreadCount = 0,
@@ -208,6 +218,37 @@ export function ProgressHeader({
                     )}
                 </motion.button>
             </div>
+
+            {/* At-a-glance metric chips — streak + due, the two numbers that drive
+                today's session, consolidated here instead of scattered below.
+                Shown only once there's something real to report. */}
+            {showStats && (streakCount > 0 || dueCount > 0) && (
+                <motion.div
+                    initial={{opacity: 0, y: 6}}
+                    animate={{opacity: 1, y: 0}}
+                    transition={{delay: 0.2, duration: 0.35}}
+                    className="flex items-center gap-2 px-6 pb-3"
+                >
+                    {streakCount > 0 && (
+                        <Chip
+                            tone="amber"
+                            size="md"
+                            icon={<Flame className="w-3.5 h-3.5" fill="currentColor"/>}
+                        >
+                            {streakCount}-day streak
+                        </Chip>
+                    )}
+                    {dueCount > 0 && (
+                        <Chip
+                            tone="navy"
+                            size="md"
+                            icon={<Layers className="w-3.5 h-3.5"/>}
+                        >
+                            {dueCount} due today
+                        </Chip>
+                    )}
+                </motion.div>
+            )}
         </div>
     );
 }
