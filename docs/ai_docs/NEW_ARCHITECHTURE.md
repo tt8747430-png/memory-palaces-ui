@@ -9,7 +9,7 @@ Mindscape ("Your Memory Palace") is a phone-first method-of-loci training app �
 ### Confirmed decisions
 | Decision | Choice |
 |---|---|
-| **Location** | New **separate repo** at `memory-palaces-app-ui/memory-palaces/` (its own `git init`; add to the parent's `.gitignore`). Old app = reference spec. |
+| **Location** | New **separate, non-nested** project at **`/Users/kristianbraila/projectsGIT/web/memory-palaces/`** — a top-level *sibling* of the old `memory-palaces-app-ui/`, not nested inside it. *(Moved here 2026-06-15 from the original `memory-palaces-app-ui/memory-palaces/` subfolder; the nested folder is now empty. Standalone `git init` deferred per the user.)* Old app = reference spec. |
 | **Architecture** | **Feature-Sliced Design (FSD)** structure × **Clean/Hexagonal** dependency rule × **DDD-lite** domain × **CQRS-lite** (commands/queries) × unidirectional **Zustand** |
 | **Delivery** | **PWA** — installable from the browser, instant updates, **no App Store / Play Store** |
 | **Framework** | **React 19 + Vite** + `vite-plugin-pwa` (Workbox) |
@@ -218,7 +218,7 @@ Each feature slice spans the FSD layers it needs (entity → feature command →
 | Risk | Impact | Mitigation |
 |---|---|---|
 | Full rewrite scope | High | Domain core first (Ph 1–2); slice-by-slice views; app runnable from Ph 1 |
-| Nested separate repo confusion | Low | `git init` in `memory-palaces/`; add to parent `.gitignore` |
+| Nested separate repo confusion | Low | **Resolved** — relocated to a top-level sibling `web/memory-palaces/` (no longer nested under the old repo). |
 | iOS PWA limits (eviction, install, push pre-16.4) | Med | persisted-storage + cloud safety-net; custom A2HS; push gated to installed/16.4+ |
 | Sync conflicts / lost reviews | Med | append-only merge + per-doc revisions + server-time |
 | LLM key exposure / cost | High | Key only in Edge Function; JWT + rate-limit + token budget |
