@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {toast} from "sonner";
 import {LiquidGlassBottomNav} from "./LiquidGlassBottomNav";
+import {SwipeBackScreen} from "./ui/SwipeBackScreen";
 import {SearchPopup} from "./SearchPopup";
 import {HomeFeed} from "./HomeFeed";
 import {PalacesPage} from "./PalacesPage";
@@ -217,49 +218,61 @@ export default function HomePage() {
 
     if (showNotifications) {
         return (
-            <NotificationsScreen
-                notifications={state.notifications}
-                onBack={handleCloseNotifications}
-                onMarkAllRead={actions.markAllNotificationsRead}
-                onRemove={actions.removeNotification}
-                onClear={actions.clearNotifications}
-            />
+            <SwipeBackScreen onBack={handleCloseNotifications} className="h-full">
+                <NotificationsScreen
+                    notifications={state.notifications}
+                    onBack={handleCloseNotifications}
+                    onMarkAllRead={actions.markAllNotificationsRead}
+                    onRemove={actions.removeNotification}
+                    onClear={actions.clearNotifications}
+                />
+            </SwipeBackScreen>
         );
     }
 
     if (quizResults && selectedPalaceId) {
         return (
-            <PalaceQuizCompletionScreen
-                results={quizResults}
-                onBack={handleQuizHome}
-                onRetake={handleQuizRetake}
-                onNextPalace={handleQuizContinue}
-            />
+            <SwipeBackScreen onBack={handleQuizHome} className="h-full">
+                <PalaceQuizCompletionScreen
+                    results={quizResults}
+                    onBack={handleQuizHome}
+                    onRetake={handleQuizRetake}
+                    onNextPalace={handleQuizContinue}
+                />
+            </SwipeBackScreen>
         );
     }
 
     if (showQuiz && selectedPalaceId) {
         return (
-            <PalaceQuizScreen
-                palaceId={selectedPalaceId}
-                roomTitle={quizRoomTitle ?? undefined}
-                onBack={() => setShowQuiz(false)}
-                onComplete={handleQuizComplete}
-            />
+            <SwipeBackScreen onBack={() => setShowQuiz(false)} className="h-full">
+                <PalaceQuizScreen
+                    palaceId={selectedPalaceId}
+                    roomTitle={quizRoomTitle ?? undefined}
+                    onBack={() => setShowQuiz(false)}
+                    onComplete={handleQuizComplete}
+                />
+            </SwipeBackScreen>
         );
     }
 
     if (showDailyReview) {
         return (
-            <DailyReviewScreen
-                onBack={() => setShowDailyReview(false)}
-                onComplete={() => setShowDailyReview(false)}
-            />
+            <SwipeBackScreen onBack={() => setShowDailyReview(false)} className="h-full">
+                <DailyReviewScreen
+                    onBack={() => setShowDailyReview(false)}
+                    onComplete={() => setShowDailyReview(false)}
+                />
+            </SwipeBackScreen>
         );
     }
 
     if (showStats) {
-        return <StatsScreen onBack={() => setShowStats(false)}/>;
+        return (
+            <SwipeBackScreen onBack={() => setShowStats(false)} className="h-full">
+                <StatsScreen onBack={() => setShowStats(false)}/>
+            </SwipeBackScreen>
+        );
     }
 
     if (roomView && selectedPalaceId) {
@@ -270,57 +283,65 @@ export default function HomePage() {
 
         if (roomView.mode === "flashcards") {
             return (
-                <RoomTrainingScreen
-                    onBack={backToDetail}
-                    onComplete={handleRoomComplete}
-                    palaceId={selectedPalaceId}
-                    roomTitle={roomView.roomTitle}
-                    palaceTitle={palaceTitle}
-                />
+                <SwipeBackScreen onBack={backToDetail} className="h-full">
+                    <RoomTrainingScreen
+                        onBack={backToDetail}
+                        onComplete={handleRoomComplete}
+                        palaceId={selectedPalaceId}
+                        roomTitle={roomView.roomTitle}
+                        palaceTitle={palaceTitle}
+                    />
+                </SwipeBackScreen>
             );
         }
 
         if (roomView.mode === "match") {
             return (
-                <MatchGameScreen
-                    onBack={backToDetail}
-                    onComplete={backToDetail}
-                    palaceId={selectedPalaceId}
-                    roomTitle={roomView.roomTitle}
-                    palaceTitle={palaceTitle}
-                />
+                <SwipeBackScreen onBack={backToDetail} className="h-full">
+                    <MatchGameScreen
+                        onBack={backToDetail}
+                        onComplete={backToDetail}
+                        palaceId={selectedPalaceId}
+                        roomTitle={roomView.roomTitle}
+                        palaceTitle={palaceTitle}
+                    />
+                </SwipeBackScreen>
             );
         }
 
         if (roomView.mode === "verses") {
             return (
-                <VerseStudyScreen
-                    onBack={backToDetail}
-                    palaceId={selectedPalaceId}
-                    roomTitle={roomView.roomTitle}
-                    palaceTitle={palaceTitle}
-                />
+                <SwipeBackScreen onBack={backToDetail} className="h-full">
+                    <VerseStudyScreen
+                        onBack={backToDetail}
+                        palaceId={selectedPalaceId}
+                        roomTitle={roomView.roomTitle}
+                        palaceTitle={palaceTitle}
+                    />
+                </SwipeBackScreen>
             );
         }
 
         return (
-            <RoomDetailScreen
-                palaceId={selectedPalaceId}
-                roomTitle={roomView.roomTitle}
-                palaceTitle={palaceTitle}
-                onBack={() => setRoomView(null)}
-                onStudy={() =>
-                    setRoomView((v) => (v ? {...v, mode: "flashcards"} : null))
-                }
-                onMatch={() => setRoomView((v) => (v ? {...v, mode: "match"} : null))}
-                onVerses={() =>
-                    setRoomView((v) => (v ? {...v, mode: "verses"} : null))
-                }
-                onTest={() => {
-                    setQuizRoomTitle(roomView.roomTitle);
-                    setShowQuiz(true);
-                }}
-            />
+            <SwipeBackScreen onBack={() => setRoomView(null)} className="h-full">
+                <RoomDetailScreen
+                    palaceId={selectedPalaceId}
+                    roomTitle={roomView.roomTitle}
+                    palaceTitle={palaceTitle}
+                    onBack={() => setRoomView(null)}
+                    onStudy={() =>
+                        setRoomView((v) => (v ? {...v, mode: "flashcards"} : null))
+                    }
+                    onMatch={() => setRoomView((v) => (v ? {...v, mode: "match"} : null))}
+                    onVerses={() =>
+                        setRoomView((v) => (v ? {...v, mode: "verses"} : null))
+                    }
+                    onTest={() => {
+                        setQuizRoomTitle(roomView.roomTitle);
+                        setShowQuiz(true);
+                    }}
+                />
+            </SwipeBackScreen>
         );
     }
 

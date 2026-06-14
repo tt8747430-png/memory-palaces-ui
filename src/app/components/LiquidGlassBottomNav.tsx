@@ -78,25 +78,25 @@ export function LiquidGlassBottomNav({
                 containerRect.left -
                 containerPaddingLeft;
             const buttonCenter = relativeX + buttonRect.width / 2;
-            const indicatorLeft = buttonCenter - 28;
+            const indicatorLeft = buttonCenter - 24;
             indicatorX.set(indicatorLeft);
         }
     }, [activeTab]);
 
     return (
-        <div className="fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-50">
             <div
                 className="absolute inset-0 bg-gradient-to-t from-[#091A7A]/20 via-[#4F8EFF]/10 to-transparent blur-2xl scale-110 opacity-60"/>
 
-            <div className="relative w-[320px] h-20 rounded-[40px] overflow-hidden shadow-2xl">
+            <div className="relative w-[320px] h-16 rounded-[32px] overflow-hidden shadow-2xl">
                 <div
                     className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/8 to-white/15 backdrop-blur-3xl"/>
 
-                <div className="absolute inset-0 rounded-[40px] p-[1px]">
+                <div className="absolute inset-0 rounded-[32px] p-[1px]">
                     <div
-                        className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-white/5 rounded-[40px]"/>
+                        className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-white/5 rounded-[32px]"/>
                     <div
-                        className="absolute inset-[1px] bg-gradient-to-br from-[#091A7A]/60 via-[#1a2b8a]/50 to-[#091A7A]/60 rounded-[40px]"/>
+                        className="absolute inset-[1px] bg-gradient-to-br from-[#091A7A]/60 via-[#1a2b8a]/50 to-[#091A7A]/60 rounded-[32px]"/>
                 </div>
 
                 <div
@@ -104,11 +104,11 @@ export function LiquidGlassBottomNav({
                     className="relative h-full px-4 flex items-center justify-between"
                 >
                     <motion.div
-                        className="absolute h-14 w-14 rounded-[24px] overflow-hidden"
+                        className="absolute h-12 w-12 rounded-[20px] overflow-hidden"
                         style={{x: indicatorSpring}}
                     >
                         <motion.div
-                            className="absolute inset-0 rounded-[24px]"
+                            className="absolute inset-0 rounded-[20px]"
                             animate={{
                                 background: [
                                     "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 100%)",
@@ -124,7 +124,7 @@ export function LiquidGlassBottomNav({
                         />
 
                         <motion.div
-                            className="absolute inset-0 rounded-[24px]"
+                            className="absolute inset-0 rounded-[20px]"
                             animate={{
                                 background: [
                                     "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)",
@@ -139,7 +139,7 @@ export function LiquidGlassBottomNav({
                         />
 
                         <div
-                            className="absolute inset-0 rounded-[24px]"
+                            className="absolute inset-0 rounded-[20px]"
                             style={{
                                 boxShadow:
                                     "inset 0 2px 8px rgba(0,0,0,0.12), inset 0 -2px 6px rgba(255,255,255,0.25)",
@@ -201,7 +201,7 @@ export function LiquidGlassBottomNav({
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeDot"
-                                        className="absolute -bottom-1 w-1 h-1 bg-[#091A7A] rounded-full"
+                                        className="absolute -bottom-0.5 w-1 h-1 bg-[#091A7A] rounded-full"
                                         initial={false}
                                         transition={{
                                             type: "spring",
@@ -216,10 +216,10 @@ export function LiquidGlassBottomNav({
                 </div>
 
                 <div
-                    className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent rounded-[40px] pointer-events-none"/>
+                    className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent rounded-[32px] pointer-events-none"/>
 
                 <div
-                    className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/5 via-transparent to-transparent rounded-b-[40px] pointer-events-none"/>
+                    className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/5 via-transparent to-transparent rounded-b-[32px] pointer-events-none"/>
             </div>
 
             <div

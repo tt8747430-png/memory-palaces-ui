@@ -553,7 +553,7 @@ function InitialsMode({
                 ) : (
                     <p
                         className={`w-full flex flex-wrap items-baseline justify-center gap-y-2.5 text-[clamp(17px,4.6vw,22px)] font-semibold text-[#091A7A] ${
-                            showWordSpaces ? "gap-x-3" : "gap-x-0"
+                            showWordSpaces ? "gap-x-3" : "gap-x-2"
                         }`}
                     >
                         {tokens.map((token, i) => {
@@ -569,7 +569,7 @@ function InitialsMode({
                                 <span key={i} className="whitespace-nowrap">
                                     {lead}
                                     <span className="font-bold">{initial}</span>
-                                    {hidden > 0 && (
+                                    {showWordSpaces && hidden > 0 && (
                                         <span
                                             aria-hidden
                                             className="ml-0.5 inline-block border-b-2 border-[#091A7A]/40 align-baseline"
@@ -746,7 +746,7 @@ function VerseSettingsSheet({
                 <SettingToggle
                     icon={<TypeIcon size={18}/>}
                     label="Show word spaces"
-                    description="Keep gaps between words in the Initials view."
+                    description="Mark a blank for each hidden letter so you feel every word's length."
                     checked={showWordSpaces}
                     onChange={onShowWordSpaces}
                 />

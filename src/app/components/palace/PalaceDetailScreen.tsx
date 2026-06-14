@@ -1,5 +1,6 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {animate, AnimatePresence, HTMLMotionProps, motion, useMotionValue} from "motion/react";
+import {useSwipeBack} from "../../hooks/useSwipeBack";
 import {useCollapsibleHeader} from "../../hooks/useCollapsibleHeader";
 import {
     ArrowLeft,
@@ -336,8 +337,26 @@ function RoomCardMenu({
 }) {
     const item =
         "rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-[#2C2C2C]";
+    // Defer overlay-opening actions until the menu has fully closed; otherwise the
+    // modal menu's teardown races the dialog/sheet open and it never mounts.
+    const [open, setOpen] = useState(false);
+    const pendingAction = useRef<(() => void) | null>(null);
+    const runAfterClose = (action: () => void) => {
+        pendingAction.current = action;
+        setOpen(false);
+    };
     return (
-        <DropdownMenu>
+        <DropdownMenu
+            open={open}
+            onOpenChange={setOpen}
+            onOpenChangeComplete={(isOpen) => {
+                if (!isOpen && pendingAction.current) {
+                    const action = pendingAction.current;
+                    pendingAction.current = null;
+                    action();
+                }
+            }}
+        >
             <DropdownMenuTrigger
                 render={
                     <motion.button
@@ -352,35 +371,35 @@ function RoomCardMenu({
                 }
             />
             <DropdownMenuContent align="end" className="w-[190px] rounded-[16px] p-1.5">
-                <DropdownMenuItem onClick={onEdit} className={item}>
+                <DropdownMenuItem onClick={() => runAfterClose(onEdit)} className={item}>
                     <Edit2 size={16} className="text-[#091A7A]"/>
                     Edit room
                 </DropdownMenuItem>
                 {canMoveUp && (
-                    <DropdownMenuItem onClick={() => onMove("up")} className={item}>
+                    <DropdownMenuItem onClick={() => runAfterClose(() => onMove("up"))} className={item}>
                         <ChevronUp size={16} className="text-[#091A7A]"/>
                         Move up
                     </DropdownMenuItem>
                 )}
                 {canMoveDown && (
-                    <DropdownMenuItem onClick={() => onMove("down")} className={item}>
+                    <DropdownMenuItem onClick={() => runAfterClose(() => onMove("down"))} className={item}>
                         <ChevronDown size={16} className="text-[#091A7A]"/>
                         Move down
                     </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={onDuplicate} className={item}>
+                <DropdownMenuItem onClick={() => runAfterClose(onDuplicate)} className={item}>
                     <Copy size={16} className="text-[#091A7A]"/>
                     Duplicate room
                 </DropdownMenuItem>
                 {hasProgress && (
-                    <DropdownMenuItem onClick={onResetProgress} className={item}>
+                    <DropdownMenuItem onClick={() => runAfterClose(onResetProgress)} className={item}>
                         <RotateCcw size={16} className="text-[#091A7A]"/>
                         Reset progress
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator/>
                 <DropdownMenuItem
-                    onClick={onDelete}
+                    onClick={() => runAfterClose(onDelete)}
                     className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3 text-[14px] font-medium text-red-600 hover:bg-red-50 focus:bg-red-50"
                 >
                     <Trash2 size={16} className="text-red-600"/>
@@ -424,6 +443,17 @@ export function PalaceDetailScreen({
 
     const header = useCollapsibleHeader({distance: 150});
 
+    // Edge-swipe right to return to the Palaces list. Disabled while a nested
+    // sheet/dialog owns the screen so the gesture never pops the wrong layer.
+    const swipeBack = useSwipeBack(onBack, {
+        enabled:
+            !showSettings &&
+            !roomEditor &&
+            !deleteRoomId &&
+            !resetRoomId &&
+            !importOpen,
+    });
+
     if (!palace) {
         return (
             <div className="h-full flex items-center justify-center">
@@ -449,9 +479,12 @@ export function PalaceDetailScreen({
     const roomToReset = rooms.find((r) => r.id === resetRoomId);
 
     return (
-        <div
+        <motion.div
             ref={header.ref}
-            className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto"
+            {...swipeBack.bind()}
+            style={{x: swipeBack.x}}
+            transformTemplate={({x}) => (x && x !== "0px" ? `translateX(${x})` : "none")}
+            className="h-full bg-gradient-to-b from-[#ADC8FF] via-[#E8F2FF]/95 to-white overflow-y-auto touch-pan-y"
         >
             {/* Compact sticky bar — fades in once the banner scrolls away */}
             <motion.div
@@ -535,17 +568,34 @@ export function PalaceDetailScreen({
                         className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/50 mb-6"
                     >
                         <div className="flex items-start gap-4 mb-4">
-                            <PalaceCover
-                                icon={palace.icon}
-                                color={palace.color}
-                                image={palace.image}
-                                className="w-16 h-16 rounded-2xl flex-shrink-0 shadow-md"
-                                iconClassName="text-4xl"
-                            />
+                            <motion.button
+                                whileTap={{scale: 0.96}}
+                                onClick={() => setShowSettings(true)}
+                                aria-label="Edit palace cover and icon"
+                                className="relative flex-shrink-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                            >
+                                <PalaceCover
+                                    icon={palace.icon}
+                                    color={palace.color}
+                                    image={palace.image}
+                                    className="w-16 h-16 rounded-2xl shadow-md"
+                                    iconClassName="text-4xl"
+                                />
+                                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#091A7A] flex items-center justify-center shadow-md ring-2 ring-white">
+                                    <Edit2 className="w-3 h-3 text-white"/>
+                                </span>
+                            </motion.button>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-main-heading text-[#091A7A] mb-2">
-                                    {palace.name}
-                                </h1>
+                                <motion.button
+                                    whileTap={{scale: 0.98}}
+                                    onClick={() => setShowSettings(true)}
+                                    aria-label="Edit palace name"
+                                    className="block text-left -mx-1 px-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#091A7A]/40"
+                                >
+                                    <h1 className="text-main-heading text-[#091A7A] mb-2">
+                                        {palace.name}
+                                    </h1>
+                                </motion.button>
                                 <p className="text-small mb-3">{palace.description}</p>
                                 {totalDuration > 0 && (
                                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#EAF4FF] rounded-full">
@@ -968,7 +1018,7 @@ export function PalaceDetailScreen({
                 </AlertDialogContent>
             </AlertDialog>
 
-        </div>
+        </motion.div>
     );
 }
 

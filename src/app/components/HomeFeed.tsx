@@ -134,7 +134,7 @@ export function HomeFeed({
             {/* Scroll container */}
             <div
                 ref={header.ref}
-                className="size-full overflow-y-auto scrollbar-hide relative z-10 pb-[140px]"
+                className="size-full overflow-y-auto scrollbar-hide relative z-10 pb-[112px]"
             >
                 <motion.div
                     style={{

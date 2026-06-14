@@ -82,8 +82,28 @@ function PalaceActionsMenu({
     onDelete: () => void;
 }) {
     const archived = !!palace.archived;
+    // base-ui's modal menu locks scroll and manages focus while open. Opening an
+    // overlay (delete confirm / move sheet) from an item in the same tick races
+    // that teardown, so the overlay never stably mounts. Control the menu and run
+    // the action only once the close animation has fully settled.
+    const [open, setOpen] = useState(false);
+    const pendingAction = useRef<(() => void) | null>(null);
+    const runAfterClose = (action: () => void) => {
+        pendingAction.current = action;
+        setOpen(false);
+    };
     return (
-        <DropdownMenu>
+        <DropdownMenu
+            open={open}
+            onOpenChange={setOpen}
+            onOpenChangeComplete={(isOpen) => {
+                if (!isOpen && pendingAction.current) {
+                    const action = pendingAction.current;
+                    pendingAction.current = null;
+                    action();
+                }
+            }}
+        >
             <DropdownMenuTrigger
                 render={
                     <motion.button
@@ -100,7 +120,7 @@ function PalaceActionsMenu({
                 {!archived && (
                     <>
                         <DropdownMenuItem
-                            onClick={onToggleFavorite}
+                            onClick={() => runAfterClose(onToggleFavorite)}
                             className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
                         >
                             <Star
@@ -116,7 +136,7 @@ function PalaceActionsMenu({
                             </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            onClick={onMoveToFolder}
+                            onClick={() => runAfterClose(onMoveToFolder)}
                             className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
                         >
                             <FolderIcon size={16} className="text-[#091A7A]"/>
@@ -128,7 +148,7 @@ function PalaceActionsMenu({
                     </>
                 )}
                 <DropdownMenuItem
-                    onClick={onArchiveToggle}
+                    onClick={() => runAfterClose(onArchiveToggle)}
                     className="rounded-[10px] px-3 py-2.5 cursor-pointer flex items-center gap-3"
                 >
                     {archived ? (
@@ -144,7 +164,7 @@ function PalaceActionsMenu({
                     )}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    onClick={onDelete}
+                    onClick={() => runAfterClose(onDelete)}
                     className="rounded-[10px] px-3 py-2.5 hover:bg-red-50 focus:bg-red-50 cursor-pointer flex items-center gap-3"
                 >
                     <Trash2 size={16} className="text-red-600"/>
@@ -585,7 +605,7 @@ export function PalacesPage({
 
                     {/* Grid View */}
                     {viewMode === "grid" && (
-                        <div className="px-[20px] pb-[128px]">
+                        <div className="px-[20px] pb-[112px]">
                             <div className="grid grid-cols-2 gap-4">
                                 {loading &&
                                     Array.from({length: 4}).map((_, i) => (
@@ -655,7 +675,7 @@ export function PalacesPage({
 
                     {/* List View */}
                     {viewMode === "list" && (
-                        <div className="pb-[128px]">
+                        <div className="pb-[112px]">
                             {visiblePalaces.length > 0 ? (
                                 visiblePalaces.map((palace, index) => (
                                     <motion.div

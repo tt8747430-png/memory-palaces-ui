@@ -139,7 +139,7 @@ export function ProfilePage({onOpenSettings, onOpenStats}: ProfilePageProps) {
             : "Build your first palace to begin";
 
     return (
-        <div ref={scrollRef} className="size-full overflow-y-auto scrollbar-hide relative pb-[140px]">
+        <div ref={scrollRef} className="size-full overflow-y-auto scrollbar-hide relative pb-[112px]">
 
             {/* Sticky compact header — fades in once the large header scrolls away */}
             <motion.div
