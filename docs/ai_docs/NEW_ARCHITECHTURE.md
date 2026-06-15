@@ -31,6 +31,7 @@ Mindscape ("Your Memory Palace") is a phone-first method-of-loci training app �
 - **Mobile-first & responsive**, safe-area, accessible font scaling, ≥44px targets.
 - **Theme-ready color:** components use only **semantic CSS-variable tokens**; dark theme = a later token remap.
 - **Offline-first / local-first:** network never in the path of a card review; cloud is additive behind ports.
+- **Comments sparingly:** comment *why* (intent, trade-offs, gotchas), not *what* the code already says; prefer clear names + small functions; no redundant/placeholder noise; delete stale comments — don't pollute the code.
 - **AI Tutor is the final phase.**
 
 ### Cross-cutting engineering defaults (applied in every relevant phase)
@@ -111,6 +112,34 @@ public/ + vite.config (PWA) + supabase/ (SQL migrations, RLS, edge functions)
 - **Supabase is the cloud, behind ports** (`shared/api`): **Auth** (real accounts; dev/tests use a local/guest provider), **replication** (RxDB ↔ Postgres, per-doc revisions + append-only merge so cross-device reviews are never lost), **Storage** (palace images), **Edge Function** (Claude proxy — app never holds the key).
 - **Always-in-sync-on-leave:** live replication while active → **flush** on `visibilitychange`/`pagehide` → Workbox **`BackgroundSyncPlugin`** delivers offline-queued changes after the tab closes.
 - **Dependency Inversion guarantee:** the whole cloud layer is additive/swappable behind ports — it touches no feature/entity logic.
+
+### REST / HTTP API surface (and what stays on replication)
+
+The domain data is **not** served by REST CRUD — palaces/rooms/loci/questions/SRS
+flow through **RxDB ↔ Supabase replication** (offline-first; network never in the
+review path). REST/HTTP request–response is reserved for surfaces that don't belong
+in the sync stream, all behind `shared/api` ports:
+
+- **AI Tutor (Phase 13)** — the Claude Edge Function is the clearest REST fit:
+  JWT-verified POST + SSE streaming, commands-as-tools.
+- **Auth (Phase 9)** — Supabase Auth/GoTrue is REST: sign-up/in, token refresh,
+  password reset, magic link, guest→account claim.
+- **Storage (Phase 9)** — palace images / avatars via signed-URL or multipart POST.
+- **Web Push (Phase 10)** — POST to persist a `PushSubscription`; the pg_cron/Edge
+  sender calls the Web Push REST endpoints.
+- **Server RPCs outside the sync stream** — guest→account merge, account deletion
+  (GDPR), bulk export.
+- **Read-only catalogs** — a community/shared-palace template gallery or AI-generation
+  results: plain REST GET/POST, no RxDB collection or merge logic needed.
+- **"Free" REST via PostgREST** — once the Phase 9 schema + RLS exist, Supabase
+  auto-exposes a REST API for admin/debug tooling, server-to-server, and integrations.
+
+**Architectural payoff:** persistence already sits behind the generic `Repository<T>`
+port (`shared/api/base-repository.ts`) + composition-root DI, so a `RestRepository<T>`
+adapter can back any entity needing server-authoritative request/response (e.g. a
+future thin client without RxDB) **without touching entity/feature code** — REST is an
+optional adapter, never a rewrite. **Do not** add REST to core CRUD, SRS, or
+streak/stats — those stay local + replication.
 
 ### PWA specifics
 - `vite-plugin-pwa` runs **Workbox** (current standard; supersedes sw-precache/sw-toolbox): precache shell, runtime-cache Storage images, offline fallback, update-prompt.

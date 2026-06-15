@@ -65,6 +65,33 @@ CSS entry is `src/styles/index.css`, which imports in order: `fonts.css` → `ta
 - Honor `prefers-reduced-motion` — already wired globally via `MotionConfig reducedMotion="user"`, but new bespoke animations still need a sensible reduced fallback.
 - One deep navy (`#091A7A`) carries identity; light blue + glass for atmosphere. Avoid dense/dashboard layouts and cartoonish gamification.
 
+## Code style
+
+- **Comment only when it adds value.** Explain *why* — non-obvious intent, trade-offs,
+  gotchas — not *what* the code already states. Don't narrate obvious code, restate
+  signatures, or leave TODO/placeholder noise. Prefer clear names and small functions
+  over explanatory comments, and delete comments that no longer match the code. Keep
+  the codebase clean — do not pollute it with redundant comments.
+- **Naming:** intent-revealing names over abbreviations (`dueLoci`, not `dl`).
+  Components/types `PascalCase`, variables/functions `camelCase`, hooks `useX`, true
+  module-level constants `UPPER_SNAKE`. Booleans read as predicates (`isDue`, `hasName`,
+  `canEdit`); functions are verbs (`scheduleReview`); event handlers are `handleX`.
+  Mirror the domain vocabulary (`Palace`, `Room`, `Locus`, `srs`).
+- **Types:** never `any` — model the shape (strict mode + `noUnusedLocals/Parameters`
+  are on). Prefer discriminated unions for variants (e.g. `ProgressEvent`); keep
+  `type` vs `interface` consistent with nearby code. Type module/function boundaries
+  explicitly and let locals infer.
+- **Functions:** one job each, small, early-return over deep nesting. Keep them pure
+  where possible and push side effects (localStorage, toasts) to the edges.
+- **Immutability:** default to `const`; update state immutably (spread/map), never
+  mutate `state`/props in place — mutations flow up through the `useProgressState`
+  action callbacks.
+- **No magic values:** name repeated numbers/strings (cap sizes, intervals, storage
+  keys) as constants near where they're used.
+- **Imports:** use the `@/` alias, not long `../../` chains; reuse app primitives
+  (`ScreenHeader`, `GlassCard`, `cn`) before hand-rolling.
+- **DRY, but no premature abstraction:** extract on the third repeat, not the first guess.
+
 ## Tooling notes
 
 - `.impeccable/` holds critique/design artifacts from the "impeccable" review tooling (see the `chore: impeccable …` commits). `docs/ai_docs/` contains agent role/generation prompts. These are workflow scaffolding, not app code.
