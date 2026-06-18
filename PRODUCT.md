@@ -27,7 +27,7 @@ Voice: encouraging and clear, confident without hype. It coaches, it does not ch
 - **Corporate SaaS dashboard.** No dense data tables, gray enterprise chrome, or soulless admin panels. Progress is shown with warmth and meaning, not spreadsheet density.
 - **Cluttered / busy UI.** No information overload, no competing CTAs, no cramped layouts. Every screen breathes; one primary action at a time.
 - **Cheap / templated feel.** No stocky default gradients, no Bootstrap-default look, nothing that reads as low-effort. Craft is the brand.
-- Gamification is wanted, but the childish-Duolingo trap (cartoon mascots, constant confetti, loud rewards) is off-brand: keep motivation premium and earned.
+- Gamification is wanted and keep motivation premium and earned.
 
 ## Design Principles
 
